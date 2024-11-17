@@ -2,18 +2,18 @@
 Development of the EnvEng web application using 5S methodology for project management and Data-Oriented Programming (DOP) for development.
 
 # Project Plan Framework
-1. Introduction
+## 1. Introduction
 Project Overview: Briefly describe the project and its objectives.
 Methodologies: Explain the use of 5S for project management and DOP for development.
-2. 5S Methodology Implementation
+## 2. 5S Methodology Implementation
 Sort
-Objective: Identify and eliminate unnecessary items from the project workspace.
-Actions:
+### Objective: Identify and eliminate unnecessary items from the project workspace.
+### Actions:
 Conduct an initial audit of all project resources (code, documents, tools).
 Remove or archive obsolete or redundant items.
 Set in Order
-Objective: Organize remaining items for easy access and efficiency.
-Actions:
+### Objective: Organize remaining items for easy access and efficiency.
+### Actions:
 Establish a logical structure for code repositories.
 Create a standardized directory and file naming convention.
 Implement version control practices.
