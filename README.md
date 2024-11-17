@@ -17,7 +17,7 @@ Actions:
 Establish a logical structure for code repositories.
 Create a standardized directory and file naming convention.
 Implement version control practices.
-Shine
+## Shine
 Objective: Maintain a clean and organized workspace.
 Actions:
 Schedule regular code reviews and refactoring sessions.
