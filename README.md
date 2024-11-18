@@ -3,7 +3,8 @@ Development of the EnvEng web application using 5S methodology for project manag
 
 ## Project Plan Framework
 ### 1. Introduction
-Project Overview: Briefly describe the project and its objectives.
+Project Overview: 
+The project is created to create a Web Development platform for Enveng company.
 Methodologies: Explain the use of 5S for project management and DOP for development.
 ### 2. 5S Methodology Implementation
 Sort
