@@ -69,3 +69,4 @@ Regularly review and update processes based on feedback and performance metrics.
 ### 7. Monitoring and Evaluation
 #### Metrics: Define metrics to measure the success of 5S and DOP implementation.
 #### Review: Schedule regular review meetings to assess progress and make adjustments.
+
