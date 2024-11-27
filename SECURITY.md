@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-The following versions of Obligation Register are currently being maintained with security updates:
+The following versions of Web-App are currently being maintained with security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -12,7 +12,7 @@ The following versions of Obligation Register are currently being maintained wit
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in Obligation Register, please follow the steps below to report it:
+If you discover a security vulnerability in the repository, please follow the steps below to report it:
 
 1. **Do not open a public issue**: To protect the security of our users, please do not report security vulnerabilities in public GitHub issues.
 
@@ -28,7 +28,7 @@ If you discover a security vulnerability in Obligation Register, please follow t
 
 ## Security Updates
 
-We regularly review and update our security policies to ensure the safety and integrity of Obligation Register. Security updates are released as needed to address vulnerabilities and protect our users.
+We regularly review and update our security policies to ensure the safety and integrity of repository. Security updates are released as needed to address vulnerabilities and protect our users.
 
 ## Contact
 

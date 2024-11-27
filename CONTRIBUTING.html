@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Contributing to Web-App Repository</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="contributing-to-web-app-repository">Contributing to Web-App Repository</h1>
+<p>Thank you for considering contributing to Web-App! We welcome contributions from everyone. By participating in this project, you agree to abide by our <a href="CODE_OF_CONDUCT">Code of Conduct</a>.</p>
+<h2 id="how-to-contribute">How to Contribute</h2>
+<h3 id="reporting-issues">Reporting Issues</h3>
+<p>If you encounter any issues or have questions, please check the <a href="https://github.com/enssol/web-app/issues">GitHub Issues</a> page. You can search for existing issues or open a new one if your issue has not been addressed. When opening a new issue, please include the following information:</p>
+<ul>
+<li>A clear and descriptive title</li>
+<li>A detailed description of the issue</li>
+<li>Steps to reproduce the issue</li>
+<li>Any relevant logs, screenshots, or other information</li>
+</ul>
+<h3 id="submitting-pull-requests">Submitting Pull Requests</h3>
+<p>We welcome pull requests for bug fixes, improvements, and new features. To submit a pull request, follow these steps:</p>
+<ol>
+<li>
+<p><strong>Fork the repository</strong>: Click the &quot;Fork&quot; button at the top right corner of the repository page.</p>
+</li>
+<li>
+<p><strong>Clone your fork</strong>: Clone your forked repository to your local machine.</p>
+<pre><code class="language-sh">git <span class="hljs-built_in">clone</span> git@github.com:your-username/web-app.git
+<span class="hljs-built_in">cd</span> web-app
+</code></pre>
+</li>
+</ol>
+<h3 id="what-not-to-commit">What Not to Commit</h3>
+<p>Please avoid committing the following types of files to the repository:</p>
+<ul>
+<li><strong>Generated assets</strong>: Object files, compiled binaries, and other generated files should not be committed. These files waste space and can lead to stale data.</li>
+<li><strong>Configuration files with sensitive information</strong>: Files containing keys, passwords, environment variables, or machine-specific configurations should not be committed. Remove any references to file paths or settings specific to your machine.</li>
+<li><strong>Binary dependencies</strong>: Dependencies that you do not control, such as external libraries or frameworks, should not be committed. Use a package manager to handle these dependencies whenever possible.</li>
+</ul>
+<p>By following these guidelines, you help keep the repository clean and maintainable for everyone.</p>
+
+            
+            
+        </body>
+        </html>
