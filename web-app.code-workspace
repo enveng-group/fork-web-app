@@ -1,0 +1,464 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "files.autoSave": "afterDelay",
+        "files.autoSaveDelay": 1000,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.shellcheck": "always"
+        },
+        "editor.detectIndentation": false,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-vscode.cpptools",
+        "[javascript]": {
+            "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[c]": {
+            "editor.defaultFormatter": "ms-vscode.cpptools",
+            "editor.tabSize": 4,
+            "editor.insertSpaces": true,
+            "editor.trimAutoWhitespace": true
+        },
+        "[cpp]": {
+            "editor.defaultFormatter": "ms-vscode.cpptools",
+            "editor.tabSize": 4,
+            "editor.insertSpaces": true,
+            "editor.trimAutoWhitespace": true
+        },
+        "[json]": {
+            "editor.tabSize": 2,
+            "editor.insertSpaces": true
+        },
+        "[jsonc]": {
+            "editor.tabSize": 2,
+            "editor.insertSpaces": true
+        },
+        "[markdown]": {
+            "editor.wordWrap": "on",
+            "editor.trimAutoWhitespace": false
+        },
+        "[makefile]": {
+            "editor.tabSize": 4,
+            "editor.insertSpaces": false
+        },
+        "[makefile.am]": {
+            "editor.tabSize": 4,
+            "editor.insertSpaces": false
+        },
+        "[makefile.in]": {
+            "editor.tabSize": 4,
+            "editor.insertSpaces": false
+        },
+        "editor.formatOnPaste": true,
+        "editor.formatOnType": true,
+        "editor.insertSpaces": true,
+        "editor.rulers": [80],
+        "editor.trimAutoWhitespace": true,
+        "editor.wordWrap": "wordWrapColumn",
+        "editor.wordWrapColumn": 80,
+        "editor.minimap.enabled": true,
+        "editor.tabSize": 4,
+        "editor.lineNumbers": "on",
+        "editor.bracketPairColorization.enabled": true,
+        "editor.cursorWidth": 2,
+        "editor.renderWhitespace": "all",
+        "editor.renderControlCharacters": true,
+        "editor.snippetSuggestions": "top",
+        "editor.suggestSelection": "first",
+        "editor.tabCompletion": "on",
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": true,
+            "strings": true
+        },
+        "editor.parameterHints.enabled": true,
+        "explorer.confirmDelete": false,
+        "explorer.confirmDragAndDrop": false,
+        "explorer.sortOrder": "filesFirst",
+        "explorer.compactFolders": true,
+        "explorer.autoReveal": true,
+        "files.associations": {
+            ".env*": "dotenv",
+            ".vscode": "json",
+            ".dockerignore": "dockerfile",
+            ".editorconfig": "editorconfig",
+            "webp": "image",
+            ".csv": "csv",
+            ".html": "html",
+            ".js": "javascript",
+            ".css": "css",
+            ".wasm": "wasm",
+            ".asm": "assembly",
+            ".a": "binary",
+            ".o": "binary",
+            ".s": "assembly",
+            ".so": "binary",
+            ".d": "c",
+            ".c": "c",
+            ".h": "c",
+            ".md": "markdown",
+            ".json": "json",
+            ".yml": "yaml",
+            ".ico": "image",
+            ".ini": "ini",
+            "containerfile": "dockerfile",
+            ".txt": "plaintext",
+            "*.h": "c",
+            "*.desc": "recfile",
+            "INSTALL": "markdown",
+            "NEWS": "markdown",
+            "AUTHORS": "markdown",
+            "*.am": "makefile",
+            "*.txt": "plaintext",
+            "*.ac": "makefile",
+            ".conf": "ini",
+            ".rec": "recfile"
+        },
+        "git.alwaysSignOff": true,
+        "git.autofetch": true,
+        "git.autofetchPeriod": 180,
+        "git.autorefresh": true,
+        "git.closeDiffOnOperation": true,
+        "git.confirmSync": false,
+        "git.enableCommitSigning": true,
+        "git.enableSmartCommit": true,
+        "git.enabled": true,
+        "git.fetchOnPull": true,
+        "git.inputValidation": true,
+        "git.mergeEditor": true,
+        "git.openRepositoryInParentFolders": "always",
+        "git.postCommitCommand": "sync",
+        "git.pruneOnFetch": true,
+        "git.pullBeforeCheckout": true,
+        "git.rebaseWhenSync": true,
+        "git.replaceTagsWhenPull": true,
+        "git.showProgress": true,
+        "git.verboseCommit": true,
+        "git.pullTags": true,
+        "git.confirmForcePush": true,
+        "github.copilot.enable": {
+            "plaintext": true,
+            "markdown": true,
+            "css": true,
+            "diff": true,
+            "dockerfile": true,
+            "git": true,
+            "html": true,
+            "ini": true,
+            "javascript": true,
+            "json": true,
+            "yaml": true,
+            "dotenv": true,
+            "assembly": true,
+            "c": true,
+            "dockercompose": true,
+            "git-commit": true,
+            "git-rebase": true,
+            "makefile": true,
+            "shellscript": true,
+            "sql": true,
+            "xml": true
+        },
+        "github.copilot.editor.enableAutoCompletions": true,
+        "github.copilot.chat.edits.enabled": true,
+        "github.copilot.chat.fixTestFailure.enabled": true,
+        "github.copilot.chat.followUps": "always",
+        "github.copilot.chat.reviewSelection.enabled": true,
+        "github.copilot.editor.enableCodeActions": true,
+        "github.copilot.renameSuggestions.triggerAutomatically": true,
+        "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+        "github.copilot.chat.temporalContext.enabled": true,
+        "licenser.author": "Enveng Group - Simon French-Bluhm and Adrian Gallo",
+        "licenser.customTermsAndConditions": "Copyright @YEAR@ @AUTHOR@\n\nThese are the terms and conditions...",
+        "licenser.excludeFileExtensions": [
+            "txt",
+            "sqlite3",
+            "sql",
+            "jpg",
+            "jpeg",
+            "svg",
+            "png",
+            "ico",
+            "crt",
+            "pem",
+            "der",
+            ".gitignore",
+            ".gitattributes",
+            ".gitmodules",
+            ".gitkeep",
+            ".DS_Store",
+            ".vscode",
+            ".env",
+            ".dockerignore",
+            "webp",
+            "html",
+            "ini",
+            "conf",
+            "cfg",
+            "Makefile",
+            "Makefile.am",
+            "Makefile.in"
+        ],
+        "licenser.license": "AGPLv3",
+        "licenser.projectName": "Enveng Group - Obligation Register",
+        "licenser.useSingleLineStyle": true,
+        "terminal.integrated.shellIntegration.enabled": true,
+        "terminal.integrated.shellIntegration.showCommandGuide": true,
+        "terminal.integrated.fontFamily": "monospace",
+        "terminal.integrated.fontSize": 14,
+        "terminal.integrated.cursorStyle": "block",
+        "terminal.integrated.scrollback": 10000,
+        "terminal.integrated.copyOnSelection": true,
+        "terminal.integrated.rightClickBehavior": "paste",
+        "workbench.editorAssociations": {
+            "*.copilotmd": "vscode.markdown.preview.editor"
+        },
+        "workbench.preferredHighContrastColorTheme": "Default Dark Modern",
+        "workbench.colorTheme": "GitHub Dark Default",
+        "diffEditor.ignoreTrimWhitespace": false,
+        "search.exclude": {
+            "**/node_modules": true,
+            "**/dist": true,
+            "**/coverage": true
+        },
+        "search.useIgnoreFiles": true,
+        "search.useGlobalIgnoreFiles": true,
+        "editor.tokenColorCustomizations": {
+            "[*Light*]": {
+                "textMateRules": [
+                    {
+                        "scope": "ref.matchtext",
+                        "settings": {
+                            "foreground": "#000"
+                        }
+                    }
+                ]
+            },
+            "[*Dark*]": {
+                "textMateRules": [
+                    {
+                        "scope": "ref.matchtext",
+                        "settings": {
+                            "foreground": "#fff"
+                        }
+                    }
+                ]
+            },
+            "textMateRules": [
+                {
+                    "scope": "keyword.other.dotenv",
+                    "settings": {
+                        "foreground": "#FF000000"
+                    }
+                }
+            ]
+        },
+        "terminal.integrated.defaultProfile.osx": "yash",
+        "github.gitProtocol": "ssh",
+        "extensions.ignoreRecommendations": true,
+        "github.copilot.chat.inlineChatCompletionTrigger.enabled": true,
+        "github.copilot.chat.inlineChatHint.enabled": true,
+        "snyk.folderConfigs": [
+            {
+                "folderPath": "/home/ubuntu/web-app",
+                "baseBranch": "main",
+                "localBranches": ["feature/boilerplate", "main"]
+            }
+        ],
+        "snyk.scanningMode": "manual",
+        "snyk.trustedFolders": [
+            "/home/ubuntu/obligation_register",
+            "/home/ubuntu/wiki.wiki",
+            "/Users/adriangallo/obligation_register",
+            "/Users/adriangallo/wiki.wiki",
+            "/Users/adriangallo/multi-tool-container",
+            "/home/ubuntu/multi-tool-container",
+            "/home/ubuntu/EnvEng-WebApp-Development",
+            "/home/ubuntu/EnvEng-WebApp-Development",
+            "/home/ubuntu/web-app",
+            "/Users/adriangallo/web-app"
+        ],
+        "workbench.startupEditor": "readme",
+        "diffEditor.maxComputationTime": 0,
+        "licenser.useSPDXLicenseFormat": true,
+        "prettier.useTabs": true,
+        "editor.codeActions.triggerOnFocusChange": true,
+        "editor.foldingImportsByDefault": true,
+        "editor.guides.bracketPairs": true,
+        "editor.guides.highlightActiveIndentation": "always",
+        "editor.lightbulb.enabled": "on",
+        "editor.linkedEditing": true,
+        "editor.smoothScrolling": true,
+        "editor.stickyTabStops": true,
+        "diffEditor.codeLens": true,
+        "diffEditor.hideUnchangedRegions.enabled": true,
+        "editor.inlineSuggest.syntaxHighlightingEnabled": true,
+        "files.autoGuessEncoding": true,
+        "files.encoding": "utf8",
+        "files.eol": "\n",
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true,
+        "files.trimTrailingWhitespace": true,
+        "files.simpleDialog.enable": true,
+        "workbench.experimental.cloudChanges.autoStore": "onShutdown",
+        "workbench.externalBrowser": "/usr/bin/microsoft-edge-stable",
+        "workbench.reduceMotion": "on",
+        "workbench.editor.wrapTabs": true,
+        "explorer.fileNesting.enabled": true,
+        "debug.allowBreakpointsEverywhere": true,
+        "testing.alwaysRevealTestOnStateChange": true,
+        "testing.showAllMessages": true,
+        "scm.alwaysShowActions": true,
+        "scm.alwaysShowRepositories": true,
+        "scm.defaultViewMode": "tree",
+        "scm.diffDecorationsGutterPattern": {
+            "added": true
+        },
+        "extensions.closeExtensionDetailsOnViewChange": true,
+        "terminal.integrated.cursorBlinking": true,
+        "terminal.integrated.defaultProfile.linux": "yash",
+        "terminal.integrated.detectLocale": "on",
+        "terminal.integrated.enableMultiLinePasteWarning": "never",
+        "terminal.integrated.environmentChangesIndicator": "off",
+        "terminal.integrated.smoothScrolling": true,
+        "terminal.integrated.suggest.enabled": true,
+        "task.quickOpen.skip": true,
+        "task.verboseLogging": true,
+        "problems.showCurrentInStatus": true,
+        "remote.downloadExtensionsLocally": true,
+        "notebook.formatOnSave.enabled": true,
+        "notebook.formatOnCellExecution": true,
+        "notebook.insertFinalNewline": true,
+        "notebook.output.wordWrap": true,
+        "notebook.variablesView": true,
+        "chat.editor.wordWrap": "on",
+        "chat.experimental.detectParticipant.enabled": false,
+        "application.experimental.rendererProfiling": true,
+        "ipynb.experimental.serialization": true,
+        "git.autoStash": true,
+        "microsoft.useMsal": true,
+        "github.copilot.chat.scopeSelection": true,
+        "github.copilot.chat.search.semanticTextResults": true,
+        "markdown.preview.typographer": true,
+        "merge-conflict.autoNavigateNextConflict.enabled": true,
+        "C_Cpp.clang_format_fallbackStyle": "Google",
+        "C_Cpp.clang_format_style": "file",
+        "C_Cpp.clang_format_sortIncludes": true,
+        "C_Cpp.clang_format_path": "clang-format",
+        "makefile.extensionOutputFolder": "./build",
+        "makefile.configurations": [
+            {
+                "name": "Debug",
+                "makeArgs": ["DEBUG=1"]
+            },
+            {
+                "name": "Release",
+                "makeArgs": ["RELEASE=1"]
+            }
+        ],
+        "makefile.launchConfigurations": [
+            {
+                "name": "Debug",
+                "binaryPath": "./build/debug/app"
+            },
+            {
+                "name": "Release",
+                "binaryPath": "./build/release/app"
+            }
+        ],
+        "makefile.makePath": "make",
+        "makefile.makefilePath": "./Makefile",
+        "makefile.buildLog": "./logs/build.log",
+        "shellcheck.enable": true,
+        "shellcheck.executablePath": "shellcheck",
+        "shellcheck.run": "onSave",
+        "shellcheck.exclude": [],
+        "shellcheck.customArgs": [
+            "--severity=style", // Set severity level
+            "--enable=all"      // Enable all checks
+        ],
+        "markdown.extension.toc.levels": "1..6",
+        "markdown.extension.toc.updateOnSave": true,
+        "markdown.extension.toc.orderedList": false,
+        "markdown.extension.toc.plaintext": false,
+        "markdown.extension.orderedList.marker": "one",
+        "markdown.extension.italic.indicator": "*",
+        "markdown.extension.list.indentationSize": "inherit",
+        "markdown.extension.print.onFileSave": false,
+        "markdownlint.config": {
+            "default": true,
+            "MD013": false, // Disable line length rule for Markdown
+            "MD033": false, // Allow inline HTML
+            "MD041": false, // Allow first line to be non-header
+            "MD007": { "indent": 4 }, // Set list indentation to 4 spaces
+            "MD029": { "style": "ordered" }, // Enforce ordered list style
+            "configFile": true
+        },
+        "clang-tidy.executable": "clang-tidy",
+        "clang-tidy.checks": [
+            "bugprone-*",
+            "clang-analyzer-*",
+            "cppcoreguidelines-*",
+            "google-*",
+            "modernize-*",
+            "performance-*",
+            "readability-*",
+            "portability-*",
+            "misc-*",
+            "cert-*",
+            "linuxkernel-*",
+            "mpi-*",
+            "hicpp-*",
+            "llvm-header-guard",
+            "-modernize-deprecated-headers"
+        ],
+        "prettier.configPath": ".prettierrc",
+
+        "linthtml.enable": true,
+        "linthtml.configFile": ".linthtmlrc",
+        "linthtml.packageManager": "npm",
+        "githubPullRequests.assignCreated": "${user}",
+        "githubPullRequests.defaultCreateOption": "createAutoMerge",
+        "githubPullRequests.defaultMergeMethod": "squash",
+        "githubPullRequests.experimental.chat": true,
+        "githubPullRequests.experimental.notificationsView": true,
+        "githubPullRequests.experimental.useQuickChat": true,
+        "githubPullRequests.notifications": "pullRequests",
+        "githubPullRequests.pullBranch": "always",
+        "githubPullRequests.pullPullRequestBranchBeforeCheckout": "pullAndUpdateBase",
+        "githubPullRequests.pullRequestDescription": "Copilot",
+        "githubPullRequests.pushBranch": "always",
+        "githubPullRequests.quickDiff": true,
+        "githubPullRequests.showPullRequestNumberInTree": true,
+        "githubPullRequests.terminalLinksHandler": "vscode",
+        "remoteHub.commitDirectlyWarning": "off",
+        "remoteHub.gitProtocol": "ssh",
+        "remoteHub.richNavigation.enabled": true,
+    },
+    "extensions": {
+        "recommendations": [
+          "ms-vscode.cpptools",
+          "ms-vscode.makefile-tools",
+          "timonwong.shellcheck",
+          "davidanson.vscode-markdownlint",
+          "yzhang.markdown-all-in-one",
+        "github.vscode-pull-request-github",
+        "github.vscode-github-actions",
+        "your-publisher-name.recfile-syntax",
+        "qiumingge.cpp-check-lint",
+        "cs128.cs128-clang-tidy",
+        "editorconfig.editorconfig",
+        "github.copilot",
+        "github.copilot-chat",
+        "github.remotehub",
+        "github.github-vscode-theme",
+        "ymotongpoo.licenser",
+        "esbenp.prettier-vscode",
+        "ms-vscode.remote-repositories",
+        "snyk-security.snyk-vulnerability-scanner"
+        ]
+    }
+}

@@ -1,0 +1,37 @@
+// Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
+// SPDX-License-Identifier: 	AGPL-3.0-or-later
+---
+# This file configures clang-format according to Google Style.
+BasedOnStyle: Google
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 80
+AllowAllParametersOfDeclarationOnNextLine: true
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignTrailingComments: true
+AllowShortFunctionsOnASingleLine: InlineOnly
+BreakBeforeBraces: Allman
+BraceWrapping:
+  AfterFunction: true
+  AfterControlStatement: true
+  AfterNamespace: true
+  AfterClass: true
+  BeforeElse: true
+  BeforeCatch: true
+  BeforeWhile: true
+  AfterStruct: true
+  AfterEnum: true
+  AfterUnion: true
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+SpaceBeforeRangeBasedForLoopColon: true
+Cpp11BracedListStyle: true
+SpacesInContainerLiterals: false
+MaxEmptyLinesToKeep: 1
+SortIncludes: true
+IncludeBlocks: Preserve
+IndentCaseLabels: true
+IndentPPDirectives: AfterHash

@@ -1,0 +1,143 @@
+{
+    "env": {
+        "myIncludePath": [
+        "${workspaceFolder}/include",
+        "/usr/local/musl/include"
+        ],
+        "myDefines": [
+            "DEBUG",
+            "MY_FEATURE=1",
+            "_POSIX_C_SOURCE=200809L",
+            "_XOPEN_SOURCE=800",
+            "PLATFORM_LINUX"
+        ]
+    },
+    "configurations": [
+        {
+            "name": "Linux",
+            "compilerPath": "/usr/local/musl/bin/musl-clang",
+            "compilerArgs": [
+              "-std=c2x",
+              "-D_POSIX_C_SOURCE=200809L",
+              "-D_XOPEN_SOURCE=800",
+              "-O3",
+              "-Wall",
+              "-Wextra",
+              "-Werror",
+              "-pedantic",
+              "-Iinclude",
+              "-Wshadow",
+              "-Wconversion",
+              "-Wstrict-prototypes",
+              "-Wmissing-prototypes",
+              "-Wold-style-definition",
+              "-Wmissing-declarations",
+              "-Wredundant-decls",
+              "-Wfloat-equal",
+              "-Wundef",
+              "-Wbad-function-cast",
+              "-Wcast-qual",
+              "-Wwrite-strings",
+              "-Wformat=2",
+              "-Wstrict-aliasing=2",
+              "-Wstrict-overflow=5",
+              "-Wc++-compat",
+              "-Wnull-dereference",
+              "-Wdouble-promotion",
+              "-Wvla",
+              "-target x86_64-linux-musl",
+              "-nostdlib",
+              "-L/usr/local/musl/lib",
+              "-I/usr/local/musl/include",
+              "-static"
+            ],
+            "intelliSenseMode": "clang-x64",
+            "includePath": [
+                "${myIncludePath}"
+            ],
+            "defines": [
+                "${myDefines}"
+            ],
+            "cStandard": "c23",
+            "cppStandard": "c++23",
+            "browse": {
+                "path": [
+                "${myIncludePath}",
+                "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db"
+            }
+        },
+        {
+            "name": "Mac",
+            "compilerPath": "/usr/bin/cc",
+            "compilerArgs": [
+            "-std=c2x",
+            "-D_POSIX_C_SOURCE=200809L",
+            "-D_XOPEN_SOURCE=800",
+            "-O3",
+            "-Wall",
+            "-Wextra",
+            "-Werror",
+            "-pedantic",
+            "-Iinclude",
+            "-Wshadow",
+            "-Wconversion",
+            "-Wstrict-prototypes",
+            "-Wmissing-prototypes",
+            "-Wold-style-definition",
+            "-Wmissing-declarations",
+            "-Wredundant-decls",
+            "-Wfloat-equal",
+            "-Wundef",
+            "-Wbad-function-cast",
+            "-Wcast-qual",
+            "-Wwrite-strings",
+            "-Wformat=2",
+            "-Wstrict-aliasing=2",
+            "-Wstrict-overflow=5",
+            "-Wc++-compat",
+            "-Wnull-dereference",
+            "-Wdouble-promotion",
+            "-Wvla",
+            "-target x86_64-linux-musl",
+            "-nostdlib",
+            "-L/usr/local/musl/lib",
+            "-I/usr/local/musl/include",
+            "-static"
+            ],
+            "intelliSenseMode": "clang-arm64",
+            "includePath": [
+            "${myIncludePath}",
+            "/usr/local/musl/include"
+            ],
+            "defines": [
+                "DEBUG",
+                "MY_FEATURE=1",
+                "_POSIX_C_SOURCE=200809L",
+                "_XOPEN_SOURCE=800",
+                "PLATFORM_MAC"
+            ],
+            "cStandard": "c23",
+            "cppStandard": "c++23",
+            "browse": {
+                "path": [
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/lib",
+                "${workspaceFolder}/docs",
+                "${workspaceFolder}/tmp",
+                "${workspaceFolder}/build",
+                "${workspaceFolder}/etc",
+                "${workspaceFolder}/bin",
+                "${workspaceFolder}/tests"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db"
+            }
+        }
+    ],
+    "version": 4,
+    "enableConfigurationSquiggles": true
+}
