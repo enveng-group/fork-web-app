@@ -1,0 +1,89 @@
+# Set default behavior to automatically normalize line endings.
+* text=auto
+
+# Define attributes for specific file types
+*.c      diff=c
+*.h      diff=c
+*.cpp    diff=cpp
+*.hpp    diff=cpp
+*.asm    diff=asm
+*.s      diff=asm
+*.so     binary
+*.a      binary
+*.o      binary
+*.wasm   binary
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.webp   binary
+*.ico    binary
+*.pdf    binary
+*.zip    binary
+*.tar    binary
+*.gz     binary
+*.bz2    binary
+*.xz     binary
+
+# Custom diff for Dockerfile
+Dockerfile diff=dockerfile
+containerfile diff=dockerfile
+
+# Custom diff for JSON files
+*.json   diff=json
+
+# Custom diff for YAML files
+*.yml    diff=yaml
+*.yaml   diff=yaml
+
+# Custom diff for Markdown files
+*.md     diff=markdown
+
+# Custom diff for HTML files
+*.html   diff=html
+
+# Custom diff for CSS files
+*.css    diff=css
+
+# Custom diff for JavaScript files
+*.js     diff=javascript
+
+# Custom diff for INI files
+*.ini    diff=ini
+
+# Custom diff for plaintext files
+*.conf   diff=plaintext
+*.txt    diff=plaintext
+*.rec    diff=plaintext
+
+# Custom diff for CSV files
+*.csv    diff=csv
+
+# Custom diff for dotenv files
+*.env*   diff=dotenv
+
+# Custom diff for Docker ignore files
+.dockerignore diff=dockerfile
+
+# Custom diff for VS Code settings files
+.vscode  diff=json
+
+# Custom diff for EditorConfig files
+.editorconfig diff=ini
+
+# Custom diff for CMake files
+CMakeLists.txt diff=cmake
+*.cmake  diff=cmake
+
+# Custom diff for Shell scripts
+*.sh     diff=shell
+
+# Custom diff for Python files
+*.py     diff=python
+
+# Custom diff for XML files
+*.xml    diff=xml
+
+# Custom diff for Makefiles
+Makefile diff=make
+*.mk     diff=make

@@ -1,0 +1,112 @@
+{
+    "env": {
+        "myIncludePath": [
+            "${workspaceFolder}/include",
+            "${workspaceFolder}/src",
+            "${workspaceFolder}/lib",
+            "${workspaceFolder}/docs",
+            "${workspaceFolder}/tmp",
+            "${workspaceFolder}/build",
+            "/usr/local/musl/include"
+        ],
+        "myDefines": [
+            "DEBUG",
+            "MY_FEATURE=1",
+            "_POSIX_C_SOURCE=200809L",
+            "_XOPEN_SOURCE=200809L",
+            "PLATFORM_LINUX"
+        ]
+    },
+    "configurations": [
+        {
+            "name": "Linux",
+            "compilerPath": "/usr/local/musl/bin/musl-clang",
+            "compilerArgs": [
+                "-std=c17",
+                "-D_POSIX_C_SOURCE=200809L",
+                "-O0",
+                "-Wall",
+                "-Wextra",
+                "-pedantic",
+                "-target x86_64-linux-musl",
+                "-nostdlib",
+                "-L/usr/local/musl/lib",
+                "-I/usr/local/musl/include",
+                "-static"
+            ],
+            "intelliSenseMode": "clang-x64",
+            "includePath": [
+                "${myIncludePath}"
+            ],
+            "defines": [
+                "${myDefines}"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "forcedInclude": [
+                "${workspaceFolder}/include/config.h"
+            ],
+            "browse": {
+                "path": [
+                    "${myIncludePath}",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db"
+            }
+        },
+        {
+            "name": "Mac",
+            "compilerPath": "/usr/bin/cc",
+            "compilerArgs": [
+                "-std=c17",
+                "-D_POSIX_C_SOURCE=200809L",
+                "-O0",
+                "-Wall",
+                "-Wextra",
+                "-pedantic",
+                "-target arm64-musl",
+                "-nostdlib",
+                "-L/usr/local/musl/lib",
+                "-I/usr/local/musl/include",
+                "-static"
+            ],
+            "intelliSenseMode": "clang-arm64",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/lib",
+                "${workspaceFolder}/docs",
+                "${workspaceFolder}/tmp",
+                "${workspaceFolder}/build",
+                "/usr/local/musl/include"
+            ],
+            "defines": [
+                "DEBUG",
+                "MY_FEATURE=1",
+                "_POSIX_C_SOURCE=200809L",
+                "_XOPEN_SOURCE=200809L",
+                "PLATFORM_MAC"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "forcedInclude": [
+                "${workspaceFolder}/include/config.h"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/include",
+                    "${workspaceFolder}/src",
+                    "${workspaceFolder}/lib",
+                    "${workspaceFolder}/docs",
+                    "${workspaceFolder}/build",
+                    "${workspaceFolder}/tmp"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db"
+            }
+        }
+    ],
+    "version": 4,
+    "enableConfigurationSquiggles": true
+}

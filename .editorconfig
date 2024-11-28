@@ -1,0 +1,52 @@
+# EditorConfig is awesome: https://editorconfig.org
+
+# Root EditorConfig file for EnvEng WebApp project
+root = true
+
+# Default settings for all files
+[*]
+charset = utf-8                # Use UTF-8 encoding
+end_of_line = lf               # Use LF for line endings
+indent_style = space           # Use spaces for indentation
+indent_size = 4                # Indent with 4 spaces
+insert_final_newline = true    # Ensure files end with a newline
+trim_trailing_whitespace = true # Remove trailing whitespace
+
+# Specific settings for C and header files
+[*.{c,h}]
+max_line_length = 80           # Limit lines to 80 characters
+quote_type = double            # Prefer double quotes for strings
+
+# Settings for Markdown files
+[*.md]
+max_line_length = off          # Disable line length enforcement for Markdown
+trim_trailing_whitespace = false # Allow trailing whitespace in Markdown
+
+# Settings for Makefiles
+[Makefile]
+indent_style = tab             # Use tabs for Makefiles
+indent_size = 4
+
+# Settings for Makefile.am files
+[Makefile.am]
+indent_style = tab             # Use tabs for Makefiles
+indent_size = 4
+
+# Settings for Makefile.in files
+[Makefile.in]
+indent_style = tab             # Use tabs for Makefiles
+indent_size = 4
+
+# Settings for JSON and configuration files
+[*.{json,conf}]
+indent_size = 2                # Use 2 spaces for JSON and config files
+
+# Specific settings for POTFILES.in
+[POTFILES.in]
+insert_final_newline = false   # Do not insert a final newline
+
+# Settings for HTML files
+[*.html]
+indent_style = space           # Use spaces for indentation
+indent_size = 4                # Indent with 4 spaces
+max_line_length = 80           # Limit lines to 80 characters

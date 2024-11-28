@@ -1,0 +1,26 @@
+{
+  "extends": ["html-validate:recommended"],
+  "rules": {
+    "attr-case": "lower",
+    "attr-name-style": "dash",
+    "attr-no-dup": true,
+    "attr-quote-style": "double",
+    "class-style": "dash",
+    "doctype-html5": true,
+    "fig-req-figcaption": true,
+    "head-req-title": true,
+    "id-class-style": "dash",
+    "id-no-dup": true,
+    "img-req-alt": true,
+    "indent-style": "spaces",
+    "indent-width": 4,
+    "line-end-style": "lf",
+    "line-max-len": 80,
+    "spec-char-escape": true,
+    "tag-bans": ["style", "b", "i"],
+    "tag-close": true,
+    "tag-name-lowercase": true,
+    "tag-self-close": "always",
+    "title-max-len": 60
+  }
+}
