@@ -307,7 +307,7 @@ Install and ensure the availability of the following **POSIX-compliant tools** a
 
 - **Compiler**: `clang` (set to use musl as the C library)
 - **Build System**: `make`
-- **Linker**: `ld`
+- **Linker**: `lld`
 - **Static Analysis**: `lint` (e.g., `splint`)
 - **Formatting**: `indent`
 - **Debugger**: `gdb`
@@ -336,7 +336,8 @@ You can either download a precompiled musl package or build it from source. Here
 
 2. **Configure and build musl**:
     ```sh
-    ./configure --prefix=/usr/local/musl
+    export CC=clang
+    ./configure --prefix=/usr/local/musl --target=x86_64-linux-gnu --thread=posix
     make
     sudo make install
     ```
