@@ -316,6 +316,7 @@ Install and ensure the availability of the following **POSIX-compliant tools** a
 - **Documentation**: `groff`
 - **Packaging**: `tar` and `xz`
 - **musl**: The musl C library
+- **bear**: To generate compilation database for clang-tidy
 
 ---
 

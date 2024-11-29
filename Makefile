@@ -16,7 +16,7 @@ BIN_DIR = bin
 TEST_DIR = tests
 INCLUDE_DIR = include
 OBJ_FILES = $(BUILD_DIR)/main.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/hello.o $(BUILD_DIR)/garbage_collector.o $(BUILD_DIR)/config_loader.o $(BUILD_DIR)/env_loader.o $(BUILD_DIR)/error_handler.o $(BUILD_DIR)/validator.o
-TARGET = $(BIN_DIR)/my_program
+TARGET = $(BIN_DIR)/app
 TEST_TARGET = $(BIN_DIR)/test_runner
 
 .PHONY: all clean test doc
@@ -25,28 +25,28 @@ all: $(TARGET)
 
 # Build the main executable
 $(TARGET): $(OBJ_FILES)
-    mkdir -p $(BIN_DIR)
-    $(CC) $(CFLAGS) $(OBJ_FILES) $(LDFLAGS) -o $@
+	mkdir -p $(BIN_DIR)
+	$(CC) $(CFLAGS) $(OBJ_FILES) $(LDFLAGS) -o $@
 
 # Compile source files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-    mkdir -p $(BUILD_DIR)
-    $(CC) $(CFLAGS) -c $< -o $@
+	mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Clean up build artifacts
 clean:
-    rm -rf $(BUILD_DIR) $(BIN_DIR)
+	rm -rf $(BUILD_DIR) $(BIN_DIR)
 
 # Build and run tests
 test: $(TEST_TARGET)
-    ./$(TEST_TARGET)
+	./$(TEST_TARGET)
 
 $(TEST_TARGET): $(TEST_DIR)/test_logger.o $(BUILD_DIR)/logger.o
-    $(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 $(TEST_DIR)/%.o: $(TEST_DIR)/%.c
-    $(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
 
 # Generate documentation (man pages)
 doc:
-    groff -man docs/my_program.1 > $(BIN_DIR)/my_program.1.pdf
+	groff -man docs/app.1 > $(BIN_DIR)/app.1.pdf

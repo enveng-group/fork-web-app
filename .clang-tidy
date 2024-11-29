@@ -1,44 +1,15 @@
-// Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
-// SPDX-License-Identifier: 	AGPL-3.0-or-later
----
 Checks: >
-  -*,
-  bugprone-*,
-  clang-analyzer-*,
-  cppcoreguidelines-*,
-  google-*,
-  modernize-*,
-  performance-*,
-  readability-*,
-  portability-*,
-  misc-*,
-  cert-*,
-  linuxkernel-*,
-  mpi-*,
-  hicpp-*,
-  llvm-header-guard,
-  -modernize-deprecated-headers
+  -*,                           # Disable all checks by default
+  c23-*,                        # Enable all checks for C23
+  posix-*                       # Enable all checks for POSIX compliance
+  cert-env33-c,                 # Environment-specific safety (compliant with CERT guidelines)
+  bugprone-*,                   # Detect potential bugs in logic
+  readability-*,                # Improve code readability
+  portability-*,                # Address cross-platform issues
+  misc-*                        # Enable general miscellaneous best practices
 
-WarningsAsErrors: >
-  bugprone-*,
-  clang-analyzer-*,
-  cppcoreguidelines-*,
-  google-*,
-  modernize-*,
-  performance-*,
-  readability-*,
-  portability-*,
-  misc-*,
-  cert-*
-
-HeaderFilterRegex: '.*'
-AnalyzeTemporaryDtors: false
-FormatStyle: 'Google'
-
-CheckOptions:
-  - { key: google-readability-braces-around-statements.ShortStatementLines, value: '1' }
-  - { key: google-readability-function-size.StatementThreshold, value: '800' }
-  - { key: readability-function-size.LineThreshold, value: '200' }
-
-UseColor: true
----
+WarningsAsErrors: '*'          # Treat all warnings as errors
+HeaderFilterRegex: '.*'        # Apply checks to all headers in the project
+FormatStyle: google            # Use Google style for code formatting
+UseColor: true                 # Enable color output in reports
+User: true                     # Apply custom settings

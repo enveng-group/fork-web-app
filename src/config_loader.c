@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-#include "../lib/stdio.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../include/config_loader.h"
@@ -11,50 +11,88 @@
 #include "../include/logger.h"
 #include "../include/error_handler.h"
 
-int load_ini_config(const char *filename) {
-    FILE *file = fopen(filename, "r");
-    if (!file) {
-        return -1; // Error opening file
-    }
+enum
+{
+    MAX_LINE_LENGTH = 256,
+    MAX_ERROR_MESSAGE_LENGTH = 512
+};
 
-    char line[256];
-    while (fgets(line, sizeof(line), file)) {
+/**
+ * @brief Helper function to process configuration file.
+ *
+ * @param file Pointer to the opened file.
+ * @param config_type Type of configuration (INI or CONF).
+ * @return int 0 on success, -1 on error.
+ */
+static int processConfigFile(FILE *file, const char *config_type)
+{
+    char line[MAX_LINE_LENGTH];
+
+    while (fgets(line, sizeof(line), file))
+    {
         char *key = strtok(line, "=");
         char *value = strtok(NULL, "\n");
-        if (key && value) {
-            if (validate_string(value) != 0) {
-                handle_error("Invalid INI config value");
-                fclose(file);
+        if (key && value)
+        {
+            if (validate_string(value) != 0)
+            {
+                log_error("Invalid %s config value", config_type);
                 return -1;
             }
-            log_info("INI Config: %s = %s", key, value);
         }
     }
 
-    fclose(file);
-    return 0; // Success
+    return 0;
 }
 
-int load_conf_config(const char *filename) {
+/**
+ * @brief Load INI configuration file.
+ *
+ * @param filename Path to the configuration file.
+ * @return int 0 on success, -1 on error.
+ */
+int load_ini_config(const char *filename)
+{
     FILE *file = fopen(filename, "r");
-    if (!file) {
-        return -1; // Error opening file
+    if (!file)
+    {
+        handle_error("Error opening INI config file");
+        return -1;
     }
 
-    char line[256];
-    while (fgets(line, sizeof(line), file)) {
-        char *key = strtok(line, "=");
-        char *value = strtok(NULL, "\n");
-        if (key && value) {
-            if (validate_string(value) != 0) {
-                handle_error("Invalid CONF config value");
-                fclose(file);
-                return -1;
-            }
-            log_info("CONF Config: %s = %s", key, value);
-        }
+    int result = processConfigFile(file, "INI");
+
+    if (fclose(file) != 0)
+    {
+        handle_error("Error closing INI config file");
+        return -1;
     }
 
-    fclose(file);
-    return 0; // Success
+    return result;
+}
+
+/**
+ * @brief Load CONF configuration file.
+ *
+ * @param filename Path to the configuration file.
+ * @return int 0 on success, -1 on error.
+ */
+int load_conf_config(const char *filename)
+{
+    FILE *file = fopen(filename, "r");
+    if (!file)
+    {
+        handle_error("Error opening CONF config file");
+        return -1;
+    }
+
+    int result = processConfigFile(file, "CONF");
+
+    if (fclose(file) != 0)
+    {
+        handle_error("Error closing CONF config file");
+        return -1;
+    }
+
+    return result;
 }

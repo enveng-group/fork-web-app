@@ -6,8 +6,8 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-void init_logger(void);
-void log_info(const char *message, ...);
-void log_error(const char *message, ...);
+void initLogger(void);
+void logInfo(const char *message, ...);
+void logError(const char *message, ...);
 
 #endif // LOGGER_H
