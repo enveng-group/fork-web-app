@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: 	AGPL-3.0-or-later
  */
 
-#include <stdio.h>
+#include "../lib/stdio.h"
 #include <stdarg.h>
 #include "../include/logger.h"
 

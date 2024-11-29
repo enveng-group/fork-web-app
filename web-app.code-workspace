@@ -437,6 +437,7 @@
         "remoteHub.commitDirectlyWarning": "off",
         "remoteHub.gitProtocol": "ssh",
         "remoteHub.richNavigation.enabled": true,
+        "editor.semanticHighlighting.enabled": true
     },
     "extensions": {
         "recommendations": [
@@ -458,7 +459,8 @@
         "ymotongpoo.licenser",
         "esbenp.prettier-vscode",
         "ms-vscode.remote-repositories",
-        "snyk-security.snyk-vulnerability-scanner"
+        "snyk-security.snyk-vulnerability-scanner",
+        "willumz.generic-pseudocode"
         ]
     }
 }

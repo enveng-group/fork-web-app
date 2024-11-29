@@ -19,6 +19,7 @@
     "ymotongpoo.licenser",
     "esbenp.prettier-vscode",
     "ms-vscode.remote-repositories",
-    "snyk-security.snyk-vulnerability-scanner"
+    "snyk-security.snyk-vulnerability-scanner",
+    "willumz.generic-pseudocode"
   ]
 }

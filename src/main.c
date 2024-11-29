@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-#include <stdio.h>
+#include "../lib/stdio.h"
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
