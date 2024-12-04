@@ -1,5 +1,5 @@
-# EnvEng-WebApp-Development
-Development of the EnvEng web application using 5S methodology for project management and Data-Oriented Programming (DOP) for development.
+# Enveng-WebApp-Development
+Development of the Enveng web application using 5S methodology for project management and Data-Oriented Programming () for development.
 
 ## Project Plan Framework
 ### 1. Introduction
@@ -33,7 +33,7 @@ Sustain
 #### Actions:
 Conduct regular training sessions on 5S practices.
 Schedule periodic audits to ensure compliance with standards.
-### 3. Data-Oriented Programming (DOP) Implementation
+### 3. Data-Oriented Programming Implementation
 Data Separation
 #### Objective: Separate data from logic to improve clarity and maintainability.
 #### Actions:
