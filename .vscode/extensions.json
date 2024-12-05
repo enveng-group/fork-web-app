@@ -20,6 +20,7 @@
     "esbenp.prettier-vscode",
     "ms-vscode.remote-repositories",
     "snyk-security.snyk-vulnerability-scanner",
-    "willumz.generic-pseudocode"
+    "willumz.generic-pseudocode",
+    "maziac.asm-code-lens"
   ]
 }

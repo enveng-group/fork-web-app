@@ -1,37 +1,91 @@
-# Copilot Instructions for EnvEng Web Application Development
+# **Copilot Instructions for EnvEng Web Application Development**
 
-These instructions help align Copilot's suggestions with our project's requirements.
+These instructions ensure Copilot's suggestions align with our project's technical standards and development environment.
 
-## General Guidelines
-- Adhere to ISO/IEC 9899:2024 (C Standard), POSIX.1-2024, and X/Open 800 compliance in all code suggestions.
-- Ensure all code is portable, cross-platform, and cross-architecture. Avoid platform-specific features unless encapsulated for easy replacement.
+---
 
-## Code Structure
-### File Organization
-- Maintain the specified directory structure.
-- Use snake_case for file names, e.g., `data_manager.c`, `user_auth.h`.
+## **General Guidelines**
+- Adhere to **ISO/IEC 9899:2024 (C Standard)**, **POSIX.1-2008**, and **X/Open 7 (Issue 7)** compliance in all code suggestions.
+- Ensure code is **portable**, **cross-platform**, and **cross-architecture**:
+  - Prioritize compatibility with `musl libc` and **Tiny C Compiler (TCC)**.
+  - Avoid features requiring `glibc` or non-portable platform-specific APIs.
+- Write code optimized for lightweight environments (e.g., containers using **BusyBox** and `musl`).
 
-### Naming Conventions
-- **Variables**: Use `snake_case` (e.g., `user_id`).
-- **Functions**: Use `camelCase` (e.g., `processData`).
-- **Constants**: Use `UPPER_CASE` (e.g., `MAX_BUFFER_SIZE`).
+---
 
-## Coding Practices
-### Data Handling
-- Keep data definitions separate from logic. Define data structures in header files and implement logic in C files.
-- Use immutable data structures whenever applicable.
+## **Code Structure**
+### **File Organization**
+- Follow a structured directory layout:
+  - **src/**: Source files (`.c`)
+  - **include/**: Header files (`.h`)
+  - **build/**: Build artifacts
+  - **tests/**: Unit test files
+  - **docs/**: Documentation files
+- Use `snake_case` for file names, e.g., `data_manager.c`, `user_auth.h`.
 
-### Error Handling
-- Always check return values of system calls and library functions.
+### **Naming Conventions**
+- **Variables**: Use `snake_case` (e.g., `user_id`, `config_path`).
+- **Functions**: Use `camelCase` (e.g., `processData`, `validateUser`).
+- **Constants**: Use `UPPER_CASE` (e.g., `MAX_BUFFER_SIZE`, `DEFAULT_TIMEOUT`).
 
-### Memory Management
-- Avoid memory leaks. Always pair memory allocation (`malloc`) with deallocation (`free`).
+---
 
-### Performance
-- Optimize for CPU cache efficiency with data structures (e.g., prefer arrays over linked lists for sequential access).
+## **Coding Practices**
+### **Data Handling**
+- Keep data definitions separate from logic:
+  - Define data structures in header files (`.h`).
+  - Implement logic in source files (`.c`).
+- Use immutable data structures whenever applicable for safety and clarity.
 
-### Thread Safety
-- Ensure thread safety using POSIX threading primitives (e.g., `pthread_mutex_t`).
+### **Error Handling**
+- Always check return values of system calls and library functions, including:
+  - Memory allocation (`malloc`, `calloc`).
+  - File I/O (`fopen`, `fread`, `fwrite`).
+  - Threading functions (`pthread_mutex_lock`, `pthread_create`).
+- Use consistent error codes (`errno`) and logging to diagnose failures.
+
+### **Memory Management**
+- Prevent memory leaks by always pairing:
+  - **Allocation** (`malloc`, `calloc`) with **Deallocation** (`free`).
+- Avoid using dynamic memory where possible in performance-critical paths.
+- Use stack allocation for predictable performance and reduced overhead.
+
+### **Performance**
+- Optimize for **CPU cache efficiency**:
+  - Use arrays instead of linked lists for sequential data access.
+  - Minimize pointer indirection and fragmentation.
+- Enable compiler optimizations with appropriate flags (e.g., `-ffunction-sections`, `-fdata-sections`).
+- Prefer static linking (`-static`) to ensure binaries are self-contained and lightweight.
+
+### **Thread Safety**
+- Use POSIX threading primitives:
+  - Mutexes (`pthread_mutex_t`) for synchronized access to shared resources.
+  - Condition variables (`pthread_cond_t`) for thread signaling.
+- Avoid global variables or use them sparingly with proper synchronization.
+- Ensure all functions are reentrant if they may be called in multi-threaded contexts.
+
+---
+
+## **Environment-Specific Considerations**
+- **Compiler**: Target **Tiny C Compiler (TCC)** with the following capabilities:
+  - Use `-std=c11` for ISO C compliance.
+  - Define `_POSIX_C_SOURCE=200809L` and `_XOPEN_SOURCE=700` for POSIX and X/Open features supported by musl.
+  - Avoid advanced GCC-specific extensions unsupported by TCC.
+- **Libraries**:
+  - Base code on **musl libc** for portability and minimalism.
+  - Ensure compatibility with musl's threading and math libraries.
+- **Containerized Development**:
+  - Target **AMD64** architecture with static linking for compatibility across container instances.
+  - Optimize for minimal dependencies, leveraging musl’s built-in features where possible.
+
+---
+
+## **Testing and Validation**
+- Write unit tests for all functions using the following naming conventions:
+  - `test_<module_name>.c` for test files.
+  - `test_<function_name>` for individual test cases.
+- Use memory analysis tools (e.g., `valgrind` or equivalent musl-compatible tools) to validate memory safety.
+- Run all tests within the containerized environment to ensure consistency.
 
 ## Style and Formatting
 ### Indentation
@@ -50,10 +104,6 @@ These instructions help align Copilot's suggestions with our project's requireme
 ## Documentation
 - Document all files and functions using block comments.
 - Use Markdown for external documentation.
-
-## Testing
-- Write unit tests for all functions and features.
-- Follow the naming convention `test_<module_name>.c` for test files.
 
 ## Tools and Practices
 - Use Git for version control, and ensure commit messages follow the format: `[Type] Short description`.
@@ -78,6 +128,7 @@ These instructions help align Copilot's suggestions with our project's requireme
 ├── CONTRIBUTING.md
 ├── COPYING
 ├── ChangeLog
+├── Containerfile
 ├── HACKING
 ├── INSTALL
 ├── LICENSE
@@ -90,11 +141,9 @@ These instructions help align Copilot's suggestions with our project's requireme
 ├── SUPPORT.md
 ├── TODO.md
 ├── bin
-│   └── my_program.1.pdf
+│   └── app.1.pdf
 ├── build
-│   ├── configurationCache.log
-│   ├── dryrun.log
-│   └── targets.log
+├── compile_commands.json
 ├── docs
 │   ├── ARCHITECTURE.md
 │   ├── CONTACT.md
@@ -119,7 +168,7 @@ These instructions help align Copilot's suggestions with our project's requireme
 │   ├── TROUBLESHOOTING.md
 │   ├── TUTORIAL.md
 │   ├── USAGE.md
-│   └── my_program.1
+│   └── app.1
 ├── etc
 │   ├── config.conf
 │   ├── config.ini
@@ -135,11 +184,8 @@ These instructions help align Copilot's suggestions with our project's requireme
 │   ├── logger.h
 │   └── validator.h
 ├── lib
-│   ├── ctype.h
-│   ├── stdarg.h
-│   ├── stdio.h
-│   ├── stdlib.h
-│   └── string.h
+├── package-lock.json
+├── package.json
 ├── src
 │   ├── config_loader.c
 │   ├── env_loader.c
@@ -159,7 +205,7 @@ These instructions help align Copilot's suggestions with our project's requireme
 │       └── html
 └── web-app.code-workspace
 
-17 directories, 71 files
+17 directories, 67 files
 ```
 
 ### POSIX Headers only allowed to use
@@ -175,7 +221,6 @@ These instructions help align Copilot's suggestions with our project's requireme
 <fcntl.h>
 <fenv.h>
 <float.h>
-<fmtmsg.h>
 <fnmatch.h>
 <ftw.h>
 <glob.h>
@@ -190,7 +235,6 @@ These instructions help align Copilot's suggestions with our project's requireme
 <math.h>
 <monetary.h>
 <mqueue.h>
-<ndbm.h>
 <net/if.h>
 <netdb.h>
 <netinet/in.h>
@@ -205,7 +249,6 @@ These instructions help align Copilot's suggestions with our project's requireme
 <semaphore.h>
 <setjmp.h>
 <signal.h>
-<spawn.h>
 <stdarg.h>
 <stdbool.h>
 <stddef.h>
@@ -214,7 +257,6 @@ These instructions help align Copilot's suggestions with our project's requireme
 <stdlib.h>
 <string.h>
 <strings.h>
-<stropts.h>
 <sys/ipc.h>
 <sys/mman.h>
 <sys/msg.h>
@@ -233,15 +275,12 @@ These instructions help align Copilot's suggestions with our project's requireme
 <sys/utsname.h>
 <sys/wait.h>
 <syslog.h>
-<tar.h>
 <termios.h>
 <tgmath.h>
 <time.h>
-<trace.h>
 <ulimit.h>
 <unistd.h>
 <utime.h>
-<utmpx.h>
 <wchar.h>
 <wctype.h>
 <wordexp.h>

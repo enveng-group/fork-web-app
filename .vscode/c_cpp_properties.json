@@ -3,138 +3,51 @@
         "myIncludePath": [
             "${workspaceFolder}/include",
             "${workspaceFolder}/lib",
-            "/usr/local/musl/include"
+            "/usr/include"
         ],
         "myDefines": [
             "DEBUG",
             "MY_FEATURE=1",
             "_POSIX_C_SOURCE=200809L",
-            "_XOPEN_SOURCE=800",
-            "PLATFORM_LINUX"
+            "_XOPEN_SOURCE=700",
+            "PLATFORM_LINUX",
+            "TINYCC",
+            "MUSL",
+            "NDEBUG"
         ]
     },
     "configurations": [
         {
-            "name": "Linux",
-            "compilerPath": "/usr/local/musl/bin/musl-clang",
+            "name": "Linux AMD64 (musl)",
+            "compilerPath": "/usr/bin/tcc",
             "compilerArgs": [
-                "-std=c2x",
+                "-std=c11",
                 "-D_POSIX_C_SOURCE=200809L",
-                "-D_XOPEN_SOURCE=800",
-                "-O3",
+                "-D_XOPEN_SOURCE=700",
+                "-I/usr/include",
+                "-I${workspaceFolder}/include",
+                "-L/usr/lib",
+                "-static",
+                "-fno-common",
                 "-Wall",
-                "-Wextra",
                 "-Werror",
-                "-pedantic",
-                "-Iinclude",
-                "-Ilib",
-                "-Wshadow",
-                "-Wconversion",
-                "-Wstrict-prototypes",
-                "-Wmissing-prototypes",
-                "-Wold-style-definition",
-                "-Wmissing-declarations",
-                "-Wredundant-decls",
-                "-Wfloat-equal",
-                "-Wundef",
-                "-Wbad-function-cast",
-                "-Wcast-qual",
-                "-Wwrite-strings",
-                "-Wformat=2",
-                "-Wstrict-aliasing=2",
-                "-Wstrict-overflow=5",
-                "-Wc++-compat",
-                "-Wnull-dereference",
-                "-Wdouble-promotion",
-                "-Wvla",
-                "-target x86_64-linux-musl",
-                "-nostdlib",
-                "-L/usr/local/musl/lib",
-                "-I/usr/local/musl/include",
-                "-static"
+                "-g",
+                "-ffunction-sections",
+                "-fdata-sections",
+                "-march=x86-64"
             ],
-            "intelliSenseMode": "clang-x64",
+            "intelliSenseMode": "linux-gcc-x64",
             "includePath": [
                 "${myIncludePath}"
             ],
             "defines": [
                 "${myDefines}"
             ],
-            "cStandard": "c23",
-            "cppStandard": "c++23",
+            "cStandard": "c11",
             "browse": {
                 "path": [
                     "${myIncludePath}",
                     "${workspaceFolder}"
-                ],
-                "limitSymbolsToIncludedHeaders": true,
-                "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db"
-            }
-        },
-        {
-            "name": "Mac",
-            "compilerPath": "/usr/bin/cc",
-            "compilerArgs": [
-                "-std=c2x",
-                "-D_POSIX_C_SOURCE=200809L",
-                "-D_XOPEN_SOURCE=800",
-                "-O3",
-                "-Wall",
-                "-Wextra",
-                "-Werror",
-                "-pedantic",
-                "-Iinclude",
-                "-Ilib",
-                "-Wshadow",
-                "-Wconversion",
-                "-Wstrict-prototypes",
-                "-Wmissing-prototypes",
-                "-Wold-style-definition",
-                "-Wmissing-declarations",
-                "-Wredundant-decls",
-                "-Wfloat-equal",
-                "-Wundef",
-                "-Wbad-function-cast",
-                "-Wcast-qual",
-                "-Wwrite-strings",
-                "-Wformat=2",
-                "-Wstrict-aliasing=2",
-                "-Wstrict-overflow=5",
-                "-Wc++-compat",
-                "-Wnull-dereference",
-                "-Wdouble-promotion",
-                "-Wvla",
-                "-target arm64-apple-darwin",
-                "-nostdlib",
-                "-L/usr/local/musl/lib",
-                "-I/usr/local/musl/include",
-                "-static"
-            ],
-            "intelliSenseMode": "clang-arm64",
-            "includePath": [
-                "${myIncludePath}",
-                "/usr/local/musl/include"
-            ],
-            "defines": [
-                "DEBUG",
-                "MY_FEATURE=1",
-                "_POSIX_C_SOURCE=200809L",
-                "_XOPEN_SOURCE=800",
-                "PLATFORM_MAC"
-            ],
-            "cStandard": "c23",
-            "cppStandard": "c++23",
-            "browse": {
-                "path": [
-                    "${workspaceFolder}/include",
-                    "${workspaceFolder}/lib",
-                    "${workspaceFolder}/src",
-                    "${workspaceFolder}/docs",
-                    "${workspaceFolder}/tmp",
-                    "${workspaceFolder}/build",
-                    "${workspaceFolder}/etc",
-                    "${workspaceFolder}/bin",
-                    "${workspaceFolder}/tests"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db"
