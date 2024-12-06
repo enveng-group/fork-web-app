@@ -53,9 +53,7 @@ Mkfile.old
 dkms.conf
 
 # Build artifacts
-#build/
-#lib/
-#bin/
+bin/
 #tmp/
 
 # Configuration and build scripts
