@@ -306,7 +306,7 @@ To ensure **POSIX compliance** while integrating the **musl C library** and stat
 Install and ensure the availability of the following **POSIX-compliant tools** and libraries:
 
 - **Compiler**: `clang` (set to use musl as the C library)
-- **Build System**: `make`
+- **Build System**: `cmake`
 - **Linker**: `lld`
 - **Static Analysis**: `lint` (e.g., `splint`)
 - **Formatting**: `indent`
@@ -551,3 +551,202 @@ This workflow ensures **POSIX compliance** and integrates **musl** as the C libr
 `clang-format` `clang-tidy` `cppcheck` `shellcheck`
 
 Development of the EnvEng web application using 5S methodology for project management and Data-Oriented Programming (DOP) for development.
+
+
+
+## **Conclusion**
+
+This workflow ensures **POSIX compliance** and integrates **musl** as the C library, enabling static linking and providing a lightweight and efficient alternative to glibc. The build system uses Clang with musl, and all binaries are statically linked, ensuring portability and reducing external dependencies. Let me know if further refinements are needed!
+
+### Build Toolchain
+
+The build process is managed using CMake with Ninja as the build system. The following targets are available:
+
+- **clang-format**: Formats the source code according to the project's style guidelines.
+- **clang-tidy**: Runs clang-tidy for static code analysis.
+- **cppcheck**: Runs cppcheck for static code analysis.
+- **valgrind**: Runs valgrind to check for memory leaks and other memory-related issues.
+- **splint**: Runs splint for static code analysis.
+- **clang-lint**: Runs clang-lint for static code analysis.
+- **indent**: Formats the source code using indent.
+- **doxygen** and **graphiz**: Generates PDF documentation from man pages.
+- **gprof**: Runs gprof for profiling the application.
+- **clang-analyzer**: Runs clang-analyzer for static code analysis.
+- **llvm-cov**: Runs llvm-cov for code coverage analysis.
+- **llvm-profdata**: Merges profiling data using llvm-profdata.
+- **llvm-symbolizer**: Symbolizes addresses in the binary using llvm-symbolizer.
+- **clang-check**: Runs clang-check for static code analysis.
+- **shellcheck**: Runs shellcheck for shell script analysis.
+- **bear**: Generates a compilation database using Bear.
+- **package**: Packages the binary into a tar.xz archive.
+- **all-tools**: Runs all the above tools and packages the binary.
+
+To automate the build process and test individual steps, follow these instructions:
+
+---
+
+### **Automated Build Process**
+Run these commands sequentially to perform a complete build and toolchain run in one go:
+1. **Generate Build Files**:
+   ```bash
+   cmake -G Ninja -S . -B build
+   ```
+   This command sets up the build system and generates the required files in the `build/` directory.
+
+2. **Build the Project**:
+   ```bash
+   ninja -C build
+   ```
+   Builds the `web_app` executable and places it in the `build/bin/` directory.
+
+3. **Run All Tools**:
+   ```bash
+   ninja -C build all-tools
+   ```
+   Executes:
+   - Static analysis (`clang-tidy` and `cppcheck`).
+   - Memory profiling with `valgrind`.
+   - Documentation generation with `doxygen`.
+   - Packaging of the binary into a `.tar.xz` archive.
+
+---
+
+### **Step-by-Step Testing**
+To test each step individually, use the following commands:
+
+1. **Build Only**:
+   ```bash
+   ninja -C build
+   ```
+   This builds the `web_app` executable.
+
+2. **Static Analysis**:
+   ```bash
+   ninja -C build static-analysis
+   ```
+   Runs `clang-tidy` and `cppcheck`, saving logs to `build/logs/`.
+
+3. **Memory Profiling**:
+   ```bash
+   ninja -C build memory-profiling
+   ```
+   Runs `valgrind` on the built binary and logs the results to `build/logs/valgrind.log`.
+
+4. **Generate Documentation**:
+   ```bash
+   ninja -C build doc_doxygen
+   ```
+   Generates API documentation using `doxygen` and places it in the `build/` directory.
+
+5. **Package the Binary**:
+   ```bash
+   ninja -C build package
+   ```
+   Creates a `.tar.xz` package containing the static binary.
+
+---
+
+### **Testing Compilation Database (Optional)**
+For tools that require a compilation database:
+```bash
+ninja -C build bear
+```
+Generates the `compile_commands.json` in the `build/` directory for IDEs or additional tooling.
+
+---
+
+### **Logs and Outputs**
+- Binaries: `build/bin/`
+- Logs: `build/logs/`
+- Documentation: `build/` (or as configured in the Doxygen file).
+- Packaged Output: `build/web_app.tar.xz`.
+
+---
+
+This structure supports both automation and manual testing, allowing you to pinpoint and address issues efficiently. Let me know if you need further clarification!
+
+./configure --prefix=/usr/local/bin/musl CC=clang CXX=clang++ LD=lld --enable-static --disable-shared --disable-werror --enable-fts --enable-fpic --disable-nls --enable-debug --with-arch=native --with-tune=native --disable-multilib --enable-posix --enable-isoc23 --with-ld=lld
+
+
+To automate the build process and test individual steps, follow these instructions:
+
+---
+### **Automated Build Process**
+Run these commands sequentially to perform a complete build and toolchain run in one go:
+1. **Generate Build Files**:
+   ```bash
+   cmake -G Ninja -S . -B build
+   ```
+   This command sets up the build system and generates the required files in the `build/` directory.
+
+2. **Build the Project**:
+   ```bash
+   ninja -C build
+   ```
+   Builds the `web_app` executable and places it in the `build/bin/` directory.
+
+3. **Run All Tools**:
+   ```bash
+   ninja -C build all-tools
+   ```
+   Executes:
+   - Static analysis (`clang-tidy` and `cppcheck`).
+   - Memory profiling with `valgrind`.
+   - Documentation generation with `doxygen`.
+   - Packaging of the binary into a `.tar.xz` archive.
+
+---
+
+### **Step-by-Step Testing**
+To test each step individually, use the following commands:
+
+1. **Build Only**:
+   ```bash
+   ninja -C build
+   ```
+   This builds the `web_app` executable.
+
+2. **Static Analysis**:
+   ```bash
+   ninja -C build static-analysis
+   ```
+   Runs `clang-tidy` and `cppcheck`, saving logs to `build/logs/`.
+
+3. **Memory Profiling**:
+   ```bash
+   ninja -C build memory-profiling
+   ```
+   Runs `valgrind` on the built binary and logs the results to `build/logs/valgrind.log`.
+
+4. **Generate Documentation**:
+   ```bash
+   ninja -C build doc_doxygen
+   ```
+   Generates API documentation using `doxygen` and places it in the `build/` directory.
+
+5. **Package the Binary**:
+   ```bash
+   ninja -C build package
+   ```
+   Creates a `.tar.xz` package containing the static binary.
+
+---
+
+### **Testing Compilation Database (Optional)**
+For tools that require a compilation database:
+```bash
+ninja -C build bear
+```
+Generates the `compile_commands.json` in the `build/` directory for IDEs or additional tooling.
+
+---
+
+### **Logs and Outputs**
+- Binaries: `build/bin/`
+- Logs: `build/logs/`
+- Documentation: `build/` (or as configured in the Doxygen file).
+- Packaged Output: `build/web_app.tar.xz`.
+
+---
+
+This structure supports both automation and manual testing, allowing you to pinpoint and address issues efficiently. Let me know if you need further clarification!

@@ -425,7 +425,7 @@
         "remoteHub.gitProtocol": "ssh",
         "remoteHub.richNavigation.enabled": true,
         "editor.semanticHighlighting.enabled": true,
-        "C_Cpp.default.cStandard": "c11",
+        "C_Cpp.default.cStandard": "c23",
         "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
         "C_Cpp.codeAnalysis.clangTidy.enabled": true,
         "c-cpp-flylint.enable": false,
@@ -435,7 +435,15 @@
         "c-cpp-flylint.cppcheck.platform": "unix64",
         "c-cpp-flylint.flexelint.enable": false,
         "c-cpp-flylint.flawfinder.enable": false,
-        "c-cpp-flylint.lizard.enable": false
+        "c-cpp-flylint.lizard.enable": false,
+        "C_Cpp.default.browse.databaseFilename": "compile_commands.json",
+        "C_Cpp.clang_format_path": "/usr/bin/clang-format",
+        "C_Cpp.formatting": "clangFormat",
+        "C_Cpp.codeAnalysis.clangTidy.config": ".clang-tidy",
+        "C_Cpp.codeAnalysis.clangTidy.path": "/usr/bin/clang-tidy",
+        "shellcheck.executablePath": "/usr/bin/shellcheck",
+        "C_Cpp.default.cppStandard": "c++23",
+        "C_Cpp.default.compilerPath": "/usr/bin/musl-gcc"
     },
     "extensions": {
         "recommendations": [

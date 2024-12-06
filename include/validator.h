@@ -7,7 +7,6 @@
 
 #include "config_loader.h"
 
-size_t safeCopy(char *dst, const char *src, size_t size);
 int validateConfig(config_t *config, const char *value);
 
 #endif // VALIDATOR_H

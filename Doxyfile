@@ -1,0 +1,7 @@
+PROJECT_NAME           = "Web App"
+OUTPUT_DIRECTORY       = docs
+INPUT                  = ../src ../include
+FILE_PATTERNS          = *.c *.h
+RECURSIVE              = YES
+GENERATE_LATEX         = NO
+GENERATE_HTML          = NO

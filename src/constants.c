@@ -15,12 +15,12 @@
 #include "validator.h"
 
 // Server constants
-char SERVER_IP[256];
+char SERVER_IP[SERVER_IP_SIZE];
 int SERVER_PORT;
 
 // SSL constants
-char SSL_CERT_FILE[256];
-char SSL_KEY_FILE[256];
+char SSL_CERT_FILE[SSL_CERT_FILE_SIZE];
+char SSL_KEY_FILE[SSL_KEY_FILE_SIZE];
 
 // Configuration file paths
 const char *ENV_FILE = ".env";
@@ -29,15 +29,15 @@ const char *DOCUMENT_ROOT;
 const char *REC_FILE_PATH;
 const char *AUTH_FILE;
 
-// Application constants
-const int global_var = 0;
-const char *app_mode;
-double version;
+// Global variables
+const int GLOBAL_VAR = 0;
+const char *APP_MODE;
+double VERSION;
 
 // Initialize configuration with default values
 const Config config = {
-    .app_name = "web_app",
-    .version = 1.0,
+    .app_name = APP_NAME,
+    .version = CONFIG_VERSION,
     .document_root = "",
     .rec_file_path = "",
     .auth_file = ""

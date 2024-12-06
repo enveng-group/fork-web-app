@@ -12,42 +12,10 @@
 #include "validator.h"
 #include "logger.h"
 #include "error_handler.h"
+#include "utils.h"
 
 #define MAX_LINE_LENGTH           1024
 #define MAX_ERROR_MESSAGE_LENGTH  256
-
-/**
- * @brief Helper function to process configuration file.
- *
- * @param file Pointer to the opened file.
- * @param config_type Type of configuration (INI or CONF).
- * @return int 0 on success, -1 on error.
- */
-int processConfigFile(FILE *file, const char *config_type)
-{
-    char line[256];
-
-    while (fgets(line, sizeof(line), file))
-    {
-        char *key = strtok(line, "=");
-        char *value = strtok(NULL, "\n");
-        if (key && value)
-        {
-            config_t temp_config;
-            safeCopy(temp_config.app_name, key, sizeof(temp_config.app_name));
-            temp_config.version = 1; // Assuming a default version for validation
-
-            if (validateConfig(&temp_config, value) != 0)
-            {
-                char error_message[MAX_ERROR_MESSAGE_LENGTH];
-                snprintf(error_message, sizeof(error_message), "Invalid %s config value", config_type);
-                logError(error_message);
-                return -1;
-            }
-        }
-    }
-    return 0;
-}
 
 int loadIniConfig(const char *filename, config_t *config)
 {
@@ -75,12 +43,6 @@ int loadIniConfig(const char *filename, config_t *config)
 
         // Skip empty lines and comments
         if (trimmed_line[0] == '\0' || trimmed_line[0] == '#' || trimmed_line[0] == ';')
-        {
-            continue;
-        }
-
-        // Skip section headers
-        if (trimmed_line[0] == '[' && trimmed_line[strlen(trimmed_line) - 1] == ']')
         {
             continue;
         }

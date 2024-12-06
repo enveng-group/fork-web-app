@@ -16,7 +16,5 @@ typedef struct {
 } config_t;
 
 int loadIniConfig(const char *filename, config_t *config);
-int processConfigFile(FILE *file, const char *config_type);
-void someFunction(void);
 
 #endif // CONFIG_LOADER_H

@@ -7,7 +7,7 @@ These instructions ensure Copilot's suggestions align with our project's technic
 ## **General Guidelines**
 - Adhere to **ISO/IEC 9899:2024 (C Standard)**, **POSIX.1-2008**, and **X/Open 8 (Issue 8)** compliance in all code suggestions.
 - Ensure code is **portable**, **cross-platform**, and **cross-architecture**:
-  - Prioritize compatibility with `musl libc` and **GCC)**.
+  - Prioritize compatibility with `musl libc`, `llvm` and `clang`.
   - Avoid features requiring `glibc` or non-portable platform-specific APIs.
 - Write code optimized for lightweight environments (e.g. `musl`).
 - Data oriented design is preferred over object oriented design.
@@ -69,10 +69,10 @@ These instructions ensure Copilot's suggestions align with our project's technic
 ---
 
 ## **Environment-Specific Considerations**
-- **Compiler**: Target **Tiny C Compiler (TCC)** with the following capabilities:
+- **Compiler**: Target **clang-musl (clang)** with the following capabilities:
   - Use `-std=c23` for ISO C compliance.
   - Define `_POSIX_C_SOURCE=200809L` and `_XOPEN_SOURCE=800` for POSIX and X/Open features supported by musl.
-  - Avoid advanced GCC-specific extensions unsupported by TCC.
+  - Avoid advanced GNU and GCC-specific extensions unsupported by clang.
 - **Libraries**:
   - Base code on **musl libc** for portability and minimalism.
   - Ensure compatibility with musl's threading and math libraries.

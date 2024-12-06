@@ -3,17 +3,36 @@ FROM debian:stable-slim
 # Install essential packages
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    build-essential \
+    clang-format \
+    clang-tidy \
     git \
     dropbear \
     gnupg \
     tree \
     ne \
-    musl-tools \
     shellcheck \
     cppcheck \
+    clang \
+    llvm \
+    cmake \
+    valgrind \
+    splint \
+    indent \
+    groff \
+    binutils \
+    wget \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+
+RUN wget https://musl.libc.org/releases/musl-1.2.5.tar.gz && \
+    tar -xzf musl-1.2.5.tar.gz && \
+    cd musl-1.2.5 && \
+    ./configure --prefix=/usr/local/musl --target=x86_64-linux-gnu && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf musl-1.2.5 musl-1.2.5.tar.gz
 
 # Set up a user for development
 RUN useradd -ms /bin/bash devuser
@@ -27,4 +46,4 @@ RUN mkdir -p ~/.ssh && chmod 700 ~/.ssh
 RUN mkdir -p ~/.gnupg && chmod 700 ~/.gnupg
 
 # Set the default command to start a shell
-CMD ["/bin/bash"]
+CMD ["/bin/sh"]

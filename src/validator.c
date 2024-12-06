@@ -10,22 +10,9 @@
 #include "validator.h"
 #include "config_loader.h"
 #include "logger.h"
+#include "utils.h"
 
-// Custom safe copy function
-size_t safeCopy(char *dst, const char *src, size_t size)
-{
-    size_t src_len = strlen(src);
-    if (size > 0)
-    {
-        size_t copy_len = (src_len >= size) ? size - 1 : src_len;
-        for (size_t i = 0; i < copy_len; ++i)
-        {
-            dst[i] = src[i];
-        }
-        dst[copy_len] = '\0';
-    }
-    return src_len;
-}
+// Remove safeCopy implementation
 
 /**
  * Function: validateConfig
@@ -38,7 +25,7 @@ size_t safeCopy(char *dst, const char *src, size_t size)
 int validateConfig(config_t *config, const char *value)
 {
     char app_name_buffer[256];
-    safeCopy(app_name_buffer, value, sizeof(app_name_buffer));
+    utils_safeCopy(app_name_buffer, value, sizeof(app_name_buffer));
 
     // Perform basic validation logic
     if (config == NULL || value == NULL)

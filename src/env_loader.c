@@ -11,13 +11,14 @@
 #include "error_handler.h"
 #include "garbage_collector.h"
 #include "constants.h"
+#include "utils.h"
 
 int loadEnvConfig(const char *filename)
 {
     FILE *file = fopen(filename, "r");
     if (!file)
     {
-        logError("Failed to open .env file: %s", filename);
+        logError("Failed to open env file: %s", filename);
         return -1;
     }
 
@@ -42,8 +43,6 @@ int loadEnvConfig(const char *filename)
             continue;
         }
 
-        logInfo("Read line: %s", trimmed_line);
-
         char *key = strtok(trimmed_line, "=");
         char *value = strtok(NULL, "\n");
 
@@ -60,31 +59,17 @@ int loadEnvConfig(const char *filename)
             while (end > value && isspace((unsigned char)*end)) end--;
             end[1] = '\0';
 
-            logInfo("Parsed key: %s, value: %s", key, value);
-
+            // Set environment variables or update configuration as needed
             if (strcmp(key, "SERVER_IP") == 0)
             {
                 strncpy(SERVER_IP, value, sizeof(SERVER_IP) - 1);
                 SERVER_IP[sizeof(SERVER_IP) - 1] = '\0'; // Ensure null-termination
-                logInfo("Loaded SERVER_IP: %s", SERVER_IP);
             }
             else if (strcmp(key, "SERVER_PORT") == 0)
             {
                 SERVER_PORT = atoi(value);
-                logInfo("Loaded SERVER_PORT: %d", SERVER_PORT);
             }
-            else if (strcmp(key, "SSL_CERT_FILE") == 0)
-            {
-                strncpy(SSL_CERT_FILE, value, sizeof(SSL_CERT_FILE) - 1);
-                SSL_CERT_FILE[sizeof(SSL_CERT_FILE) - 1] = '\0'; // Ensure null-termination
-                logInfo("Loaded SSL_CERT_FILE: %s", SSL_CERT_FILE);
-            }
-            else if (strcmp(key, "SSL_KEY_FILE") == 0)
-            {
-                strncpy(SSL_KEY_FILE, value, sizeof(SSL_KEY_FILE) - 1);
-                SSL_KEY_FILE[sizeof(SSL_KEY_FILE) - 1] = '\0'; // Ensure null-termination
-                logInfo("Loaded SSL_KEY_FILE: %s", SSL_KEY_FILE);
-            }
+            // Add more environment variables as needed
         }
         else
         {

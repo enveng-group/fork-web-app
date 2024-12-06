@@ -1,0 +1,7 @@
+--enable=all
+--inconclusive
+--std=c23
+--language=c
+--suppress=missingIncludeSystem
+--force
+--error-exitcode=1

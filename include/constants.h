@@ -6,12 +6,15 @@
 #define CONSTANTS_H
 
 // Server constants
-extern char SERVER_IP[256];
+#define SERVER_IP_SIZE 256
+extern char SERVER_IP[SERVER_IP_SIZE];
 extern int SERVER_PORT;
 
 // SSL constants
-extern char SSL_CERT_FILE[256];
-extern char SSL_KEY_FILE[256];
+#define SSL_CERT_FILE_SIZE 256
+#define SSL_KEY_FILE_SIZE 256
+extern char SSL_CERT_FILE[SSL_CERT_FILE_SIZE];
+extern char SSL_KEY_FILE[SSL_KEY_FILE_SIZE];
 
 // Configuration file paths
 extern const char *ENV_FILE;
@@ -26,19 +29,19 @@ extern const char *AUTH_FILE;
 #define CONFIG_VERSION 1.0
 
 // Global variables
-extern const int global_var;
-extern const char *app_mode;
-extern double version;
+extern const int GLOBAL_VAR;
+extern const char *APP_MODE;
+extern double VERSION;
 
-// Configuration structure
+/**
+ * Configuration structure.
+ */
 typedef struct {
-    const char *app_name;
-    const char *log_level;
-    const char *app_mode;
-    double version; // Ensure this matches the type in config_loader.h
-    char document_root[256];
-    char rec_file_path[256];
-    char auth_file[256];
+    char app_name[256];      /**< Application name */
+    char version[32];        /**< Version string */
+    char document_root[256]; /**< Document root path */
+    char rec_file_path[256]; /**< Record file path */
+    char auth_file[256];     /**< Authentication file path */
 } Config;
 
 extern const Config config;

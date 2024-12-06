@@ -1,7 +1,7 @@
 Checks: >
   -*,                           # Disable all checks by default
   c23-*,                        # Enable all checks for C23
-  posix-*                       # Enable all checks for POSIX compliance
+  posix-*,                      # Enable all checks for POSIX compliance
   cert-env33-c,                 # Environment-specific safety (compliant with CERT guidelines)
   bugprone-*,                   # Detect potential bugs in logic
   readability-*,                # Improve code readability

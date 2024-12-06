@@ -11,6 +11,7 @@
 #include "garbage_collector.h"
 #include "validator.h"
 #include "constants.h"
+#include "utils.h"
 
 // Function prototypes
 void initialize(void);

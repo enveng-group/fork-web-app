@@ -1,0 +1,17 @@
++posixlib
++charint
++boolint
++longint
++realcompare
++relaxtypes
++fcnuse
++mustfreefresh
++mustfreeonly
++mustfree
++mustdefine
++mustmod
++mustuse
++mustalias
++mustaliasonly
++mustaliasfresh
++mustaliasonlyfresh
