@@ -5,8 +5,13 @@
 #ifndef ENV_LOADER_H
 #define ENV_LOADER_H
 
-#include "config_loader.h"
+#include <stdio.h>
 
-int load_env_config(const char *filename);
+typedef struct {
+    char *key;
+    char *value;
+} env_var_t;
+
+int loadEnvConfig(const char *filename);
 
 #endif // ENV_LOADER_H

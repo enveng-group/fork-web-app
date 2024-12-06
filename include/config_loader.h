@@ -1,25 +1,22 @@
 /**
- * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 #ifndef CONFIG_LOADER_H
 #define CONFIG_LOADER_H
 
+#include <stdio.h>
+
 typedef struct {
-    char *key;
-    char *value;
-    char *app_name;
-    double version;
-    char *log_level;
-    int enable_feature_x;
-    int enable_feature_y;
-    int enable_feature_z;
-    int max_retries;
-    char *app_mode;
+    char app_name[256];
+    double version; // Change from int to double
+    char document_root[256];
+    char rec_file_path[256];
+    char auth_file[256];
 } config_t;
 
-int load_ini_config(const char *filename);
-int load_conf_config(const char *filename);
+int loadIniConfig(const char *filename, config_t *config);
+int processConfigFile(FILE *file, const char *config_type);
+void someFunction(void);
 
 #endif // CONFIG_LOADER_H

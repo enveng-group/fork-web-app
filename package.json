@@ -1,16 +1,5 @@
 {
-  "name": "enveng-webapp",
-  "version": "1.0.0",
-  "description": "EnvEng Web Application",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-org/enveng-webapp.git"
-  },
-  "license": "AGPL-3.0-or-later",
-  "keywords": ["enveng", "webapp"],
   "dependencies": {
-    "dotenv-vault": "latest"
-  },
-  "src": "src",
-  "install": "install"
+    "dotenv-vault": "^1.26.2"
+  }
 }

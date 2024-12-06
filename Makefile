@@ -1,51 +1,35 @@
-# Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
-# SPDX-License-Identifier: 	AGPL-3.0-or-later
+# Compiler and Flags
+CC = /usr/bin/musl-gcc
+CFLAGS = -std=c2x -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=800 -O3 -Wall -Wextra -Werror -pedantic -I/usr/include/x86_64-linux-musl -I$(PWD)/include -L/usr/lib/x86_64-linux-musl -nostdlib -static -fno-common -ffunction-sections -fdata-sections -march=x86-64 -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wmissing-declarations -Wredundant-decls -Wfloat-equal -Wundef -Wbad-function-cast -Wcast-qual -Wwrite-strings -Wformat=2 -Wstrict-aliasing=2 -Wstrict-overflow=5 -Wnull-dereference -Wdouble-promotion -Wvla -Wcast-align -Wpointer-arith -Wswitch-default -Wunreachable-code
 
-# POSIX-compliant Makefile for building and testing with musl
+# Output Directories
+OBJDIR = obj
+BINDIR = bin
+INCDIR = include
 
-# For Trisquel use (CC = /usr/local/musl/bin/musl-clang-15 && LD=/usr/local/musl/bin/ld.musl-clang-15)
-# For Debian use (CC = /usr/local/musl/bin/musl-clang && LD=/usr/local/musl/bin/ld.musl-clang)
-CC = /usr/local/musl/bin/musl-clang
-LD=/usr/local/musl/bin/ld.musl-clang
-CFLAGS = -static -std=c2x -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=800 -O3 -Wall -Wextra -Werror -pedantic -Iinclude -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wmissing-declarations -Wredundant-decls -Wfloat-equal -Wundef -Wbad-function-cast -Wcast-qual -Wwrite-strings -Wformat=2 -Wstrict-aliasing=2 -Wstrict-overflow=5 -Wc++-compat -Wnull-dereference -Wdouble-promotion -Wvla
-LDFLAGS = -static -L/usr/local/musl/lib -lm -Wl,--no-undefined -Wl,--warn-common -Wl, -Wl
-SRC_DIR = src
-BUILD_DIR = build
-BIN_DIR = bin
-TEST_DIR = tests
-INCLUDE_DIR = include
-OBJ_FILES = $(BUILD_DIR)/main.o $(BUILD_DIR)/logger.o $(BUILD_DIR)/hello.o $(BUILD_DIR)/garbage_collector.o $(BUILD_DIR)/config_loader.o $(BUILD_DIR)/env_loader.o $(BUILD_DIR)/error_handler.o $(BUILD_DIR)/validator.o
-TARGET = $(BIN_DIR)/my_program
-TEST_TARGET = $(BIN_DIR)/test_runner
+# Source Files and Targets
+SRCS := $(wildcard src/*.c)
+OBJS := $(SRCS:src/%.c=$(OBJDIR)/%.o)
+TARGET = $(BINDIR)/web_app
 
-.PHONY: all clean test doc
+# Create the necessary directories
+$(OBJDIR) $(BINDIR):
+	@mkdir -p $@
 
+# Default target to build the program
 all: $(TARGET)
 
-# Build the main executable
-$(TARGET): $(OBJ_FILES)
-	mkdir -p $(BIN_DIR)
-	$(CC) $(CFLAGS) $(OBJ_FILES) $(LDFLAGS) -o $@
+# Link the object files to create the final binary
+$(TARGET): $(OBJS) | $(BINDIR)
+	$(CC) $(OBJS) -o $@
 
-# Compile source files
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	mkdir -p $(BUILD_DIR)
+# Compile source files into object files
+$(OBJDIR)/%.o: src/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Clean up build artifacts
 clean:
-	rm -rf $(BUILD_DIR) $(BIN_DIR)
+	rm -rf $(OBJDIR) $(BINDIR)
 
-# Build and run tests
-test: $(TEST_TARGET)
-	./$(TEST_TARGET)
-
-$(TEST_TARGET): $(TEST_DIR)/test_logger.o $(BUILD_DIR)/logger.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
-
-$(TEST_DIR)/%.o: $(TEST_DIR)/%.c
-	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-# Generate documentation (man pages)
-doc:
-	groff -man docs/my_program.1 > $(BIN_DIR)/my_program.1.pdf
+# Phony targets
+.PHONY: all clean

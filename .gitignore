@@ -60,7 +60,7 @@ bin/
 config.*
 
 # Development environment files
-#.vscode/
+.vscode/
 *.db
 *.db-*
 *.env*
@@ -88,8 +88,21 @@ yarn-error.log*
 
 
 # Ignoring sensitive or system-specific files
-.env*
+.env
+.env.me
+.env.previous
 *.vault
-# Exception for specific env files to be versioned
+
+# Exceptions
 !.env.project
 !.env.vault
+!.vscode/c_cpp_properties.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+!app.1.pdf
+
+.flaskenv*
+
+.env*

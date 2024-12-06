@@ -310,12 +310,13 @@ Install and ensure the availability of the following **POSIX-compliant tools** a
 - **Linker**: `lld`
 - **Static Analysis**: `lint` (e.g., `splint`)
 - **Formatting**: `indent`
-- **Debugger**: `gdb`
-- **Profiling**: `gprof`
+- **Debugger**: `lldb`
+- **Profiling**: `gprof` < -- TODO: Need to figure out how to download >
 - **Memory Debugging**: `valgrind`
-- **Documentation**: `man` or `groff`
-- **Packaging**: `tar`, `gzip`, or `xz`
+- **Documentation**: `groff`
+- **Packaging**: `tar` and `xz`
 - **musl**: The musl C library
+- **bear**: To generate compilation database for clang-tidy
 
 ---
 

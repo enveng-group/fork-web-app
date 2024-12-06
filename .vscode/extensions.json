@@ -14,11 +14,12 @@
     "editorconfig.editorconfig",
     "github.copilot",
     "github.copilot-chat",
-    "github.remotehub",
     "github.github-vscode-theme",
     "ymotongpoo.licenser",
     "esbenp.prettier-vscode",
     "ms-vscode.remote-repositories",
-    "snyk-security.snyk-vulnerability-scanner"
+    "willumz.generic-pseudocode",
+    "maziac.asm-code-lens",
+    "nathanj.cppcheck-plugin"
   ]
 }

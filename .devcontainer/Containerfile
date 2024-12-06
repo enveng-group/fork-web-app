@@ -1,0 +1,30 @@
+FROM debian:stable-slim
+
+# Install essential packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    git \
+    dropbear \
+    gnupg \
+    tree \
+    ne \
+    musl-tools \
+    shellcheck \
+    cppcheck \
+    && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set up a user for development
+RUN useradd -ms /bin/bash devuser
+
+# Switch to the new user
+USER devuser
+WORKDIR /home/devuser
+
+# Expose SSH and GPG for use in the container
+RUN mkdir -p ~/.ssh && chmod 700 ~/.ssh
+RUN mkdir -p ~/.gnupg && chmod 700 ~/.gnupg
+
+# Set the default command to start a shell
+CMD ["/bin/bash"]

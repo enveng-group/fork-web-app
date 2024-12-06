@@ -1,0 +1,19 @@
+{
+    "name": "Web App Dev Environment",
+    "build": {
+        "dockerfile": "Containerfile"
+    },
+    "runArgs": [
+        "--name", "web-app-container",
+        "--network", "host",  // Use host network
+    ],
+    "mounts": [
+        "source=podman_volume,target=/home/devuser,type=volume"
+    ],
+    "remoteUser": "devuser",
+    "containerUser": "devuser",
+    "postCreateCommand": "echo 'Development container is ready!'",
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2.5.2": {}
+    }
+}

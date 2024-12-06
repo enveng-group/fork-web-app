@@ -172,6 +172,9 @@
     "MD029": { "style": "ordered" } // Enforce ordered list style
   },
   "prettier.configPath": ".prettierrc",
-  "linthtml.packageManager": "npm",
   "C_Cpp.default.compilerPath": "/opt/homebrew/Cellar/gcc/14.2.0_1/bin/gcc-14",
+  "editor.semanticHighlighting.enabled": true,
+  "C_Cpp.default.cStandard": "c11",
+  "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
+  "C_Cpp.codeAnalysis.clangTidy.enabled": true
 }

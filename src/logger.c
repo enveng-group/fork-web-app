@@ -1,29 +1,33 @@
 /**
  * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
- * SPDX-License-Identifier: 	AGPL-3.0-or-later
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 #include <stdio.h>
 #include <stdarg.h>
-#include "../include/logger.h"
+#include <unistd.h>
+#include "logger.h"
 
 // logger.c
-void init_logger(void) {
+void initLogger(void)
+{
     // Initialize logging system
 }
 
-void log_info(const char *message, ...) {
+void logInfo(const char *message, ...)
+{
     va_list args;
     va_start(args, message);
-    vprintf("%s", args);
-    printf("\n");
+    vdprintf(STDOUT_FILENO, message, args);
+    dprintf(STDOUT_FILENO, "\n");
     va_end(args);
 }
 
-void log_error(const char *message, ...) {
+void logError(const char *message, ...)
+{
     va_list args;
     va_start(args, message);
-    vfprintf(stderr, "%s", args);
-    fprintf(stderr, "\n");
+    vdprintf(STDERR_FILENO, message, args);
+    dprintf(STDERR_FILENO, "\n");
     va_end(args);
 }
