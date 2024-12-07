@@ -9,7 +9,7 @@
 #include "config_loader.h"
 
 size_t utils_safeCopy(char *dst, const char *src, size_t size);
-int utils_processConfigFile(FILE *file, const char *config_type);
-int utils_loadEnvConfig(const char *filename);
+int    utils_processConfigFile(FILE *file, const char *config_type);
+int    utils_loadEnvConfig(const char *filename);
 
-#endif // UTILS_H
+#endif  // UTILS_H

@@ -7,11 +7,12 @@
 
 #include <stdio.h>
 
-typedef struct {
+typedef struct
+{
     char *key;
     char *value;
 } env_var_t;
 
 int loadEnvConfig(const char *filename);
 
-#endif // ENV_LOADER_H
+#endif  // ENV_LOADER_H

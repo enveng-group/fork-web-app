@@ -9,4 +9,4 @@
 
 int validateConfig(config_t *config, const char *value);
 
-#endif // VALIDATOR_H
+#endif  // VALIDATOR_H

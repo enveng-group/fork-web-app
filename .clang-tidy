@@ -1,15 +1,18 @@
 Checks: >
-  -*,                           # Disable all checks by default
-  c23-*,                        # Enable all checks for C23
-  posix-*,                      # Enable all checks for POSIX compliance
-  cert-env33-c,                 # Environment-specific safety (compliant with CERT guidelines)
-  bugprone-*,                   # Detect potential bugs in logic
-  readability-*,                # Improve code readability
-  portability-*,                # Address cross-platform issues
-  misc-*                        # Enable general miscellaneous best practices
+  -*,
+  c23-*,
+  posix-*,
+  cert-env33-c,
+  bugprone-*,
+  readability-*,
+  portability-*,
+  misc-*,
+  google-*,
+  performance-*,
+  concurrency-*
 
-WarningsAsErrors: '*'          # Treat all warnings as errors
-HeaderFilterRegex: '.*'        # Apply checks to all headers in the project
-FormatStyle: google            # Use Google style for code formatting
-UseColor: true                 # Enable color output in reports
-User: true                     # Apply custom settings
+WarningsAsErrors: '*'
+HeaderFilterRegex: '.*'
+FormatStyle: google
+UseColor: true
+User: true

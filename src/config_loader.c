@@ -3,19 +3,19 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+#include "config_loader.h"
+#include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <ctype.h>
-#include "config_loader.h"
-#include "validator.h"
-#include "logger.h"
 #include "error_handler.h"
+#include "logger.h"
 #include "utils.h"
+#include "validator.h"
 
-#define MAX_LINE_LENGTH           1024
-#define MAX_ERROR_MESSAGE_LENGTH  256
+#define MAX_LINE_LENGTH 1024
+#define MAX_ERROR_MESSAGE_LENGTH 256
 
 int loadIniConfig(const char *filename, config_t *config)
 {
@@ -42,14 +42,15 @@ int loadIniConfig(const char *filename, config_t *config)
         end[1] = '\0';
 
         // Skip empty lines and comments
-        if (trimmed_line[0] == '\0' || trimmed_line[0] == '#' || trimmed_line[0] == ';')
+        if (trimmed_line[0] == '\0' || trimmed_line[0] == '#' ||
+            trimmed_line[0] == ';')
         {
             continue;
         }
 
         logInfo("Read line: %s", trimmed_line);
 
-        char *key = strtok(trimmed_line, "=");
+        char *key   = strtok(trimmed_line, "=");
         char *value = strtok(NULL, "\n");
 
         if (key && value)
@@ -70,7 +71,8 @@ int loadIniConfig(const char *filename, config_t *config)
             if (strcmp(key, "app_name") == 0)
             {
                 strncpy(config->app_name, value, sizeof(config->app_name) - 1);
-                config->app_name[sizeof(config->app_name) - 1] = '\0'; // Ensure null-termination
+                config->app_name[sizeof(config->app_name) - 1] =
+                    '\0';  // Ensure null-termination
                 logInfo("Loaded app_name: %s", config->app_name);
             }
             else if (strcmp(key, "version") == 0)
@@ -80,20 +82,26 @@ int loadIniConfig(const char *filename, config_t *config)
             }
             else if (strcmp(key, "document_root") == 0)
             {
-                strncpy(config->document_root, value, sizeof(config->document_root) - 1);
-                config->document_root[sizeof(config->document_root) - 1] = '\0'; // Ensure null-termination
+                strncpy(config->document_root, value,
+                        sizeof(config->document_root) - 1);
+                config->document_root[sizeof(config->document_root) - 1] =
+                    '\0';  // Ensure null-termination
                 logInfo("Loaded document_root: %s", config->document_root);
             }
             else if (strcmp(key, "rec_file_path") == 0)
             {
-                strncpy(config->rec_file_path, value, sizeof(config->rec_file_path) - 1);
-                config->rec_file_path[sizeof(config->rec_file_path) - 1] = '\0'; // Ensure null-termination
+                strncpy(config->rec_file_path, value,
+                        sizeof(config->rec_file_path) - 1);
+                config->rec_file_path[sizeof(config->rec_file_path) - 1] =
+                    '\0';  // Ensure null-termination
                 logInfo("Loaded rec_file_path: %s", config->rec_file_path);
             }
             else if (strcmp(key, "auth_file") == 0)
             {
-                strncpy(config->auth_file, value, sizeof(config->auth_file) - 1);
-                config->auth_file[sizeof(config->auth_file) - 1] = '\0'; // Ensure null-termination
+                strncpy(config->auth_file, value,
+                        sizeof(config->auth_file) - 1);
+                config->auth_file[sizeof(config->auth_file) - 1] =
+                    '\0';  // Ensure null-termination
                 logInfo("Loaded auth_file: %s", config->auth_file);
             }
         }
@@ -104,8 +112,11 @@ int loadIniConfig(const char *filename, config_t *config)
     }
 
     // Log the final configuration values for debugging
-    logInfo("Final configuration: app_name=%s, version=%.2f, document_root=%s, rec_file_path=%s, auth_file=%s",
-            config->app_name, config->version, config->document_root, config->rec_file_path, config->auth_file);
+    logInfo(
+        "Final configuration: app_name=%s, version=%.2f, document_root=%s, "
+        "rec_file_path=%s, auth_file=%s",
+        config->app_name, config->version, config->document_root,
+        config->rec_file_path, config->auth_file);
 
     fclose(file);
     return 0;

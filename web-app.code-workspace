@@ -448,7 +448,6 @@
     "extensions": {
         "recommendations": [
           "ms-vscode.cpptools",
-          "ms-vscode.makefile-tools",
           "timonwong.shellcheck",
           "davidanson.vscode-markdownlint",
           "yzhang.markdown-all-in-one",
@@ -456,7 +455,6 @@
         "github.vscode-github-actions",
         "your-publisher-name.recfile-syntax",
         "qiumingge.cpp-check-lint",
-        "cs128.cs128-clang-tidy",
         "editorconfig.editorconfig",
         "github.copilot",
         "github.copilot-chat",
@@ -466,7 +464,8 @@
         "ms-vscode.remote-repositories",
         "willumz.generic-pseudocode",
         "maziac.asm-code-lens",
-        "nathanj.cppcheck-plugin"
+        "snyk-security.snyk-vulnerability-scanner",
+        "cs128.cs128-clang-tidy"
       ]
     }
 }

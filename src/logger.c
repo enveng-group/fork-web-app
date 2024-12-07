@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <unistd.h>
 #include "logger.h"
+#include <stdarg.h>
+#include <stdio.h>
+#include <unistd.h>
 
 // logger.c
 void initLogger(void)

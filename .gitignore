@@ -102,6 +102,7 @@ yarn-error.log*
 !.vscode/tasks.json
 !.vscode/extensions.json
 !app.1.pdf
+!CMakeLists.txt
 
 .flaskenv*
 

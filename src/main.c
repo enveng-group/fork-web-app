@@ -5,13 +5,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "config_loader.h"
+#include "constants.h"
 #include "env_loader.h"
 #include "error_handler.h"
-#include "logger.h"
 #include "garbage_collector.h"
-#include "validator.h"
-#include "constants.h"
+#include "logger.h"
 #include "utils.h"
+#include "validator.h"
 
 // Function prototypes
 void initialize(void);
@@ -78,7 +78,8 @@ void cleanup(void)
 
 /**
  * Upgrade configuration to the current version.
- * This function applies necessary transformations to upgrade the configuration to the current version.
+ * This function applies necessary transformations to upgrade the configuration
+ * to the current version.
  * @param old_version The old version of the configuration.
  */
 void upgradeConfig(double old_version)

@@ -10,4 +10,4 @@
 
 void handleError(const char *error_message);
 
-#endif // ERROR_HANDLER_H
+#endif  // ERROR_HANDLER_H

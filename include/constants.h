@@ -8,7 +8,7 @@
 // Server constants
 #define SERVER_IP_SIZE 256
 extern char SERVER_IP[SERVER_IP_SIZE];
-extern int SERVER_PORT;
+extern int  SERVER_PORT;
 
 // SSL constants
 #define SSL_CERT_FILE_SIZE 256
@@ -29,14 +29,15 @@ extern const char *AUTH_FILE;
 #define CONFIG_VERSION 1.0
 
 // Global variables
-extern const int GLOBAL_VAR;
+extern const int   GLOBAL_VAR;
 extern const char *APP_MODE;
-extern double VERSION;
+extern double      VERSION;
 
 /**
  * Configuration structure.
  */
-typedef struct {
+typedef struct
+{
     char app_name[256];      /**< Application name */
     char version[32];        /**< Version string */
     char document_root[256]; /**< Document root path */
@@ -49,4 +50,4 @@ extern const Config config;
 // Function to load constants from .env and config.ini files
 void loadConstants(const char *filename);
 
-#endif // CONSTANTS_H
+#endif  // CONSTANTS_H

@@ -611,57 +611,210 @@ Run these commands sequentially to perform a complete build and toolchain run in
 
 ---
 
-### **Step-by-Step Testing**
-To test each step individually, use the following commands:
-
-1. **Build Only**:
-   ```bash
-   ninja -C build
-   ```
-   This builds the `web_app` executable.
-
-2. **Static Analysis**:
-   ```bash
-   ninja -C build static-analysis
-   ```
-   Runs `clang-tidy` and `cppcheck`, saving logs to `build/logs/`.
-
-3. **Memory Profiling**:
-   ```bash
-   ninja -C build memory-profiling
-   ```
-   Runs `valgrind` on the built binary and logs the results to `build/logs/valgrind.log`.
-
-4. **Generate Documentation**:
-   ```bash
-   ninja -C build doc_doxygen
-   ```
-   Generates API documentation using `doxygen` and places it in the `build/` directory.
-
-5. **Package the Binary**:
-   ```bash
-   ninja -C build package
-   ```
-   Creates a `.tar.xz` package containing the static binary.
+Here's a detailed sequence of **commands for each tool at every stage of C compilation and development**, ensuring thorough use of your toolchain. Each stage is designed for strict POSIX and ISO C23 compliance, with no redundancy or overlap.
 
 ---
 
-### **Testing Compilation Database (Optional)**
-For tools that require a compilation database:
+## **1. Code Formatting & Linting**
+Run these commands before writing or committing code to ensure style compliance.
+
 ```bash
-ninja -C build bear
+# Format C code
+clang-format -i <source_file>.c  # Inline modification
+clang-format -i src/*.c include/*.h            # Format all C files in the directory
+
+# Format shell scripts (if applicable)
+shfmt -w <script>.sh  # Inline modification
+shfmt -d <script>.sh  # Show diff without applying changes
 ```
-Generates the `compile_commands.json` in the `build/` directory for IDEs or additional tooling.
 
 ---
 
-### **Logs and Outputs**
-- Binaries: `build/bin/`
-- Logs: `build/logs/`
-- Documentation: `build/` (or as configured in the Doxygen file).
-- Packaged Output: `build/web_app.tar.xz`.
+## **2. Static Analysis**
+Run static analysis tools early in development to catch potential errors.
+
+```bash
+# clang-tidy: Perform advanced checks
+clang-tidy src/*.c include/*.h --config-file=.clang-tidy -- -Iinclude -fix-errors
+OR
+clang-tidy src/*.c include/*.h --config-file=.clang-tidy -- -Iinclude -fix-errors > clang-tidy.log 2>&1
+
+# cppcheck: Find bugs in C code
+cppcheck --enable=all --std=c23 <source_file>.c
+
+# splint: Strict C linting
+splint <source_file>.c
+splint *.c  # Analyze multiple files
+
+# shellcheck: Analyze shell scripts
+shellcheck <script>.sh
+```
 
 ---
+
+## **3. Documentation**
+Use these tools to generate project documentation from your source code.
+
+```bash
+# Generate Doxygen configuration file (one-time setup)
+doxygen -g Doxyfile
+
+# Customize Doxyfile (edit manually, then generate documentation)
+doxygen
+
+# Generate diagrams using Graphviz (works with Doxygen)
+dot -Tpng -o callgraph.png callgraph.dot  # Example of graph rendering
+```
+
+---
+
+## **4. Build Configuration**
+Set up and configure your build system.
+
+```bash
+# Generate build files using CMake with Ninja
+cmake -G Ninja -DCMAKE_C_COMPILER=musl-gcc .
+
+# Build project
+ninja
+
+# Generate compilation database (needed for clang tools)
+bear -- ninja
+```
+
+---
+
+## **5. Debugging**
+Debug your application at runtime.
+
+```bash
+# Debug program with GDB
+gdb ./<binary>  # Launch debugger
+
+# Use addr2line to convert addresses into file and line numbers
+addr2line -e ./<binary> <address>
+
+# Use llvm-symbolizer for symbol resolution
+llvm-symbolizer -e ./<binary> <address>
+```
+
+---
+
+## **6. Memory & Performance Analysis**
+Analyze memory usage and optimize performance.
+
+```bash
+# Valgrind: Detect memory issues
+valgrind ./<binary>
+
+# AddressSanitizer: Run memory checks (built with Clang)
+clang -fsanitize=address -o <binary> <source_file>.c
+./<binary>
+
+# Perf: CPU profiling
+perf record ./<binary>
+perf report
+
+# Gprof: Performance profiling
+gcc -pg -o <binary> <source_file>.c
+./<binary>
+gprof ./<binary> gmon.out > analysis.txt
+
+# Bolt: Optimize binary layout
+llvm-bolt ./<binary> -o <optimized_binary>
+```
+
+---
+
+## **7. Coverage**
+Run coverage tools to measure test completeness.
+
+```bash
+# Compile with coverage support
+gcc -fprofile-arcs -ftest-coverage -o <binary> <source_file>.c
+
+# Run binary to collect coverage data
+./<binary>
+
+# Generate coverage report
+gcov <source_file>.c
+gcov-tool merge <coverage_file_1>.gcov <coverage_file_2>.gcov -o merged.gcov
+```
+
+---
+
+## **8. Compilation Database**
+Generate a compilation database to integrate with Clang tools.
+
+```bash
+# Generate compile_commands.json
+bear -- ninja
+```
+
+---
+
+## **9. Packaging**
+Package the compiled binary for distribution.
+
+```bash
+# Package using CPack (requires configuration in CMakeLists.txt)
+cpack
+
+# Compress using tar and xz
+tar -cf <package_name>.tar <directory>
+xz <package_name>.tar
+```
+
+---
+
+## **10. Workflow Summary**
+Here’s a sequential workflow from code writing to packaging:
+
+1. **Pre-code Setup**
+   ```bash
+   clang-format -i *.c
+   ```
+
+2. **Static Analysis**
+   ```bash
+   clang-tidy <source_file>.c -- -std=c23
+   cppcheck --enable=all --std=c23 <source_file>.c
+   splint <source_file>.c
+   ```
+
+3. **Build and Generate Database**
+   ```bash
+   cmake -G Ninja -DCMAKE_C_COMPILER=musl-gcc .
+   ninja
+   bear -- ninja
+   ```
+
+4. **Debugging**
+   ```bash
+   gdb ./<binary>
+   ```
+
+5. **Memory and Performance Analysis**
+   ```bash
+   valgrind ./<binary>
+   perf record ./<binary>
+   ```
+
+6. **Documentation**
+   ```bash
+   doxygen
+   ```
+
+7. **Packaging**
+   ```bash
+   cpack
+   tar -cf <package_name>.tar <directory>
+   xz <package_name>.tar
+   ```
+
+---
+
+Let me know if you'd like an automated shell script for this workflow!
 
 This structure supports both automation and manual testing, allowing you to pinpoint and address issues efficiently. Let me know if you need further clarification!
 
@@ -750,3 +903,89 @@ Generates the `compile_commands.json` in the `build/` directory for IDEs or addi
 ---
 
 This structure supports both automation and manual testing, allowing you to pinpoint and address issues efficiently. Let me know if you need further clarification!
+
+### **Where to Save the Wrapper Script**
+
+The wrapper script should be saved in a directory included in your `PATH` environment variable, ideally one that takes precedence over system directories like `/usr/bin`. Common locations are:
+
+1. **Recommended Location**: `/usr/local/bin`
+   - This directory is usually included in the `PATH` on most Linux systems and prioritized over `/usr/bin`.
+
+2. **Alternative (User-Specific)**: `$HOME/bin`
+   - If you don’t have root access, you can save it in your user-specific `bin` directory, and ensure `$HOME/bin` is added to your `PATH`.
+
+---
+
+### **How to Save the Script**
+
+1. Create the script:
+   ```bash
+   sudo nano /usr/local/bin/musl-linker
+   ```
+   Add the following lines to the file:
+   ```bash
+   #!/bin/sh
+   /usr/bin/musl-ldd "$@"
+   ```
+2. Make the script executable:
+   ```bash
+   sudo chmod +x /usr/local/bin/musl-linker
+   ```
+
+If saving to `$HOME/bin`:
+```bash
+mkdir -p $HOME/bin
+nano $HOME/bin/musl-linker
+chmod +x $HOME/bin/musl-linker
+```
+
+---
+
+### **When to Execute**
+
+The wrapper script does not need to be explicitly executed; it acts as a replacement for the linker binary (`/usr/bin/ld`). You reference it when configuring your build system, as follows:
+
+1. **During CMake Configuration**:
+   Use the wrapper script as the linker:
+   ```bash
+   cmake -G Ninja \
+     -DCMAKE_C_COMPILER=musl-gcc \
+     -DCMAKE_LINKER=/usr/local/bin/musl-linker \
+     -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=/usr/bin/musl-ldd" \
+     .
+   ```
+
+2. **Build Step**:
+   Once CMake has been configured, just build normally using Ninja:
+   ```bash
+   ninja
+   ```
+
+---
+
+### **Verifying the Wrapper Usage**
+
+You can confirm the linker being used by checking the build logs or directly inspecting the `link.txt` files generated in the build directory:
+
+```bash
+grep "/usr/local/bin/musl-linker" <build-directory>/CMakeFiles/*/link.txt
+```
+
+This should list the `musl-linker` script being invoked for linking.
+
+---
+
+### **General Tips**
+
+- **Global Persistence**: If you want all projects to use this wrapper without specifying it in CMake every time, you can export it in your shell:
+  ```bash
+  export LD=/usr/local/bin/musl-linker
+  ```
+  Add this line to your `.bashrc` or `.zshrc` for permanent effect.
+
+- **Debugging**: Add debug messages to the script to verify it's being executed:
+  ```bash
+  echo "musl-linker invoked with: $@" >&2
+  ```
+
+Let me know if you need additional help with setting this up!

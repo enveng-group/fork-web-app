@@ -2,15 +2,15 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+#include "env_loader.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include "env_loader.h"
-#include "logger.h"
+#include "constants.h"
 #include "error_handler.h"
 #include "garbage_collector.h"
-#include "constants.h"
+#include "logger.h"
 #include "utils.h"
 
 int loadEnvConfig(const char *filename)
@@ -38,12 +38,13 @@ int loadEnvConfig(const char *filename)
         end[1] = '\0';
 
         // Skip empty lines and comments
-        if (trimmed_line[0] == '\0' || trimmed_line[0] == '#' || trimmed_line[0] == ';')
+        if (trimmed_line[0] == '\0' || trimmed_line[0] == '#' ||
+            trimmed_line[0] == ';')
         {
             continue;
         }
 
-        char *key = strtok(trimmed_line, "=");
+        char *key   = strtok(trimmed_line, "=");
         char *value = strtok(NULL, "\n");
 
         if (key && value)
@@ -63,7 +64,8 @@ int loadEnvConfig(const char *filename)
             if (strcmp(key, "SERVER_IP") == 0)
             {
                 strncpy(SERVER_IP, value, sizeof(SERVER_IP) - 1);
-                SERVER_IP[sizeof(SERVER_IP) - 1] = '\0'; // Ensure null-termination
+                SERVER_IP[sizeof(SERVER_IP) - 1] =
+                    '\0';  // Ensure null-termination
             }
             else if (strcmp(key, "SERVER_PORT") == 0)
             {

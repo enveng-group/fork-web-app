@@ -7,7 +7,7 @@ These instructions ensure Copilot's suggestions align with our project's technic
 ## **General Guidelines**
 - Adhere to **ISO/IEC 9899:2024 (C Standard)**, **POSIX.1-2008**, and **X/Open 8 (Issue 8)** compliance in all code suggestions.
 - Ensure code is **portable**, **cross-platform**, and **cross-architecture**:
-  - Prioritize compatibility with `musl libc`, `llvm` and `clang`.
+  - Prioritize compatibility with `musl libc`, and `musl-gcc`.
   - Avoid features requiring `glibc` or non-portable platform-specific APIs.
 - Write code optimized for lightweight environments (e.g. `musl`).
 - Data oriented design is preferred over object oriented design.
@@ -69,7 +69,7 @@ These instructions ensure Copilot's suggestions align with our project's technic
 ---
 
 ## **Environment-Specific Considerations**
-- **Compiler**: Target **clang-musl (clang)** with the following capabilities:
+- **Compiler**: Target **musl-gcc (gcc)** with the following capabilities:
   - Use `-std=c23` for ISO C compliance.
   - Define `_POSIX_C_SOURCE=200809L` and `_XOPEN_SOURCE=800` for POSIX and X/Open features supported by musl.
   - Avoid advanced GNU and GCC-specific extensions unsupported by clang.
@@ -125,23 +125,8 @@ These instructions ensure Copilot's suggestions align with our project's technic
 .
 ├── ACKNOWLEDGEMENT.md
 ├── AUTHORS
-├── build
-│   ├── config_loader.o
-│   ├── configurationCache.log
-│   ├── dryrun.log
-│   ├── env_loader.o
-│   ├── error_handler.o
-│   ├── garbage_collector.o
-│   ├── hello.o
-│   ├── logger.o
-│   ├── main.o
-│   ├── targets.log
-│   └── validator.o
-├── ChangeLog
-├── CHANGELOG.md
+├── CHANGELOG
 ├── CODE_OF_CONDUCT.md
-├── compile_commands.json
-├── Containerfile
 ├── CONTRIBUTING.md
 ├── COPYING
 ├── docs
@@ -156,7 +141,6 @@ These instructions ensure Copilot's suggestions align with our project's technic
 │   ├── GLOSSARY.md
 │   ├── GOVERNANCE.md
 │   ├── HISTORY.md
-│   ├── INSTALL.md
 │   ├── MIGRATION.md
 │   ├── PRIVACY.md
 │   ├── REFERENCES.md
@@ -168,40 +152,50 @@ These instructions ensure Copilot's suggestions align with our project's technic
 │   ├── TROUBLESHOOTING.md
 │   ├── TUTORIAL.md
 │   └── USAGE.md
+├── Doxyfile
 ├── etc
-│   └── config.ini
+│   ├── config.ini
+│   └── server
+│       └── auth.passwd
 ├── HACKING
 ├── include
 │   ├── config_loader.h
+│   ├── constants.h
+│   ├── env_loader.h
 │   ├── error_handler.h
 │   ├── garbage_collector.h
 │   ├── logger.h
+│   ├── utils.h
 │   └── validator.h
 ├── INSTALL
 ├── LICENSE
 ├── MAINTAINERS
-├── mk.sh
 ├── MONITORING_AND_EVALUATION
-├── NEWS
-├── obj
 ├── package.json
 ├── package-lock.json
 ├── README.md
 ├── SECURITY.md
 ├── src
 │   ├── config_loader.c
+│   ├── constants.c
+│   ├── env_loader.c
 │   ├── error_handler.c
 │   ├── garbage_collector.c
 │   ├── logger.c
 │   ├── main.c
+│   ├── utils.c
 │   └── validator.c
 ├── SUPPORT.md
-├── tmp
-│   └── http.pseudo
 ├── TODO.md
+├── var
+│   └── www
+│       ├── data
+│       │   └── records.rec
+│       └── html
+│           └── index.html
 └── web-app.code-workspace
 
-7 directories, 70 files
+10 directories, 62 files
 ```
 
 ### POSIX Headers only allowed to use

@@ -6,11 +6,11 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 void initLogger(void);
 void logInfo(const char *format, ...);
 void logError(const char *message, ...);
 
-#endif // LOGGER_H
+#endif  // LOGGER_H

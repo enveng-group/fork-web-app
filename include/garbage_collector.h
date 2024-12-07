@@ -8,9 +8,9 @@
 
 #include <stdlib.h>
 
-void initGarbageCollector(void);
-void cleanupGarbageCollector(void);
+void  initGarbageCollector(void);
+void  cleanupGarbageCollector(void);
 void* gcMalloc(size_t size);
-void gcFree(void *ptr);
+void  gcFree(void* ptr);
 
-#endif // GARBAGE_COLLECTOR_H
+#endif  // GARBAGE_COLLECTOR_H

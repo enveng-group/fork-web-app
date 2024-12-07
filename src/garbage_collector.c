@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+#include "garbage_collector.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "garbage_collector.h"
 
-typedef struct GCNode {
-    void *ptr;
+typedef struct GCNode
+{
+    void          *ptr;
     struct GCNode *next;
 } GCNode;
 
@@ -32,7 +33,7 @@ void cleanupGarbageCollector(void)
     gcHead = NULL;
 }
 
-void* gcMalloc(size_t size)
+void *gcMalloc(size_t size)
 {
     void *ptr = malloc(size);
     if (ptr == NULL)
@@ -47,9 +48,9 @@ void* gcMalloc(size_t size)
         return NULL;
     }
 
-    node->ptr = ptr;
+    node->ptr  = ptr;
     node->next = gcHead;
-    gcHead = node;
+    gcHead     = node;
 
     return ptr;
 }
@@ -62,7 +63,7 @@ void gcFree(void *ptr)
         if ((*current)->ptr == ptr)
         {
             GCNode *node = *current;
-            *current = node->next;
+            *current     = node->next;
             free(node->ptr);
             free(node);
             return;

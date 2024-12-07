@@ -2,16 +2,16 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+#include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "config_loader.h"
+#include "constants.h"
 #include "env_loader.h"
 #include "error_handler.h"
-#include "logger.h"
 #include "garbage_collector.h"
+#include "logger.h"
 #include "validator.h"
-#include "constants.h"
-#include "utils.h"
 
 // Remove the definitions of initialize, cleanup, upgradeConfig, and main
 
