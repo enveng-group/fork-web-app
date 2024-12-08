@@ -296,6 +296,13 @@ Project Maintainer: [Adrian Gallo](agallo@enveng-group.com.au)
 - Write unit tests for all functions and features.
 - Follow the naming convention `test_<module_name>.c` for test files.
 
+```sh
+mkdir build
+cd build
+cmake -G Ninja ..
+ninja
+ctest
+```
 
 To ensure **POSIX compliance** while integrating the **musl C library** and statically linking everything into your program, follow these instructions. musl is a lightweight, fast, and POSIX-compliant C standard library that can replace glibc for static linking.
 
@@ -807,6 +814,8 @@ xz <package_name>.tar
 
 ---
 
+**Testing with
+
 ## **10. Workflow Summary**
 Here’s a sequential workflow from code writing to packaging:
 
@@ -1028,4 +1037,54 @@ This should list the `musl-linker` script being invoked for linking.
   echo "musl-linker invoked with: $@" >&2
   ```
 
-Let me know if you need additional help with setting this up!
+**Cmake**
+
+1. Generate Build Files:
+
+```sh
+cmake -G Ninja -S . -B build
+```
+
+2. Build the Project:
+
+```sh
+ninja -C build
+```
+
+3. Run All Tools:
+
+```sh
+ninja -C build run_all_tools
+```
+
+### Individual Build Targets
+
+1. **Static Analysis**:
+
+```sh
+ninja -C build static-analysis
+```
+
+2. **Memory Profiling**:
+
+```sh
+ninja -C build memory-profiling
+```
+
+3. **Generate Documentation**:
+
+```sh
+ninja -C build doc_doxygen
+```
+
+4. **Package the Binary**:
+
+```sh
+ninja -C build package
+```
+
+5. **Run Tests**:
+
+```sh
+ninja -C build execute_tests
+```

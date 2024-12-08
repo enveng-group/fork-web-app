@@ -128,6 +128,7 @@ These instructions ensure Copilot's suggestions align with our project's technic
 ├── ACKNOWLEDGEMENT.md
 ├── AUTHORS
 ├── CHANGELOG
+├── CMakeLists.txt
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
 ├── COPYING
@@ -163,10 +164,16 @@ These instructions ensure Copilot's suggestions align with our project's technic
 ├── include
 │   ├── config_loader.h
 │   ├── constants.h
+│   ├── csv_utils.h
+│   ├── data_structures.h
 │   ├── env_loader.h
+│   ├── error_codes.h
 │   ├── error_handler.h
 │   ├── garbage_collector.h
 │   ├── logger.h
+│   ├── records.h
+│   ├── rec_utils.h
+│   ├── test_framework.h
 │   ├── utils.h
 │   └── validator.h
 ├── INSTALL
@@ -180,14 +187,29 @@ These instructions ensure Copilot's suggestions align with our project's technic
 ├── src
 │   ├── config_loader.c
 │   ├── constants.c
+│   ├── csv_utils.c
+│   ├── data_structures.c
 │   ├── env_loader.c
 │   ├── error_handler.c
 │   ├── garbage_collector.c
 │   ├── logger.c
 │   ├── main.c
+│   ├── records.c
+│   ├── rec_utils.c
 │   ├── utils.c
 │   └── validator.c
 ├── SUPPORT.md
+├── tests
+│   ├── test_config_loader.c
+│   ├── test_constants.c
+│   ├── test_data_structures.c
+│   ├── test_env_loader.c
+│   ├── test_error_handler.c
+│   ├── test_garbage_collector.c
+│   ├── test_logger.c
+│   ├── test_main.c
+│   ├── test_utils.c
+│   └── test_validator.c
 ├── TODO.md
 ├── var
 │   └── www
@@ -197,7 +219,7 @@ These instructions ensure Copilot's suggestions align with our project's technic
 │           └── index.html
 └── web-app.code-workspace
 
-10 directories, 62 files
+11 directories, 83 files
 ```
 
 ### POSIX Headers only allowed to use

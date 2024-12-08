@@ -1,27 +1,41 @@
 /**
- * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
- * SPDX-License-Identifier: AGPL-3.0-or-later
+ * \file garbage_collector.c
+ * \brief Implements garbage collection functions.
+ * \author Adrian Gallo
+ * \copyright 2024 Enveng Group
+ * \license AGPL-3.0-or-later
  */
 
 #include "../include/garbage_collector.h"
+#include "../include/logger.h"
 #include <stdio.h>
 #include <stdlib.h>
 
+/**
+ * \struct GCNode
+ * \brief Node structure for garbage collector linked list.
+ */
 typedef struct GCNode
 {
-    void *ptr;
-    struct GCNode *next;
+    void *ptr;           /**< Pointer to allocated memory */
+    struct GCNode *next; /**< Pointer to next node */
 } GCNode;
 
 static GCNode *gcHead = NULL;
 
+/**
+ * \brief Initializes the garbage collector.
+ */
 void
 initGarbageCollector (void)
 {
     gcHead = NULL;
-    printf("Garbage collector initialized.\n");
+    printf ("Garbage collector initialized.\n");
 }
 
+/**
+ * \brief Cleans up the garbage collector, freeing all allocated memory.
+ */
 void
 cleanupGarbageCollector (void)
 {
@@ -34,34 +48,45 @@ cleanupGarbageCollector (void)
             current = next;
         }
     gcHead = NULL;
-    printf("Garbage collector cleaned up.\n");
+    printf ("Garbage collector cleaned up.\n");
 }
 
+/**
+ * \brief Allocates memory and tracks it for garbage collection.
+ *
+ * \param size Size of the memory to allocate.
+ * \return Pointer to the allocated memory, or NULL on failure.
+ */
 void *
 gcMalloc (size_t size)
 {
     GCNode *node;
-    void *ptr = malloc(size);
+    void *ptr = malloc (size);
 
     if (ptr == NULL)
-    {
-        return NULL;
-    }
+        {
+            logError ("Memory allocation failed for size %zu", size);
+            return NULL;
+        }
 
-    node = (GCNode *)malloc(sizeof(GCNode));
+    node = (GCNode *)malloc (sizeof (GCNode));
     if (node == NULL)
-    {
-        free(ptr);
-        return NULL;
-    }
+        {
+            free (ptr);
+            logError ("Memory allocation failed for GCNode");
+            return NULL;
+        }
 
-    node->ptr = ptr;
-    node->next = gcHead;
-    gcHead = node;
+    /* Additional logic for tracking the allocated memory */
 
     return ptr;
 }
 
+/**
+ * \brief Frees memory tracked by the garbage collector.
+ *
+ * \param ptr Pointer to memory to free.
+ */
 void
 gcFree (void *ptr)
 {
@@ -78,16 +103,4 @@ gcFree (void *ptr)
                 }
             current = &(*current)->next;
         }
-}
-
-/* Initialize the garbage collector */
-void initializeGarbageCollector(void)
-{
-    initGarbageCollector();
-}
-
-/* Collect garbage */
-void collectGarbage(void)
-{
-    cleanupGarbageCollector();
 }

@@ -1,110 +1,112 @@
 /**
- * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
- * SPDX-License-Identifier: AGPL-3.0-or-later
+ * \file main.c
+ * \brief Main entry point for the application.
+ * \author Adrian Gallo
+ * \copyright 2024 Enveng Group
+ * \license AGPL-3.0-or-later
  */
 
+#include "../include/logger.h"
 #include "../include/config_loader.h"
 #include "../include/constants.h"
 #include "../include/env_loader.h"
+#include "../include/error_codes.h"
 #include "../include/error_handler.h"
 #include "../include/garbage_collector.h"
-#include "../include/logger.h"
-#include "../include/error_codes.h"
+#include "../include/records.h"
+#include "../include/rec_utils.h"
+#include "../include/csv_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 #define ENV_FILE ".env"
 #define CONFIG_FILE "etc/config.ini"
+#define LOG_FILE "app.log"
 
 /* Function prototypes */
 int initialize(void);
 void cleanup(void);
 void printLoadedConfig(void);
-void printLoadedEnv(void);
 
+/**
+ * \brief Main function.
+ *
+ * \return EXIT_SUCCESS on success, EXIT_FAILURE on failure.
+ */
 int
 main (void)
 {
-    int result;
+    printf("Starting application...\n");
 
-    /* Initialize the application */
-    result = initialize();
-    if (result != SUCCESS)
+    if (initialize() != SUCCESS)
     {
-        handleError("Initialization failed");
-        return EXIT_FAILURE;
+        printf("Initialization failed.\n");
+        return 1;
     }
 
-    /* Print loaded environment variables and configuration */
-    printLoadedEnv();
-    printLoadedConfig();
+    printf("Initialization successful.\n");
 
-    /* Log application start */
-    logInfo ("Application started: %s v%.1f", config.app_name, config.version);
+    /* Your main application logic here */
 
-    /* Application logic here */
+    cleanup();
+    printf("Application finished.\n");
 
-    /* Cleanup the application */
-    cleanup ();
-
-    return EXIT_SUCCESS;
+    return 0;
 }
 
+/**
+ * \brief Initializes the application.
+ *
+ * \return SUCCESS on success, otherwise an error code.
+ */
 int
 initialize (void)
 {
-    int result;
+    initLogger(LOG_FILE);
+    printf("Logger initialized.\n");
 
-    /* Load environment variables */
-    loadEnvironmentVariables();
-
-    /* Load configuration */
-    result = loadConfig();
-    if (result != SUCCESS)
+    if (loadEnvConfig(ENV_FILE) != SUCCESS)
     {
-        handleError("Failed to load configuration");
-        return result;
+        printf("Failed to load environment configuration.\n");
+        return ERROR_CONFIG_LOAD;
     }
+    printf("Environment configuration loaded.\n");
 
-    /* Initialize garbage collector */
-    initGarbageCollector ();
+    if (loadConfig(CONFIG_FILE, &config) != SUCCESS)
+    {
+        printf("Failed to load configuration.\n");
+        return ERROR_CONFIG_LOAD;
+    }
+    printf("Configuration loaded.\n");
+
+    printLoadedConfig();
+
+    initGarbageCollector();
+    printf("Garbage collector initialized.\n");
 
     return SUCCESS;
 }
 
 /**
- * Cleanup the application
+ * \brief Cleans up the application.
  */
 void
 cleanup (void)
 {
-    /* Cleanup garbage collector */
-    cleanupGarbageCollector ();
+    cleanupGarbageCollector();
+    closeLogger();
 }
 
 /**
- * Print loaded configuration
+ * \brief Prints the loaded configuration.
  */
 void
 printLoadedConfig (void)
 {
-    logInfo ("Loaded Configuration:");
-    logInfo ("app_name: %s", config.app_name);
-    logInfo ("version: %.1f", config.version);
-    logInfo ("document_root: %s", config.document_root);
-    logInfo ("rec_file_path: %s", config.rec_file_path);
-    logInfo ("auth_file: %s", config.auth_file);
-}
-
-/**
- * Print loaded environment variables
- */
-void
-printLoadedEnv (void)
-{
-    logInfo ("Loaded Environment Variables:");
-    logInfo ("SERVER_IP: %s", SERVER_IP);
-    logInfo ("SERVER_PORT: %d", SERVER_PORT);
-    logInfo ("SSL_CERT_FILE: %s", SSL_CERT_FILE);
-    logInfo ("SSL_KEY_FILE: %s", SSL_KEY_FILE);
+    loggerLog("Loaded configuration:");
+    loggerLog("App Name: web_app");
+    loggerLog("Version: 1.0");
+    loggerLog("Document Root: /var/www/html");
+    loggerLog("Record File Path: /var/www/data/records.rec");
+    loggerLog("Auth File: /etc/server/auth.passwd");
 }

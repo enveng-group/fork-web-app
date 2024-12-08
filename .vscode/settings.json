@@ -28,7 +28,8 @@
   },
   "[jsonc]": {
     "editor.tabSize": 2,
-    "editor.insertSpaces": true
+    "editor.insertSpaces": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[markdown]": {
     "editor.wordWrap": "on",
@@ -150,7 +151,7 @@
   "prettier.configPath": ".prettierrc",
   "C_Cpp.default.compilerPath": "/usr/bin/musl-gcc",
   "editor.semanticHighlighting.enabled": true,
-  "C_Cpp.default.cStandard": "c23",
+  "C_Cpp.default.cStandard": "c89",
   "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
   "C_Cpp.default.browse.databaseFilename": "compile_commands.json"

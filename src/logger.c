@@ -1,61 +1,83 @@
 /**
- * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
- * SPDX-License-Identifier: AGPL-3.0-or-later
+ * \file logger.c
+ * \brief Implementation of the logger module.
+ * \author Adrian Gallo
+ * \copyright 2024 Enveng Group
+ * \license AGPL-3.0-or-later
  */
 
 #include "../include/logger.h"
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
 
-/* logger.c */
-void
-initLogger(void)
-{
-    /* Initialize logging system */
-}
+static FILE *logFile = NULL;
+static char lastMessage[256];
+static int lastError = 0;
 
-/* Log a message */
-void
-logMessage(const char *message)
+void initLogger(const char *logFileName)
 {
-    if (message == NULL)
+    logFile = fopen(logFileName, "a");
+    if (logFile == NULL)
     {
-        fprintf(stderr, "Error: NULL message passed to logMessage\n");
-        return;
+        perror("Failed to open log file");
+        exit(EXIT_FAILURE);
     }
-    printf("%s\n", message);
 }
 
-/* Log an error message */
-void
-logError(const char *format, ...)
+void closeLogger(void)
+{
+    if (logFile != NULL)
+    {
+        fclose(logFile);
+        logFile = NULL;
+    }
+}
+
+void loggerLog(const char *message)
+{
+    if (logFile != NULL)
+    {
+        fprintf(logFile, "%s\n", message);
+        fflush(logFile);
+        strncpy(lastMessage, message, sizeof(lastMessage) - 1);
+        lastMessage[sizeof(lastMessage) - 1] = '\0';
+    }
+}
+
+void logInfo(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    vfprintf(stderr, format, args);
+    if (logFile != NULL)
+    {
+        vfprintf(logFile, format, args);
+        fprintf(logFile, "\n");
+        fflush(logFile);
+    }
     va_end(args);
-    fprintf(stderr, "\n");
 }
 
-/* Log an info message */
-void
-logInfo(const char *format, ...)
+void logError(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    vprintf(format, args);
+    if (logFile != NULL)
+    {
+        vfprintf(logFile, format, args);
+        fprintf(logFile, "\n");
+        fflush(logFile);
+    }
     va_end(args);
-    printf("\n");
 }
 
-/* Log a warning message */
-void
-logWarning(const char *format, ...)
+const char *loggerGetLastMessage(void)
 {
-    va_list args;
-    va_start(args, format);
-    vfprintf(stderr, format, args);
-    va_end(args);
-    fprintf(stderr, "\n");
+    return lastMessage;
+}
+
+int loggerGetLastError(void)
+{
+    return lastError;
 }
