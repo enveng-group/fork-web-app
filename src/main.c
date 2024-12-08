@@ -16,6 +16,7 @@
 #include "../include/records.h"
 #include "../include/rec_utils.h"
 #include "../include/csv_utils.h"
+#include "../include/socket_module.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -36,6 +37,8 @@ void printLoadedConfig(void);
 int
 main (void)
 {
+    int sockfd;
+
     printf("Starting application...\n");
 
     if (initialize() != SUCCESS)
@@ -45,6 +48,17 @@ main (void)
     }
 
     printf("Initialization successful.\n");
+
+    /* Create and bind the socket */
+    sockfd = createSocket();
+    if (sockfd < 0)
+    {
+        printf("Failed to create and bind socket.\n");
+        cleanup();
+        return 1;
+    }
+
+    printf("Socket created and bound successfully.\n");
 
     /* Your main application logic here */
 

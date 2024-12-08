@@ -87,6 +87,7 @@ if(CLANG_TIDY)
         COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/rec_utils.c -- build
         COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/utils.c -- build
         COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/validator.c -- build
+        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/socket_module.c -- build
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         COMMENT "Running clang-tidy on source and header files"
     )

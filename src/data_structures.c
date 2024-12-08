@@ -62,6 +62,9 @@ addHeader (Dictionary *dict, const char *key, const char *value)
     char **new_keys;
     char **new_values;
 
+    (void)key;
+    (void)value;
+
     new_keys = (char **)gcMalloc ((dict->size + 1) * sizeof (char *));
     new_values = (char **)gcMalloc ((dict->size + 1) * sizeof (char *));
 
