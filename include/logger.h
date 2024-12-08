@@ -7,10 +7,10 @@
 #define LOGGER_H
 
 #include <stdarg.h>
-#include <stdio.h>
 
-void initLogger(void);
 void logInfo(const char *format, ...);
-void logError(const char *message, ...);
+void logError(const char *format, ...);
+void logWarning(const char *format, ...);
+void initLogger(void);
 
-#endif  // LOGGER_H
+#endif /* LOGGER_H */

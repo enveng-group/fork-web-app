@@ -1,84 +1,127 @@
 /**
+ * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-#include "env_loader.h"
+#include "../include/env_loader.h"
+#include "../include/constants.h"
+#include "../include/logger.h"
+#include "../include/utils.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "constants.h"
-#include "error_handler.h"
-#include "garbage_collector.h"
-#include "logger.h"
-#include "utils.h"
 
-int loadEnvConfig(const char *filename)
+enum
 {
-    FILE *file = fopen(filename, "r");
-    if (!file)
-    {
-        logError("Failed to open env file: %s", filename);
-        return -1;
+    LINE_SIZE = 256
+};
+
+static char *
+trim (char *str)
+{
+    char *end;
+
+    /* Trim leading space */
+    while (isspace((unsigned char)*str)) str++;
+
+    if (*str == 0)  /* All spaces? */
+        return str;
+
+    /* Trim trailing space */
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) end--;
+
+    /* Write new null terminator */
+    *(end + 1) = '\0';
+
+    return str;
+}
+
+int loadEnvConfig(const char *filename) {
+    FILE *file;
+    char line[256];
+
+    file = fopen(filename, "r");
+    if (!file) {
+        perror("fopen");
+        return -1;  /* Change return type to int and return -1 on error */
     }
 
-    char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        char *trimmed_line = trim(line);
+        /* Process trimmed_line */
+        printf("Processed line: %s\n", trimmed_line); /* Example usage */
+    }
+
+    fclose(file);
+    return 0;  /* Return 0 on success */
+}
+
+void
+loadEnvironmentVariables (void)
+{
+    FILE *file;
+    char line[LINE_SIZE];
+    char *key;
+    char *value;
+    char *saveptr = NULL;
+
+    logInfo("Attempting to open environment file: %s", ENV_FILE);
+    file = fopen(ENV_FILE, "r");
+    if (!file)
+    {
+        logError("Failed to open environment file: %s", ENV_FILE);
+        return;
+    }
+
+    logInfo("Environment file opened successfully: %s", ENV_FILE);
     while (fgets(line, sizeof(line), file))
     {
-        // Trim leading and trailing whitespace
-        char *trimmed_line = line;
-        while (isspace((unsigned char)*trimmed_line)) trimmed_line++;
-        size_t len = strlen(trimmed_line);
-        if (len == 0)
-        {
-            continue;
-        }
-        char *end = trimmed_line + len - 1;
-        while (end > trimmed_line && isspace((unsigned char)*end)) end--;
-        end[1] = '\0';
-
-        // Skip empty lines and comments
-        if (trimmed_line[0] == '\0' || trimmed_line[0] == '#' ||
-            trimmed_line[0] == ';')
+        char *trimmed_line = trimWhitespace(line);
+        if (isEmptyOrComment(trimmed_line))
         {
             continue;
         }
 
-        char *key   = strtok(trimmed_line, "=");
-        char *value = strtok(NULL, "\n");
-
+        key = strtok_r(trimmed_line, "=", &saveptr);
+        value = strtok_r(NULL, "\n", &saveptr);
         if (key && value)
         {
-            // Trim leading and trailing whitespace from key and value
-            while (isspace((unsigned char)*key)) key++;
-            end = key + strlen(key) - 1;
-            while (end > key && isspace((unsigned char)*end)) end--;
-            end[1] = '\0';
+            key = trimWhitespace(key);
+            value = trimWhitespace(value);
 
-            while (isspace((unsigned char)*value)) value++;
-            end = value + strlen(value) - 1;
-            while (end > value && isspace((unsigned char)*end)) end--;
-            end[1] = '\0';
-
-            // Set environment variables or update configuration as needed
             if (strcmp(key, "SERVER_IP") == 0)
             {
-                strncpy(SERVER_IP, value, sizeof(SERVER_IP) - 1);
-                SERVER_IP[sizeof(SERVER_IP) - 1] =
-                    '\0';  // Ensure null-termination
+                safeStrncpy(SERVER_IP, value, sizeof(SERVER_IP));
+                logInfo("Loaded SERVER_IP: %s", SERVER_IP);
             }
             else if (strcmp(key, "SERVER_PORT") == 0)
             {
                 SERVER_PORT = atoi(value);
+                logInfo("Loaded SERVER_PORT: %d", SERVER_PORT);
             }
-            // Add more environment variables as needed
+            else if (strcmp(key, "SSL_CERT_FILE") == 0)
+            {
+                safeStrncpy(SSL_CERT_FILE, value, sizeof(SSL_CERT_FILE));
+                logInfo("Loaded SSL_CERT_FILE: %s", SSL_CERT_FILE);
+            }
+            else if (strcmp(key, "SSL_KEY_FILE") == 0)
+            {
+                safeStrncpy(SSL_KEY_FILE, value, sizeof(SSL_KEY_FILE));
+                logInfo("Loaded SSL_KEY_FILE: %s", SSL_KEY_FILE);
+            }
+            else
+            {
+                logWarning("Unknown environment variable: %s", key);
+            }
         }
         else
         {
-            logError("Failed to parse line: %s", trimmed_line);
+            logError("Failed to parse environment line: %s", line);
         }
     }
 
     fclose(file);
-    return 0;
+    logInfo("Environment variables loaded successfully");
 }

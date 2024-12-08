@@ -97,7 +97,7 @@ This file outlines tasks, features, and enhancements for the **WebApp** project.
 - [ ] Support multi-language functionality (i18n)
 - [ ] Add export functionality (CSV, PDF) for data reports
 - [ ] Implement dark mode support
-- [ ] Integrate with third-party services (Google Analytics, etc.)
+- [ ] Integrate with third-party services (gnu Analytics, etc.)
 - [ ] Add more advanced data visualisation types (charts, graphs)
 
 ---

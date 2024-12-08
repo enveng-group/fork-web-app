@@ -1,18 +1,17 @@
-Checks: >
-  -*,
-  c23-*,
-  posix-*,
-  cert-env33-c,
-  bugprone-*,
-  readability-*,
-  portability-*,
-  misc-*,
-  google-*,
-  performance-*,
-  concurrency-*
-
+---
+Checks:          "clang-diagnostic-*,clang-analyzer-*, bugprone-*, misc-*, portability-*,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-warnings-as-errors"
 WarningsAsErrors: '*'
+HeaderFileExtensions:
+    - h
+ImplementationFileExtensions:
+    - c
 HeaderFilterRegex: '.*'
-FormatStyle: google
-UseColor: true
-User: true
+ExcludeHeaderFilterRegex: ''
+FormatStyle:     file
+User:            ubuntu
+CheckOptions:
+    bugprone-argument-comment.CommentIntegerLiterals: '0'
+    bugprone-argument-comment.CommentNullPtrs: '0'
+    bugprone-argument-comment.CommentStringLiterals: '0'
+    bugprone-assert-side-effect.AssertMacros: assert,NSAssert,NSCAssert
+    bugprone-assert-side-effect.CheckFunctionCalls: 'false'

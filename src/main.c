@@ -1,92 +1,110 @@
 /**
+ * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+#include "../include/config_loader.h"
+#include "../include/constants.h"
+#include "../include/env_loader.h"
+#include "../include/error_handler.h"
+#include "../include/garbage_collector.h"
+#include "../include/logger.h"
+#include "../include/error_codes.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "config_loader.h"
-#include "constants.h"
-#include "env_loader.h"
-#include "error_handler.h"
-#include "garbage_collector.h"
-#include "logger.h"
-#include "utils.h"
-#include "validator.h"
 
-// Function prototypes
-void initialize(void);
-void hello(void);
+#define ENV_FILE ".env"
+#define CONFIG_FILE "etc/config.ini"
+
+/* Function prototypes */
+int initialize(void);
 void cleanup(void);
-void upgradeConfig(double old_version);
+void printLoadedConfig(void);
+void printLoadedEnv(void);
 
-int main(void)
+int
+main (void)
 {
-    // Initialize the application
-    initialize();
+    int result;
 
-    // Application logic
-    printf("Hello, world!\n");
-
-    // Use SERVER_IP and SERVER_PORT
-    printf("Server IP: %s\n", SERVER_IP);
-    printf("Server Port: %d\n", SERVER_PORT);
-
-    // Cleanup the application
-    cleanup();
-
-    return 0;
-}
-
-void hello(void)
-{
-    printf("Hello, world!\n");
-}
-
-/**
- * Initialize the application
- */
-void initialize(void)
-{
-    // Initialize garbage collector
-    initGarbageCollector();
-
-    // Initialize logger
-    initLogger();
-
-    // Load constants from .env and config.ini files
-    loadEnvConfig(ENV_FILE);
-    loadConstants(CONFIG_FILE);
-
-    // Upgrade configuration if needed
-    if (config.version < CURRENT_CONFIG_VERSION)
+    /* Initialize the application */
+    result = initialize();
+    if (result != SUCCESS)
     {
-        upgradeConfig(config.version);
+        handleError("Initialization failed");
+        return EXIT_FAILURE;
     }
 
-    // Log application start
-    logInfo("Application started: %s v%.1f", config.app_name, config.version);
+    /* Print loaded environment variables and configuration */
+    printLoadedEnv();
+    printLoadedConfig();
+
+    /* Log application start */
+    logInfo ("Application started: %s v%.1f", config.app_name, config.version);
+
+    /* Application logic here */
+
+    /* Cleanup the application */
+    cleanup ();
+
+    return EXIT_SUCCESS;
+}
+
+int
+initialize (void)
+{
+    int result;
+
+    /* Load environment variables */
+    loadEnvironmentVariables();
+
+    /* Load configuration */
+    result = loadConfig();
+    if (result != SUCCESS)
+    {
+        handleError("Failed to load configuration");
+        return result;
+    }
+
+    /* Initialize garbage collector */
+    initGarbageCollector ();
+
+    return SUCCESS;
 }
 
 /**
  * Cleanup the application
  */
-void cleanup(void)
+void
+cleanup (void)
 {
-    // Cleanup garbage collector
-    cleanupGarbageCollector();
+    /* Cleanup garbage collector */
+    cleanupGarbageCollector ();
 }
 
 /**
- * Upgrade configuration to the current version.
- * This function applies necessary transformations to upgrade the configuration
- * to the current version.
- * @param old_version The old version of the configuration.
+ * Print loaded configuration
  */
-void upgradeConfig(double old_version)
+void
+printLoadedConfig (void)
 {
-    if (old_version < 2.0)
-    {
-        // Add upgrade logic here
-    }
-    // Add more transformations for future versions as needed
+    logInfo ("Loaded Configuration:");
+    logInfo ("app_name: %s", config.app_name);
+    logInfo ("version: %.1f", config.version);
+    logInfo ("document_root: %s", config.document_root);
+    logInfo ("rec_file_path: %s", config.rec_file_path);
+    logInfo ("auth_file: %s", config.auth_file);
+}
+
+/**
+ * Print loaded environment variables
+ */
+void
+printLoadedEnv (void)
+{
+    logInfo ("Loaded Environment Variables:");
+    logInfo ("SERVER_IP: %s", SERVER_IP);
+    logInfo ("SERVER_PORT: %d", SERVER_PORT);
+    logInfo ("SSL_CERT_FILE: %s", SSL_CERT_FILE);
+    logInfo ("SSL_KEY_FILE: %s", SSL_KEY_FILE);
 }

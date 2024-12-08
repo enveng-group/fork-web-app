@@ -4,6 +4,12 @@ enable=all
 # Set the severity level for warnings
 severity=style
 
+# Enable all warnings
+enable=all
+
+# Set the severity level for warnings
+severity=style
+
 # Set the shell dialect to POSIX sh
 shell=sh
 

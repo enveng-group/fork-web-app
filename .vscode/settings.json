@@ -125,34 +125,10 @@
   "ipynb.experimental.serialization": true,
   "git.autoStash": true,
   "markdown.preview.typographer": true,
-  "C_Cpp.clang_format_fallbackStyle": "Google",
+  "C_Cpp.clang_format_fallbackStyle": "GNU",
   "C_Cpp.clang_format_style": "file",
   "C_Cpp.clang_format_sortIncludes": true,
-  "C_Cpp.clang_format_path": "clang-format",
-  "makefile.extensionOutputFolder": "./build",
-  "makefile.configurations": [
-    {
-      "name": "Debug",
-      "makeArgs": ["DEBUG=1"]
-    },
-    {
-      "name": "Release",
-      "makeArgs": ["RELEASE=1"]
-    }
-  ],
-  "makefile.launchConfigurations": [
-    {
-      "name": "Debug",
-      "binaryPath": "./build/debug/app"
-    },
-    {
-      "name": "Release",
-      "binaryPath": "./build/release/app"
-    }
-  ],
-  "makefile.makePath": "gmake",
-  "makefile.makefilePath": "./Makefile",
-  "makefile.buildLog": "./logs/build.log",
+  "C_Cpp.clang_format_path": "/usr/bin/clang-format",
   "shellcheck.enable": true,
   "shellcheck.executablePath": "shellcheck",
   "shellcheck.run": "onSave",
@@ -172,9 +148,9 @@
     "MD029": { "style": "ordered" } // Enforce ordered list style
   },
   "prettier.configPath": ".prettierrc",
-  "C_Cpp.default.compilerPath": "/opt/homebrew/Cellar/gcc/14.2.0_1/bin/gcc-14",
+  "C_Cpp.default.compilerPath": "/usr/bin/musl-gcc",
   "editor.semanticHighlighting.enabled": true,
-  "C_Cpp.default.cStandard": "c11",
+  "C_Cpp.default.cStandard": "c23",
   "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
   "C_Cpp.codeAnalysis.clangTidy.enabled": true,
   "C_Cpp.default.browse.databaseFilename": "compile_commands.json"

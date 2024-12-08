@@ -3,31 +3,59 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-#include "logger.h"
+#include "../include/logger.h"
 #include <stdarg.h>
 #include <stdio.h>
-#include <unistd.h>
+#include <stdlib.h>
 
-// logger.c
-void initLogger(void)
+/* logger.c */
+void
+initLogger(void)
 {
-    // Initialize logging system
+    /* Initialize logging system */
 }
 
-void logInfo(const char *message, ...)
+/* Log a message */
+void
+logMessage(const char *message)
 {
-    va_list args;
-    va_start(args, message);
-    vdprintf(STDOUT_FILENO, message, args);
-    dprintf(STDOUT_FILENO, "\n");
-    va_end(args);
+    if (message == NULL)
+    {
+        fprintf(stderr, "Error: NULL message passed to logMessage\n");
+        return;
+    }
+    printf("%s\n", message);
 }
 
-void logError(const char *message, ...)
+/* Log an error message */
+void
+logError(const char *format, ...)
 {
     va_list args;
-    va_start(args, message);
-    vdprintf(STDERR_FILENO, message, args);
-    dprintf(STDERR_FILENO, "\n");
+    va_start(args, format);
+    vfprintf(stderr, format, args);
     va_end(args);
+    fprintf(stderr, "\n");
+}
+
+/* Log an info message */
+void
+logInfo(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+    printf("\n");
+}
+
+/* Log a warning message */
+void
+logWarning(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+    fprintf(stderr, "\n");
 }

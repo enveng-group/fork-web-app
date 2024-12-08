@@ -391,7 +391,7 @@ The **Makefile** is updated to use musl for static linking, with Clang configure
 # POSIX-compliant Makefile for building and testing with musl
 
 CC = clang
-CFLAGS = -std=c17 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -O0 -pedantic
+CFLAGS = -std=c17 -D_POSIX_C_SOURCE -Wall -Wextra -O0 -pedantic
 LDFLAGS = -static -L/usr/local/musl/lib -I/usr/local/musl/include -lm
 SRC_DIR = src
 BUILD_DIR = build
@@ -611,7 +611,7 @@ Run these commands sequentially to perform a complete build and toolchain run in
 
 ---
 
-Here's a detailed sequence of **commands for each tool at every stage of C compilation and development**, ensuring thorough use of your toolchain. Each stage is designed for strict POSIX and ISO C23 compliance, with no redundancy or overlap.
+Here's a detailed sequence of **commands for each tool at every stage of C compilation and development**, ensuring thorough use of your toolchain. Each stage is designed for strict POSIX and ISO c90 compliance, with no redundancy or overlap.
 
 ---
 
@@ -620,6 +620,7 @@ Run these commands before writing or committing code to ensure style compliance.
 
 ```bash
 # Format C code
+clang-format -style=gnu -dump-config > .clang-format
 clang-format -i <source_file>.c  # Inline modification
 clang-format -i src/*.c include/*.h            # Format all C files in the directory
 
@@ -635,15 +636,53 @@ Run static analysis tools early in development to catch potential errors.
 
 ```bash
 # clang-tidy: Perform advanced checks
-clang-tidy src/*.c include/*.h --config-file=.clang-tidy -- -Iinclude -fix-errors
-OR
-clang-tidy src/*.c include/*.h --config-file=.clang-tidy -- -Iinclude -fix-errors > clang-tidy.log 2>&1
+clang-tidy --verify-config
+mkdir build
+cd build
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+cd ..
+clang-tidy -fix-errors -header-filter=.* include/config_loader.h -- build
+clang-tidy -fix-errors -header-filter=.* include/constants.h -- build
+clang-tidy -fix-errors -header-filter=.* include/env_loader.h -- build
+clang-tidy -fix-errors -header-filter=.* include/error_handler.h -- build
+clang-tidy -fix-errors -header-filter=.* include/garbage_collector.h -- build
+clang-tidy -fix-errors -header-filter=.* include/logger.h -- build
+clang-tidy -fix-errors -header-filter=.* include/utils.h -- build
+clang-tidy -fix-errors -header-filter=.* include/validator.h -- build
+
+clang-tidy -fix-errors -header-filter=.* src/config_loader.c -- build
+clang-tidy -fix-errors -header-filter=.* src/constants.c -- build
+clang-tidy -fix-errors -header-filter=.* src/env_loader.c -- build
+clang-tidy -fix-errors -header-filter=.* src/error_handler.c -- build
+clang-tidy -fix-errors -header-filter=.* src/garbage_collector.c -- build
+clang-tidy -fix-errors -header-filter=.* src/logger.c -- build
+clang-tidy -fix-errors -header-filter=.* src/main.c -- build
+clang-tidy -fix-errors -header-filter=.* src/utils.c -- build
+clang-tidy -fix-errors -header-filter=.* src/validator.c -- build
+.....
+
 
 # cppcheck: Find bugs in C code
-cppcheck --enable=all --std=c23 <source_file>.c
+cppcheck --enable=all --std=c90 -I /usr/include/x86_64-linux-musl -I include --suppress=unusedFunction --force src/config_loader.c
+cppcheck --enable=all --std=c90 -I /usr/include/x86_64-linux-musl -I include --suppress=unusedFunction --force src/constants.c
+cppcheck --enable=all --std=c90 -I /usr/include/x86_64-linux-musl -I include --suppress=unusedFunction --force src/env_loader.c
+cppcheck --enable=all --std=c90 -I /usr/include/x86_64-linux-musl -I include --suppress=unusedFunction --force src/error_handler.c
+cppcheck --enable=all --std=c90 -I /usr/include/x86_64-linux-musl -I include --suppress=unusedFunction --force src/garbage_collector.c
+cppcheck --enable=all --std=c90 -I /usr/include/x86_64-linux-musl -I include --suppress=unusedFunction --force src/logger.c
+cppcheck --enable=all --std=c90 -I /usr/include/x86_64-linux-musl -I include --suppress=unusedFunction --force src/main.c
+cppcheck --enable=all --std=c90 -I /usr/include/x86_64-linux-musl -I include --suppress=unusedFunction --force src/utils.c
+cppcheck --enable=all --std=c90 -I /usr/include/x86_64-linux-musl -I include --suppress=unusedFunction --force src/validator.c
 
-# splint: Strict C linting
-splint <source_file>.c
+# splint: Strict C linting TODO: Need to figure out how to refactor without breaking code and then incorporate in cmake
+splint src/config_loader.c
+splint src/constants.c
+splint src/env_loader.c
+splint src/error_handler.c
+splint src/garbage_collector.c
+splint src/logger.c
+splint src/main.c
+splint src/utils.c
+splint src/validator.c
 splint *.c  # Analyze multiple files
 
 # shellcheck: Analyze shell scripts
@@ -652,7 +691,7 @@ shellcheck <script>.sh
 
 ---
 
-## **3. Documentation**
+## **3. Documentation** TODO go through Doxygen in more detail and implement and add to Cmake
 Use these tools to generate project documentation from your source code.
 
 ```bash
@@ -673,7 +712,8 @@ Set up and configure your build system.
 
 ```bash
 # Generate build files using CMake with Ninja
-cmake -G Ninja -DCMAKE_C_COMPILER=musl-gcc .
+cmake -G Ninja . -B build
+cmake -G Ninja -DCMAKE_C_COMPILER=musl-gcc ..
 
 # Build project
 ninja
@@ -777,8 +817,8 @@ Here’s a sequential workflow from code writing to packaging:
 
 2. **Static Analysis**
    ```bash
-   clang-tidy <source_file>.c -- -std=c23
-   cppcheck --enable=all --std=c23 <source_file>.c
+   clang-tidy <source_file>.c -- -std=c90
+   cppcheck --enable=all --std=c90 <source_file>.c
    splint <source_file>.c
    ```
 
@@ -818,7 +858,7 @@ Let me know if you'd like an automated shell script for this workflow!
 
 This structure supports both automation and manual testing, allowing you to pinpoint and address issues efficiently. Let me know if you need further clarification!
 
-./configure --prefix=/usr/local/bin/musl CC=clang CXX=clang++ LD=lld --enable-static --disable-shared --disable-werror --enable-fts --enable-fpic --disable-nls --enable-debug --with-arch=native --with-tune=native --disable-multilib --enable-posix --enable-isoc23 --with-ld=lld
+./configure --prefix=/usr/local/bin/musl CC=clang CXX=clang++ LD=lld --enable-static --disable-shared --disable-werror --enable-fts --enable-fpic --disable-nls --enable-debug --with-arch=native --with-tune=native --disable-multilib --enable-posix --enable-isoc90 --with-ld=lld
 
 
 To automate the build process and test individual steps, follow these instructions:

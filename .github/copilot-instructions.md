@@ -5,24 +5,26 @@ These instructions ensure Copilot's suggestions align with our project's technic
 ---
 
 ## **General Guidelines**
-- Adhere to **ISO/IEC 9899:2024 (C Standard)**, **POSIX.1-2008**, and **X/Open 8 (Issue 8)** compliance in all code suggestions.
+- Adhere to **ISO/IEC 9899:1990 (C90 Standard)**, ** POSIX.1 (ISO/IEC 9945-1:1996 - IEEE Standard 1003.1)**, and **X/Open** compliance in all code suggestions.
 - Ensure code is **portable**, **cross-platform**, and **cross-architecture**:
-  - Prioritize compatibility with `musl libc`, and `musl-gcc`.
-  - Avoid features requiring `glibc` or non-portable platform-specific APIs.
+    - Prioritize compatibility with `musl libc`, and `musl-gcc`.
+    - Avoid features requiring `glibc` or non-portable platform-specific APIs.
 - Write code optimized for lightweight environments (e.g. `musl`).
 - Data oriented design is preferred over object oriented design.
+- Format C Code following GNU Coding Standards.
+- Do not use C++ comments (`//`) in C code.
 
 ---
 
 ## **Code Structure**
 ### **File Organization**
 - Follow a structured directory layout:
-  - **src/**: Source files (`.c`)
-  - **include/**: Header files (`.h`)
-  - **obj/**: Object files (`.o`)
-  - **bin/**: Binary artifacts
-  - **etc/**: Config test files
-  - **docs/**: Documentation files
+    - **src/**: Source files (`.c`)
+    - **include/**: Header files (`.h`)
+    - **obj/**: Object files (`.o`)
+    - **bin/**: Binary artifacts
+    - **etc/**: Config test files
+    - **docs/**: Documentation files
 - Use `snake_case` for file names, e.g., `data_manager.c`, `user_auth.h`.
 
 ### **Naming Conventions**
@@ -35,34 +37,34 @@ These instructions ensure Copilot's suggestions align with our project's technic
 ## **Coding Practices**
 ### **Data Handling**
 - Keep data definitions separate from logic:
-  - Define data structures in header files (`.h`).
-  - Implement logic in source files (`.c`).
+    - Define data structures in header files (`.h`).
+    - Implement logic in source files (`.c`).
 - Use immutable data structures whenever applicable for safety and clarity.
 
 ### **Error Handling**
 - Always check return values of system calls and library functions, including:
-  - Memory allocation (`malloc`, `calloc`).
-  - File I/O (`fopen`, `fread`, `fwrite`).
-  - Threading functions (`pthread_mutex_lock`, `pthread_create`).
+    - Memory allocation (`malloc`, `calloc`).
+    - File I/O (`fopen`, `fread`, `fwrite`).
+    - Threading functions (`pthread_mutex_lock`, `pthread_create`).
 - Use consistent error codes (`errno`) and logging to diagnose failures.
 
 ### **Memory Management**
 - Prevent memory leaks by always pairing:
-  - **Allocation** (`malloc`, `calloc`) with **Deallocation** (`free`).
+    - **Allocation** (`malloc`, `calloc`) with **Deallocation** (`free`).
 - Avoid using dynamic memory where possible in performance-critical paths.
 - Use stack allocation for predictable performance and reduced overhead.
 
 ### **Performance**
 - Optimize for **CPU cache efficiency**:
-  - Use arrays instead of linked lists for sequential data access.
-  - Minimize pointer indirection and fragmentation.
+    - Use arrays instead of linked lists for sequential data access.
+    - Minimize pointer indirection and fragmentation.
 - Enable compiler optimizations with appropriate flags (e.g., `-ffunction-sections`, `-fdata-sections`).
 - Prefer static linking (`-static`) to ensure binaries are self-contained and lightweight.
 
 ### **Thread Safety**
 - Use POSIX threading primitives:
-  - Mutexes (`pthread_mutex_t`) for synchronized access to shared resources.
-  - Condition variables (`pthread_cond_t`) for thread signaling.
+    - Mutexes (`pthread_mutex_t`) for synchronized access to shared resources.
+    - Condition variables (`pthread_cond_t`) for thread signaling.
 - Avoid global variables or use them sparingly with proper synchronization.
 - Ensure all functions are reentrant if they may be called in multi-threaded contexts.
 
@@ -70,22 +72,22 @@ These instructions ensure Copilot's suggestions align with our project's technic
 
 ## **Environment-Specific Considerations**
 - **Compiler**: Target **musl-gcc (gcc)** with the following capabilities:
-  - Use `-std=c23` for ISO C compliance.
-  - Define `_POSIX_C_SOURCE=200809L` and `_XOPEN_SOURCE=800` for POSIX and X/Open features supported by musl.
-  - Avoid advanced GNU and GCC-specific extensions unsupported by clang.
+    - Use `-std=c90` for ISO C compliance.
+    - Define `_POSIX_C_SOURCE` and `_XOPEN_SOURCE` for POSIX and X/Open features supported by musl.
+    - Avoid advanced GNU and GCC-specific extensions unsupported by clang.
 - **Libraries**:
-  - Base code on **musl libc** for portability and minimalism.
-  - Ensure compatibility with musl's threading and math libraries.
+    - Base code on **musl libc** for portability and minimalism.
+    - Ensure compatibility with musl's threading and math libraries.
 - **Containerized Development**:
-  - Target **AMD64** architecture with static linking for compatibility across container instances.
-  - Optimize for minimal dependencies, leveraging musl’s built-in features where possible.
+    - Target **AMD64** architecture with static linking for compatibility across container instances.
+    - Optimize for minimal dependencies, leveraging musl’s built-in features where possible.
 
 ---
 
 ## **Testing and Validation**
 - Write unit tests for all functions using the following naming conventions:
-  - `test_<module_name>.c` for test files.
-  - `test_<function_name>` for individual test cases.
+    - `test_<module_name>.c` for test files.
+    - `test_<function_name>` for individual test cases.
 - Use memory analysis tools (e.g., `valgrind` or equivalent musl-compatible tools) to validate memory safety.
 - Run all tests within the containerized environment to ensure consistency.
 
@@ -104,8 +106,8 @@ These instructions ensure Copilot's suggestions align with our project's technic
 - Limit lines to 80 characters for readability.
 
 ## Documentation
-- Document all files and functions using block comments.
-- Use Markdown for external documentation.
+- Document all files and functions using C90 comments style.
+- Use Doxygen for external documentation.
 
 ## Tools and Practices
 - Use Git for version control, and ensure commit messages follow the format: `[Type] Short description`.

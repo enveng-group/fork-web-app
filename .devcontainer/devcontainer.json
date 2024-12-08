@@ -5,7 +5,7 @@
     },
     "runArgs": [
         "--name", "web-app-container",
-        "--network", "host",  // Use host network
+        "--network", "host"
     ],
     "mounts": [
         "source=podman_volume,target=/home/devuser,type=volume"

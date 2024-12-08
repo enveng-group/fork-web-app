@@ -1,4 +1,5 @@
 /**
+ * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
@@ -7,6 +8,6 @@
 
 #include "config_loader.h"
 
-int validateConfig(config_t *config, const char *value);
+int validateConfig (Config *config, const char *value);
 
-#endif  // VALIDATOR_H
+#endif /* VALIDATOR_H */
