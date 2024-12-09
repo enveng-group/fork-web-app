@@ -7,10 +7,11 @@
  */
 
 #include "../include/logger.h"
+#include "../include/compat.h"
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 
 static FILE *logFile = NULL;
 static char lastMessage[256];

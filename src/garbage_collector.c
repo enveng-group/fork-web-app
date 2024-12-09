@@ -2,82 +2,130 @@
  * \file garbage_collector.c
  * \brief Implements garbage collection functions.
  * \author Adrian Gallo
- * \copyright 2024 Enveng Group
  * \license AGPL-3.0-or-later
  */
 
 #include "../include/garbage_collector.h"
 #include "../include/logger.h"
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 /**
- * \struct GCNode
- * \brief Node structure for garbage collector linked list.
- */
-typedef struct GCNode
-{
-    void *ptr;           /**< Pointer to allocated memory */
-    struct GCNode *next; /**< Pointer to next node */
-} GCNode;
-
-static GCNode *gcHead = NULL;
-
-/**
  * \brief Initializes the garbage collector.
+ *
+ * \param gc The garbage collector to initialize.
  */
-void
-initGarbageCollector (void)
+void initGarbageCollector(GarbageCollector *gc)
 {
-    gcHead = NULL;
-    printf ("Garbage collector initialized.\n");
+    if (gc == NULL)
+    {
+        return;
+    }
+
+    gc->head = NULL;
+    pthread_mutex_init(&gc->lock, NULL);
 }
 
 /**
- * \brief Cleans up the garbage collector, freeing all allocated memory.
+ * \brief Adds a data pointer to the garbage collector.
+ *
+ * \param gc The garbage collector.
+ * \param data The data pointer to add.
  */
-void
-cleanupGarbageCollector (void)
+void addGarbage(GarbageCollector *gc, void *data)
 {
-    GCNode *current = gcHead;
+    GCNode *node;
+
+    if (gc == NULL || data == NULL)
+    {
+        return;
+    }
+
+    node = (GCNode *)malloc(sizeof(GCNode));
+    if (node == NULL)
+    {
+        logError("Failed to allocate memory for GCNode");
+        return;
+    }
+
+    node->data = data;
+    node->next = NULL;
+
+    pthread_mutex_lock(&gc->lock);
+
+    node->next = gc->head;
+    gc->head = node;
+
+    pthread_mutex_unlock(&gc->lock);
+}
+
+/**
+ * \brief Cleans up the garbage collector and frees all allocated memory.
+ *
+ * \param gc The garbage collector to clean up.
+ */
+void cleanupGarbageCollector(GarbageCollector *gc)
+{
+    GCNode *current;
+    GCNode *next;
+
+    if (gc == NULL)
+    {
+        return;
+    }
+
+    pthread_mutex_lock(&gc->lock);
+
+    current = gc->head;
     while (current != NULL)
-        {
-            GCNode *next = current->next;
-            free (current->ptr);
-            free (current);
-            current = next;
-        }
-    gcHead = NULL;
-    printf ("Garbage collector cleaned up.\n");
+    {
+        next = current->next;
+        free(current->data);
+        free(current);
+        current = next;
+    }
+
+    gc->head = NULL;
+
+    pthread_mutex_unlock(&gc->lock);
+    pthread_mutex_destroy(&gc->lock);
 }
 
 /**
  * \brief Allocates memory and tracks it for garbage collection.
  *
+ * \param gc The garbage collector.
  * \param size Size of the memory to allocate.
  * \return Pointer to the allocated memory, or NULL on failure.
  */
-void *
-gcMalloc (size_t size)
+void *gcMalloc(GarbageCollector *gc, size_t size)
 {
     GCNode *node;
-    void *ptr = malloc (size);
+    void *ptr;
 
+    ptr = malloc(size);
     if (ptr == NULL)
-        {
-            logError ("Memory allocation failed for size %zu", size);
-            return NULL;
-        }
+    {
+        logError("Memory allocation failed for size %zu", size);
+        return NULL;
+    }
 
-    node = (GCNode *)malloc (sizeof (GCNode));
+    node = (GCNode *)malloc(sizeof(GCNode));
     if (node == NULL)
-        {
-            free (ptr);
-            logError ("Memory allocation failed for GCNode");
-            return NULL;
-        }
+    {
+        free(ptr);
+        logError("Memory allocation failed for GCNode");
+        return NULL;
+    }
 
-    /* Additional logic for tracking the allocated memory */
+    node->data = ptr;
+    node->next = NULL;
+
+    pthread_mutex_lock(&gc->lock);
+    node->next = gc->head;
+    gc->head = node;
+    pthread_mutex_unlock(&gc->lock);
 
     return ptr;
 }
@@ -85,22 +133,24 @@ gcMalloc (size_t size)
 /**
  * \brief Frees memory tracked by the garbage collector.
  *
+ * \param gc The garbage collector.
  * \param ptr Pointer to memory to free.
  */
-void
-gcFree (void *ptr)
+void gcFree(GarbageCollector *gc, void *ptr)
 {
-    GCNode **current = &gcHead;
+    GCNode **current;
+
+    current = &gc->head;
     while (*current != NULL)
+    {
+        if ((*current)->data == ptr)
         {
-            if ((*current)->ptr == ptr)
-                {
-                    GCNode *node = *current;
-                    *current = node->next;
-                    free (node->ptr);
-                    free (node);
-                    return;
-                }
-            current = &(*current)->next;
+            GCNode *node = *current;
+            *current = node->next;
+            free(node->data);
+            free(node);
+            return;
         }
+        current = &(*current)->next;
+    }
 }

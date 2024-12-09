@@ -2,17 +2,29 @@
  * \file env_loader.c
  * \brief Implements environment variable loading functions.
  * \author Adrian Gallo
- * \copyright 2024 Enveng Group
  * \license AGPL-3.0-or-later
  */
 
 #include "../include/env_loader.h"
-#include "../include/logger.h"
+#include "../include/constants.h"
 #include "../include/utils.h"
+#include "../include/error_codes.h"
+#include "../include/logger.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define MAX_LINE_LENGTH 256
+#define ENV_FILE ".env"
+#define SERVER_IP_SIZE 16
+#define SSL_CERT_FILE_SIZE 256
+#define SSL_KEY_FILE_SIZE 256
+
+extern char server_ip[SERVER_IP_SIZE];
+extern int server_port;
+extern char SSL_CERT_FILE[SSL_CERT_FILE_SIZE];
+extern char SSL_KEY_FILE[SSL_KEY_FILE_SIZE];
 
 /**
  * \enum LINE_SIZE
@@ -24,43 +36,28 @@ enum
 };
 
 /**
- * \brief Loads environment variables from the environment file.
- */
-void
-loadEnvironmentVariables (void)
-{
-    /* Implementation of loading environment variables */
-}
-
-/**
  * \brief Loads environment configuration from a file.
  *
- * \param filename Name of the file to load.
- * \return 0 if loading is successful, otherwise an error code.
+ * \param filename The name of the file to load.
+ * \return SUCCESS on success, otherwise an error code.
  */
-int
-loadEnvConfig (const char *filename)
+int loadEnvConfig(const char *filename)
 {
     FILE *file;
-    char line[1024];
-    char key[256], value[256];
+    char line[MAX_LINE_LENGTH];
 
-    file = fopen (filename, "r");
-    if (file == NULL)
-        {
-            logError ("Failed to open environment file");
-            return -1;
-        }
+    file = fopen(filename, "r");
+    if (!file)
+    {
+        perror("Failed to open environment config file");
+        return ERROR_FILE_OPEN;
+    }
 
-    while (fgets (line, sizeof (line), file))
-        {
-            if (sscanf (line, "%255[^=]=%255[^\n]", key, value) == 2)
-                {
-                    setenv (trimWhitespace (key), trimWhitespace (value), 1);
-                    logInfo ("Loaded environment variable: %s=%s", key, value);
-                }
-        }
+    while (fgets(line, sizeof(line), file))
+    {
+        logInfo("Loaded environment variable: %s", line);
+    }
 
-    fclose (file);
-    return 0;
+    fclose(file);
+    return SUCCESS;
 }

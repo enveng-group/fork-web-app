@@ -9,8 +9,35 @@
 #ifndef RECORDS_H
 #define RECORDS_H
 
-#include "project.h"
+#include <stddef.h> /* For size_t */
+#include "garbage_collector.h"
 
-/* Function prototypes specific to records can be added here */
+/**
+ * \struct Record
+ * \brief Structure to hold individual record information.
+ */
+typedef struct {
+    int  id;
+    char name[256];
+} Record;
+
+/**
+ * \struct RecordProject
+ * \brief Structure to hold project information for records.
+ */
+typedef struct {
+    Record *entries;
+    size_t  entry_count;
+} RecordProject;
+
+/* Function prototypes */
+void initRecordProject(RecordProject *project);
+void freeRecordProject(RecordProject *project);
+int addEntry(RecordProject *project, const Record *entry, GarbageCollector *gc);
+int removeEntry(RecordProject *project, size_t index);
+Record *findEntryById(const RecordProject *project, int id);
+int updateEntryById(RecordProject *project, int id, const Record *new_entry);
+void printRecordProject(const RecordProject *project);
+int loadRecordProjectFromFile(const char *filename, RecordProject *project);
 
 #endif /* RECORDS_H */

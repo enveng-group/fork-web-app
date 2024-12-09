@@ -648,22 +648,57 @@ mkdir build
 cd build
 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
 cd ..
+clang-tidy -fix-errors -header-filter=.* include/atomic_ops.h -- build
+clang-tidy -fix-errors -header-filter=.* include/compat.h -- build
+clang-tidy -fix-errors -header-filter=.* include/compat_layer.h -- build
+clang-tidy -fix-errors -header-filter=.* include/compat_types.h -- build
 clang-tidy -fix-errors -header-filter=.* include/config_loader.h -- build
 clang-tidy -fix-errors -header-filter=.* include/constants.h -- build
+clang-tidy -fix-errors -header-filter=.* include/csv_utils.h -- build
+clang-tidy -fix-errors -header-filter=.* include/data_structures.h -- build
 clang-tidy -fix-errors -header-filter=.* include/env_loader.h -- build
+clang-tidy -fix-errors -header-filter=.* include/error_codes.h -- build
 clang-tidy -fix-errors -header-filter=.* include/error_handler.h -- build
+clang-tidy -fix-errors -header-filter=.* include/external_includes.h -- build
 clang-tidy -fix-errors -header-filter=.* include/garbage_collector.h -- build
+clang-tidy -fix-errors -header-filter=.* include/http_parser.h -- build
+clang-tidy -fix-errors -header-filter=.* include/http_response.h -- build
 clang-tidy -fix-errors -header-filter=.* include/logger.h -- build
+clang-tidy -fix-errors -header-filter=.* include/project.h -- build
+clang-tidy -fix-errors -header-filter=.* include/records.h -- build
+clang-tidy -fix-errors -header-filter=.* include/rec_utils.h -- build
+clang-tidy -fix-errors -header-filter=.* include/server.h -- build
+clang-tidy -fix-errors -header-filter=.* include/socket_module.h -- build
+clang-tidy -fix-errors -header-filter=.* include/ssl_module.h -- build
+clang-tidy -fix-errors -header-filter=.* include/static_file_handler.h -- build
+clang-tidy -fix-errors -header-filter=.* include/test_framework.h -- build
 clang-tidy -fix-errors -header-filter=.* include/utils.h -- build
 clang-tidy -fix-errors -header-filter=.* include/validator.h -- build
 
+clang-tidy -fix-errors -header-filter=.* src/add_custom_uint64.s -- build
+clang-tidy -fix-errors -header-filter=.* src/atomic_ops.c -- build
+clang-tidy -fix-errors -header-filter=.* src/compat.c -- build
+clang-tidy -fix-errors -header-filter=.* src/compat_layer.c -- build
+clang-tidy -fix-errors -header-filter=.* src/compatStrtol64_asm.s -- build
 clang-tidy -fix-errors -header-filter=.* src/config_loader.c -- build
 clang-tidy -fix-errors -header-filter=.* src/constants.c -- build
+clang-tidy -fix-errors -header-filter=.* src/csv_utils.c -- build
+clang-tidy -fix-errors -header-filter=.* src/data_structures.c -- build
+clang-tidy -fix-errors -header-filter=.* src/div_custom_uint64.s -- build
 clang-tidy -fix-errors -header-filter=.* src/env_loader.c -- build
 clang-tidy -fix-errors -header-filter=.* src/error_handler.c -- build
 clang-tidy -fix-errors -header-filter=.* src/garbage_collector.c -- build
+clang-tidy -fix-errors -header-filter=.* src/http_parser.c -- build
+clang-tidy -fix-errors -header-filter=.* src/http_response.c -- build
 clang-tidy -fix-errors -header-filter=.* src/logger.c -- build
 clang-tidy -fix-errors -header-filter=.* src/main.c -- build
+clang-tidy -fix-errors -header-filter=.* src/records.c -- build
+clang-tidy -fix-errors -header-filter=.* src/rec_utils.c -- build
+clang-tidy -fix-errors -header-filter=.* src/server.c -- build
+clang-tidy -fix-errors -header-filter=.* src/sha256_asm.c -- build
+clang-tidy -fix-errors -header-filter=.* src/socket_module.c -- build
+clang-tidy -fix-errors -header-filter=.* src/ssl_module.c -- build
+clang-tidy -fix-errors -header-filter=.* src/static_file_handler.c -- build
 clang-tidy -fix-errors -header-filter=.* src/utils.c -- build
 clang-tidy -fix-errors -header-filter=.* src/validator.c -- build
 .....
@@ -997,11 +1032,7 @@ The wrapper script does not need to be explicitly executed; it acts as a replace
 1. **During CMake Configuration**:
    Use the wrapper script as the linker:
    ```bash
-   cmake -G Ninja \
-     -DCMAKE_C_COMPILER=musl-gcc \
-     -DCMAKE_LINKER=/usr/local/bin/musl-linker \
-     -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=/usr/bin/musl-ldd" \
-     .
+cmake -G Ninja -DCMAKE_C_COMPILER=musl-clang -B build
    ```
 
 2. **Build Step**:
@@ -1087,4 +1118,16 @@ ninja -C build package
 
 ```sh
 ninja -C build execute_tests
+```
+
+**SSL**
+
+```sh
+sudo apt-get install libssl-dev
+mkdir -p /etc/letsencrypt/live/yourdomain.com
+sudo cp /usr/include/x86_64-linux-musl /usr/local/include/
+sudo cp /usr/include/openssl /usr/local/include/x86_64-linux-musl/
+sudo cp /usr/include/x86_64-linux-gnu/openssl/opensslconf.h /usr/local/include/x86_64-linux-musl/openssl/
+sudo cp /usr/include/x86_64-linux-gnu/openssl/oconfiguration.h /usr/local/include/x86_64-linux-musl/openssl/
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/letsencrypt/live/yourdomain.com/privkey.pem -out /etc/letsencrypt/live/yourdomain.com/cert.pem
 ```

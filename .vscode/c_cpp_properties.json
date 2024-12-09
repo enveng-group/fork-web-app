@@ -2,7 +2,10 @@
     "env": {
         "myIncludePath": [
             "${workspaceFolder}/include",
-            "/usr/include/x86_64-linux-musl"
+            "/usr/local/include",
+            "/usr/local/include/openssl",
+            "/usr/local/include/linux_header"
+
         ],
         "myDefines": [
             "DEBUG",
@@ -16,10 +19,10 @@
     },
     "configurations": [
         {
-            "name": "Linux AMD64 (musl-gcc)",
-            "compilerPath": "/usr/bin/musl-gcc",
+            "name": "Linux AMD64 (musl-clang)",
+            "compilerPath": "/usr/local/bin/musl-clang",
             "compilerArgs": [
-                "-std=c90",
+                "-std=c89",
                 "-D_POSIX_C_SOURCE=199506L",
                 "-D_XOPEN_SOURCE=500",
                 "-ansi",
@@ -27,18 +30,22 @@
                 "-Wall",
                 "-Wextra",
                 "-pedantic",
-                "-I/usr/include/x86_64-linux-musl",
+                "-I/usr/local/include",
+                "-I/usr/local/include/openssl",
+                "-I/usr/local/include/linux_header",
                 "-I${workspaceFolder}/include",
-                "-L/usr/lib/x86_64-linux-musl",
+                "-L/usr/local/lib",
+                "-L/usr/local/lib/ssl",
                 "-static",
                 "-fno-common",
                 "-ffunction-sections",
                 "-fdata-sections",
                 "fstack-protector-strong",
                 "-fPIC",
-                "-static"
+                "-static",
+                "-Wno-long-long"
             ],
-            "intelliSenseMode": "linux-gcc-x64",
+            "intelliSenseMode": "linux-clang-x64",
             "includePath": ["${myIncludePath}"],
             "defines": ["${myDefines}"],
             "cStandard": "c89",

@@ -1,18 +1,11 @@
 /**
  * \file constants.c
- * \brief Defines constants and global variables.
+ * \brief Implements functions to load constants.
  * \author Adrian Gallo
- * \copyright 2024 Enveng Group
  * \license AGPL-3.0-or-later
  */
 
 #include "../include/constants.h"
-#include "../include/config_loader.h"
-#include "../include/env_loader.h"
-#include "../include/error_codes.h" /* Include error_codes.h for SUCCESS */
-#include "../include/logger.h"
-#include "../include/utils.h"
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,39 +15,46 @@
 #define CONFIG_VERSION 1.0
 #endif
 
-/* Server constants */
-char SERVER_IP[SERVER_IP_SIZE];
-int SERVER_PORT;
-char SSL_CERT_FILE[SSL_CERT_FILE_SIZE];
-char SSL_KEY_FILE[SSL_KEY_FILE_SIZE];
+/* Function declarations */
+int loadConstants(const char *filename);
 
-/* Global configuration variable */
-Config config = { "APP_MODE", CONFIG_VERSION, NULL, 0 };
-
-/* Configuration file paths */
-const char *ENV_FILE = ".env"; /* Define ENV_FILE */
-const char *CONFIG_FILE = "etc/config.ini";
-const char *DOCUMENT_ROOT;
-const char *REC_FILE_PATH;
-const char *AUTH_FILE;
-
-/* Global variables */
-const int GLOBAL_VAR = 0;
-const char *APP_MODE;
-double VERSION;
+typedef struct {
+    char key[KEY_SIZE];
+    char value[VALUE_SIZE];
+} Entry;
 
 /**
  * \brief Loads constants from a file.
  *
- * \param filename Name of the file to load.
- * \return SUCCESS on success, otherwise an error code.
+ * \param filename The name of the file to load constants from.
+ * \return 0 on success, -1 on failure.
  */
-int
-loadConstants (const char *filename)
+int loadConstants(const char *filename)
 {
-    /* Implementation of loadConstants function */
-    (void)filename; /* Suppress unused parameter warning */
+    FILE *file;
+    char buffer[256];
 
-    /* If there is no implementation, return SUCCESS */
-    return SUCCESS;
+    file = fopen(filename, "r");
+    if (file == NULL)
+    {
+        perror("Failed to open file");
+        return -1;
+    }
+
+    while (fgets(buffer, sizeof(buffer), file) != NULL)
+    {
+        char key[KEY_SIZE];
+        char value[VALUE_SIZE];
+        Entry entry;
+
+        if (sscanf(buffer, "%s = %s", key, value) == 2)
+        {
+            strncpy(entry.key, key, sizeof(entry.key) - 1);
+            entry.key[sizeof(entry.key) - 1] = '\0';
+            strncpy(entry.value, value, sizeof(entry.value) - 1);
+            entry.value[sizeof(entry.value) - 1] = '\0';
+        }
+    }
+    fclose(file);
+    return 0;
 }

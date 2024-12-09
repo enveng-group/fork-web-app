@@ -2,14 +2,14 @@
  * \file data_structures.h
  * \brief Header file for data structures.
  * \author Adrian Gallo
- * \copyright 2024 Enveng Group
  * \license AGPL-3.0-or-later
  */
 
 #ifndef DATA_STRUCTURES_H
 #define DATA_STRUCTURES_H
 
-#include <stdlib.h>
+#include <stddef.h>  /* For size_t */
+#include "garbage_collector.h"
 
 /**
  * \struct Dictionary
@@ -59,14 +59,15 @@ typedef struct
  *
  * \param dict Pointer to the dictionary to initialize.
  */
-void initDictionary (Dictionary *dict);
+void initDictionary(Dictionary *dict);
 
 /**
  * \brief Frees the dictionary.
  *
  * \param dict Pointer to the dictionary to free.
+ * \param gc Pointer to the garbage collector.
  */
-void freeDictionary (Dictionary *dict);
+void freeDictionary(Dictionary *dict, GarbageCollector *gc);
 
 /**
  * \brief Adds a header to the dictionary.
@@ -75,6 +76,6 @@ void freeDictionary (Dictionary *dict);
  * \param key Key of the header.
  * \param value Value of the header.
  */
-void addHeader (Dictionary *dict, const char *key, const char *value);
+void addHeader(Dictionary *dict, const char *key, const char *value);
 
 #endif /* DATA_STRUCTURES_H */

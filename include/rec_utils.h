@@ -9,7 +9,7 @@
 #ifndef REC_UTILS_H
 #define REC_UTILS_H
 
-#include "records.h"
+#include "project.h"  /* Include the header where Project is defined */
 
 /**
  * \brief Converts a CSV file to a REC file.

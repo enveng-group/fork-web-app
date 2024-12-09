@@ -1,57 +1,69 @@
 /**
  * \file socket_module.c
- * \brief Implements socket creation using POSIX socket API.
+ * \brief Implements socket-related functions.
  * \author Adrian Gallo
- * \copyright 2024 Enveng Group
  * \license AGPL-3.0-or-later
  */
 
+#include "../include/socket_module.h"
+#include "../include/logger.h"
+#include "../include/constants.h"
+#include <arpa/inet.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
 #include <sys/socket.h>
-#include <errno.h>
-#include "../include/constants.h"
-#include "../include/logger.h"
-#include "../include/socket_module.h"
+#include <unistd.h>
 
 /**
- * \brief Creates and binds a UDP socket.
+ * \brief Gets the server IP address.
  *
- * \return Created socket on success, -1 on failure.
+ * \return The server IP address as a string.
  */
-int createSocket(void)
+const char *getServerIp(void)
 {
-    int                 sockfd;
-    struct sockaddr_in  server_addr;
-    int                 opt = 1;
-    char                ip_str[INET_ADDRSTRLEN];
+    return "127.0.0.1"; /* Replace with actual logic to get the server IP */
+}
 
-    /* Create UDP socket */
-    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+/**
+ * \brief Gets the server port.
+ *
+ * \return The server port as an integer.
+ */
+int getServerPort(void)
+{
+    return 8080; /* Replace with actual logic to get the server port */
+}
+
+/**
+ * \brief Creates and binds a socket to the specified IP and port.
+ *
+ * \return The socket file descriptor on success, -1 on failure.
+ */
+int createAndBindSocket(void)
+{
+    int sockfd;
+    struct sockaddr_in server_addr;
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
     {
         logError("Failed to create socket: %s", strerror(errno));
         return -1;
     }
 
-    /* Set socket options to allow reusing the address */
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(getServerPort());
+
+    if (inet_pton(AF_INET, getServerIp(), &server_addr.sin_addr) <= 0)
     {
-        logError("Failed to set socket options: %s", strerror(errno));
+        logError("Invalid address/ Address not supported: %s", getServerIp());
         close(sockfd);
         return -1;
     }
 
-    /* Set up server address structure */
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family      = AF_INET;
-    server_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
-    server_addr.sin_port        = htons(SERVER_PORT);
-
-    /* Bind the socket to the server IP and port */
     if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     {
         logError("Failed to bind socket: %s", strerror(errno));
@@ -59,9 +71,37 @@ int createSocket(void)
         return -1;
     }
 
-    /* Convert IP address to string */
-    inet_ntop(AF_INET, &server_addr.sin_addr, ip_str, sizeof(ip_str));
-    logInfo("Socket created and bound to %s:%d", ip_str, ntohs(server_addr.sin_port));
+    if (listen(sockfd, SOMAXCONN) < 0)
+    {
+        logError("Failed to listen on socket: %s", strerror(errno));
+        close(sockfd);
+        return -1;
+    }
 
+    logInfo("Socket created and bound to %s:%d", getServerIp(), getServerPort());
     return sockfd;
+}
+
+/**
+ * \brief Accepts a new connection on the given socket.
+ *
+ * \param sockfd The socket file descriptor.
+ * \return The file descriptor for the accepted connection, or -1 on failure.
+ */
+int acceptConnection(int sockfd)
+{
+    int client_fd;
+    struct sockaddr_in client_addr;
+    socklen_t client_len = sizeof(client_addr);
+
+    client_fd = accept(sockfd, (struct sockaddr *)&client_addr, &client_len);
+    if (client_fd < 0)
+    {
+        logError("Failed to accept connection: %s", strerror(errno));
+        return -1;
+    }
+
+    logInfo("Accepted connection from %s:%d",
+            inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+    return client_fd;
 }

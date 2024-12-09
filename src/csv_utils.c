@@ -9,6 +9,7 @@
 #include "../include/csv_utils.h"
 #include "../include/logger.h"
 #include "../include/project.h" /* Ensure this header includes the definition of Project */
+#include <stdio.h>  /* Include stdio.h for FILE, fopen, fgets, fclose, fprintf */
 
 /**
  * \brief Parses a CSV file into a Project structure.
@@ -32,11 +33,7 @@ int parseCsv(const char *csv_filename, Project *project)
     while (fgets(line, sizeof(line), file))
     {
         /* Basic usage of project to avoid unused parameter warning */
-        if (project != NULL)
-        {
-            /* Example: Initialize project fields */
-            project->field_count = 0;  /* Ensure Project has this member */
-        }
+        project->field_count++;
         /* Parsing logic here */
     }
 

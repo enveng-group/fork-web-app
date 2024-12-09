@@ -6,6 +6,7 @@
  * \license AGPL-3.0-or-later
  */
 
+#include "../include/compat.h"
 #include "../include/config_loader.h"
 #include "../include/logger.h" /* Include logger.h for logError */
 #include "../include/utils.h"

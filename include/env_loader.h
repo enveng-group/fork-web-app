@@ -9,6 +9,9 @@
 #ifndef ENV_LOADER_H
 #define ENV_LOADER_H
 
+
+#define SERVER_IP
+#define SERVER_PORT
 /**
  * \struct env_var_t
  * \brief Structure to hold environment variables.

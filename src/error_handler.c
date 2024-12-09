@@ -14,10 +14,9 @@
  *
  * \param error_message Error message to log.
  */
-void
-handleError (const char *error_message)
+void handleError(const char *error_message)
 {
-    handleLogError (error_message);
+    handleLogError(error_message);
 }
 
 /**

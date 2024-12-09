@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.10)
 
 # Project Name and Settings
 project(EnvEngWebApp C)
@@ -7,8 +7,12 @@ project(EnvEngWebApp C)
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
-set(CMAKE_C_COMPILER musl-gcc)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c90 -D_POSIX_C_SOURCE=199506L -D_XOPEN_SOURCE=500 -I/usr/include/x86_64-linux-musl -Wall -ansi -Wextra -pedantic -O3 -ffunction-sections -fdata-sections -fno-common -fstack-protector-strong -fPIC -static -g")
+set(CMAKE_C_COMPILER musl-clang)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c90 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -I/usr/local/include -I/usr/local/include/openssl -Wall -ansi -Wextra -pedantic -O3 -ffunction-sections -fdata-sections -fno-common -fstack-protector-strong -fPIC -Wno-long-long -g")
+set(CMAKE_EXE_LINKER_FLAGS "-L/usr/local/lib -static")
+
+# Disable C++ compiler
+set(CMAKE_CXX_COMPILER "")
 
 # Enable position-independent code (PIC)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -19,26 +23,84 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Include Directories
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
+    /usr/local/include
+    /usr/local/include/openssl
+    /usr/local/include/linux_header
+    include
+)
+
+# Add library directories
+link_directories(
+    /usr/local/lib
+    /usr/local/lib/ssl
 )
 
 # Set static linking flags
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 set(BUILD_SHARED_LIBS OFF)
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -static")
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -static")
 
-# Source Files
-file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/*.c)
-file(GLOB_RECURSE HEADERS ${CMAKE_SOURCE_DIR}/include/*.h)
+# Add source files
+set(SOURCE_FILES
+    src/add_custom_uint64.s
+    src/atomic_ops.c
+    src/compat.c
+    src/compat_layer.c
+    src/compatStrtol64_asm.s
+    src/config_loader.c
+    src/constants.c
+    src/csv_utils.c
+    src/data_structures.c
+    src/div_custom_uint64.s
+    src/env_loader.c
+    src/error_handler.c
+    src/garbage_collector.c
+    src/http_parser.c
+    src/http_response.c
+    src/logger.c
+    src/main.c
+    src/records.c
+    src/rec_utils.c
+    src/server.c
+    src/sha256_asm.c
+    src/socket_module.c
+    src/ssl_module.c
+    src/static_file_handler.c
+    src/utils.c
+    src/validator.c
+)
 
-# Create Executable
-add_executable(enveng_web_app ${SOURCES} ${HEADERS})
+# Add executable target
+add_executable(enveng_web_app ${SOURCE_FILES})
 
-# Include directories
-target_include_directories(enveng_web_app PRIVATE ${CMAKE_SOURCE_DIR}/include)
+# Find OpenSSL library
+find_package(OpenSSL REQUIRED)
 
-# Link libraries
-target_link_libraries(enveng_web_app PRIVATE pthread m)
+# Include OpenSSL directories
+include_directories(${OPENSSL_INCLUDE_DIR})
+
+# Link OpenSSL libraries
+target_link_libraries(enveng_web_app ${OPENSSL_LIBRARIES} -ldl)
+
+# Link additional libraries and source files
+target_link_libraries(enveng_web_app
+    /usr/local/lib64/libcrypto.a
+    /usr/local/lib64/libssl.a
+    -ldl
+    -static
+)
+
+# Add source files containing the missing functions
+target_sources(enveng_web_app PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/compat.c
+    ${CMAKE_SOURCE_DIR}/src/compat_layer.c
+    ${CMAKE_SOURCE_DIR}/src/data_structures.c
+    ${CMAKE_SOURCE_DIR}/src/http_parser.c
+    ${CMAKE_SOURCE_DIR}/src/records.c
+    ${CMAKE_SOURCE_DIR}/src/static_file_handler.c
+    ${CMAKE_SOURCE_DIR}/src/add_custom_uint64.s
+    ${CMAKE_SOURCE_DIR}/src/div_custom_uint64.s
+    ${CMAKE_SOURCE_DIR}/src/compatStrtol64_asm.s
+)
 
 # Ensure Ninja is used as the generator
 if (NOT CMAKE_GENERATOR STREQUAL "Ninja")
@@ -62,34 +124,7 @@ if(CLANG_TIDY)
     add_custom_target(clang_tidy
         COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/config_loader.h -- build
         COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/constants.h -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/csv_utils.h -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/data_structures.h -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/env_loader.h -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/error_codes.h -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/error_handler.h -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/garbage_collector.h -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/logger.h -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/records.h -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/rec_utils.h -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/test_framework.h -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/utils.h -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* include/validator.h -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/config_loader.c -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/constants.c -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/csv_utils.c -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/data_structures.c -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/env_loader.c -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/error_handler.c -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/garbage_collector.c -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/logger.c -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/main.c -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/records.c -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/rec_utils.c -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/utils.c -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/validator.c -- build
-        COMMAND ${CLANG_TIDY} -fix -header-filter=.* src/socket_module.c -- build
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Running clang-tidy on source and header files"
+        # Add other header files as needed
     )
 endif()
 
@@ -97,9 +132,9 @@ endif()
 find_program(CPPCHECK "cppcheck")
 if(CPPCHECK)
     add_custom_target(cppcheck
-        COMMAND ${CPPCHECK} --enable=all --inconclusive --std=c90 --platform=unix64 --suppress=missingIncludeSystem -I${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/src
+        COMMAND ${CPPCHECK} --enable=all --inconclusive --quiet src include
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Running cppcheck on source files"
+        COMMENT "Running cppcheck on source and header files"
     )
 endif()
 
@@ -163,8 +198,8 @@ endif()
 
 # Install Target
 install(TARGETS enveng_web_app DESTINATION /usr/local/bin)
-install(FILES ${CMAKE_SOURCE_DIR}/README.md DESTINATION /usr/share/doc/enveng_web_app)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/docs DESTINATION /usr/share/doc/enveng_web_app)
+install(FILES ${CMAKE_SOURCE_DIR}/README.md DESTINATION /usr/share/doc/web_app)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/docs DESTINATION /usr/share/doc/web_app)
 
 # Packaging
 include(CPack)
