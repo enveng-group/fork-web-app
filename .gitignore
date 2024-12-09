@@ -108,3 +108,5 @@ yarn-error.log*
 .flaskenv*
 
 .env*
+etc/letsencrypt/live/yourdomain.com/cert.pem
+etc/letsencrypt/live/yourdomain.com/privkey.pem
