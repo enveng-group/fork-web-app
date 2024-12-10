@@ -8,6 +8,8 @@
         "github.vscode-pull-request-github",
         "github.vscode-github-actions",
         "your-publisher-name.recfile-syntax",
+        "qiumingge.cpp-check-lint",
+        "cs128.cs128-clang-tidy",
         "editorconfig.editorconfig",
         "github.copilot",
         "github.copilot-chat",
@@ -17,8 +19,6 @@
         "ms-vscode.remote-repositories",
         "willumz.generic-pseudocode",
         "maziac.asm-code-lens",
-        "snyk-security.snyk-vulnerability-scanner",
-        "xaver.clang-format",
-        "ms-vscode.cmake-tools"
+        "nathanj.cppcheck-plugin"
     ]
 }
