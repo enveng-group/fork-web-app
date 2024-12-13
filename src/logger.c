@@ -1,84 +1,128 @@
 /**
- * \file logger.c
- * \brief Implementation of the logger module.
- * \author Adrian Gallo
- * \copyright 2024 Enveng Group
- * \license AGPL-3.0-or-later
+ * Copyright 2024 Enveng Group - Adrian Gallo.
+ * SPDX-License-Identifier: 	AGPL-3.0-or-later
  */
-
-#include "../include/logger.h"
-#include "../include/compat.h"
-#include <stdarg.h>
+/* logger.c */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <pthread.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include "../include/logger.h"
 
-static FILE *logFile = NULL;
-static char lastMessage[256];
-static int lastError = 0;
+static FILE *log_file = NULL;
+static int current_log_level = LOG_LEVEL_INFO;
+static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void initLogger(const char *logFileName)
+int logInit(const char *filename, int log_level)
 {
-    logFile = fopen(logFileName, "a");
-    if (logFile == NULL)
-    {
-        perror("Failed to open log file");
-        exit(EXIT_FAILURE);
+    pthread_mutex_lock(&log_mutex);
+
+    if (log_file) {
+        fclose(log_file);
     }
+
+    log_file = fopen(filename, "a");
+    if (!log_file) {
+        pthread_mutex_unlock(&log_mutex);
+        return -1;
+    }
+
+    /* Set file permissions to 600 */
+    chmod(filename, 0600);
+
+    current_log_level = log_level;
+
+    pthread_mutex_unlock(&log_mutex);
+    return 0;
 }
 
-void closeLogger(void)
+static void logMessage(int level, const char *format, va_list args)
 {
-    if (logFile != NULL)
-    {
-        fclose(logFile);
-        logFile = NULL;
-    }
-}
+    time_t now;
+    struct tm *tm_info;
+    char timestamp[26];
+    char *level_str;
 
-void loggerLog(const char *message)
-{
-    if (logFile != NULL)
-    {
-        fprintf(logFile, "%s\n", message);
-        fflush(logFile);
-        strncpy(lastMessage, message, sizeof(lastMessage) - 1);
-        lastMessage[sizeof(lastMessage) - 1] = '\0';
+    if (level > current_log_level || !log_file) {
+        return;
     }
-}
 
-void logInfo(const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    if (logFile != NULL)
-    {
-        vfprintf(logFile, format, args);
-        fprintf(logFile, "\n");
-        fflush(logFile);
+    pthread_mutex_lock(&log_mutex);
+
+    /* Get current time */
+    time(&now);
+    tm_info = localtime(&now);
+    strftime(timestamp, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+    /* Determine log level string */
+    switch (level) {
+        case LOG_LEVEL_ERROR:
+            level_str = "ERROR";
+            break;
+        case LOG_LEVEL_WARN:
+            level_str = "WARN";
+            break;
+        case LOG_LEVEL_INFO:
+            level_str = "INFO";
+            break;
+        case LOG_LEVEL_DEBUG:
+            level_str = "DEBUG";
+            break;
+        default:
+            level_str = "UNKNOWN";
     }
-    va_end(args);
+
+    /* Write log entry */
+    fprintf(log_file, "[%s] [%s] ", timestamp, level_str);
+    vfprintf(log_file, format, args);
+    fprintf(log_file, "\n");
+    fflush(log_file);
+
+    pthread_mutex_unlock(&log_mutex);
 }
 
 void logError(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    if (logFile != NULL)
-    {
-        vfprintf(logFile, format, args);
-        fprintf(logFile, "\n");
-        fflush(logFile);
-    }
+    logMessage(LOG_LEVEL_ERROR, format, args);
     va_end(args);
 }
 
-const char *loggerGetLastMessage(void)
+void logWarn(const char *format, ...)
 {
-    return lastMessage;
+    va_list args;
+    va_start(args, format);
+    logMessage(LOG_LEVEL_WARN, format, args);
+    va_end(args);
 }
 
-int loggerGetLastError(void)
+void logInfo(const char *format, ...)
 {
-    return lastError;
+    va_list args;
+    va_start(args, format);
+    logMessage(LOG_LEVEL_INFO, format, args);
+    va_end(args);
+}
+
+void logDebug(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    logMessage(LOG_LEVEL_DEBUG, format, args);
+    va_end(args);
+}
+
+void logCleanup(void)
+{
+    pthread_mutex_lock(&log_mutex);
+    if (log_file) {
+        fclose(log_file);
+        log_file = NULL;
+    }
+    pthread_mutex_unlock(&log_mutex);
 }

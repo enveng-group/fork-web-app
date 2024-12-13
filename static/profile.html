@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Environmental Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+        }
+        .header {
+            background-color: #0056b3;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-menu {
+            background-color: #004494;
+            padding: 0.5rem;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+        }
+        .nav-menu a:hover {
+            background-color: #003470;
+            border-radius: 4px;
+        }
+        .container {
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .profile-section {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-group input[readonly] {
+            background-color: #f8f9fa;
+        }
+        .save-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .save-btn:hover {
+            background-color: #218838;
+        }
+        .history-list {
+            list-style: none;
+            padding: 0;
+        }
+        .history-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        .history-timestamp {
+            color: #666;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Profile Management</h1>
+        <form action="/logout" method="POST" style="margin: 0;">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </header>
+
+    <nav class="nav-menu">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/profile">Profile</a>
+        <a href="/audit">Audit Log</a>
+    </nav>
+
+    <main class="container">
+        <section class="profile-section">
+            <h2>Profile Information</h2>
+            <form action="/profile/update" method="POST">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="pronouns">Pronouns</label>
+                    <input type="text" id="pronouns" name="pronouns">
+                </div>
+                <button type="submit" class="save-btn">Save Changes</button>
+            </form>
+        </section>
+
+        <section class="profile-section">
+            <h2>Change Password</h2>
+            <form action="/profile/password" method="POST">
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" id="current_password" name="current_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="new_password">New Password</label>
+                    <input type="password" id="new_password" name="new_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                </div>
+                <button type="submit" class="save-btn">Update Password</button>
+            </form>
+        </section>
+
+        <section class="profile-section">
+            <h2>Activity History</h2>
+            <ul class="history-list" id="activity-history">
+                <!-- History items will be populated by the server -->
+            </ul>
+        </section>
+    </main>
+    <script>
+        function loadUserProfile() {
+            fetch('/api/profile', {
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(profile => {
+                document.getElementById('username').value = profile.username;
+                document.getElementById('email').value = profile.email;
+                document.getElementById('title').value = profile.title;
+                document.getElementById('phone').value = profile.phone;
+                document.getElementById('pronouns').value = profile.pronouns;
+
+                // Load audit history
+                fetch('/api/audit/history')
+                .then(response => response.json())
+                .then(history => {
+                    const historyList = document.getElementById('activity-history');
+                    history.forEach(entry => {
+                        const li = document.createElement('li');
+                        li.className = 'history-item';
+                        li.innerHTML = `
+                            <span class="history-timestamp">${entry.timestamp}</span>
+                            <p>${entry.message}</p>
+                        `;
+                        historyList.appendChild(li);
+                    });
+                });
+            });
+        }
+
+        window.onload = loadUserProfile;
+    </script>
+</body>
+</html>

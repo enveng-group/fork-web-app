@@ -1073,7 +1073,7 @@ This should list the `musl-linker` script being invoked for linking.
 1. Generate Build Files:
 
 ```sh
-cmake -G Ninja -S . -B build
+cmake -DENABLE_DEV_CFLAGS=ON -G Ninja -S . -B build
 ```
 
 2. Build the Project:
@@ -1130,4 +1130,273 @@ sudo cp /usr/include/openssl /usr/local/include/x86_64-linux-musl/
 sudo cp /usr/include/x86_64-linux-gnu/openssl/opensslconf.h /usr/local/include/x86_64-linux-musl/openssl/
 sudo cp /usr/include/x86_64-linux-gnu/openssl/oconfiguration.h /usr/local/include/x86_64-linux-musl/openssl/
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/letsencrypt/live/yourdomain.com/privkey.pem -out /etc/letsencrypt/live/yourdomain.com/cert.pem
+```
+
+
+***Hashing Passwords***
+
+```sh
+musl-clang -o hash_password hash_password.c -lssl -lcrypto
+./hash_password "John Doe" "password123"
+```
+
+
+### **Setting Up User Authentication**
+```sh
+echo "username:password_hash:uid:gid:full_name:home_dir:shell" | sudo tee -a /devcontainer/web-app/etc/auth/passwd
+```
+
+```sh
+# 1. Create volume if not exists
+podman volume create pod_vol
+
+# 2. Run container with volume mount
+podman run --platform linux/amd64 \
+  -it \
+  --name web-app-container \
+  -v pod_vol:/devcontainer:Z \
+  -e HOME=/devcontainer \
+  -w /devcontainer \
+  -p 8080:80 \
+  docker.io/enveng/web-app:latest \
+  /bin/ash -c "source ~/.ashrc && exec /bin/ash"
+
+# 3. In another terminal, verify mount
+podman exec web-app-container ls -la /devcontainer
+
+# 4. Stop container
+podman stop web-app-container
+
+# 5. Commit container with volume
+podman commit \
+  --format docker \
+  --change "VOLUME /devcontainer" \
+  --change "WORKDIR /devcontainer" \
+  --change "ENV HOME=/devcontainer" \
+  web-app-container \
+  enveng/web-app:latest-with-volume
+
+# 6. Save image
+podman save -o web-app-with-volume.tar enveng/web-app:latest-with-volume
+
+# 7. Load image on target system
+podman load -i web-app-with-volume.tar
+```
+
+```sh
+# .exrc
+set noflash
+set noai
+set tabstop=4
+set showmatch
+set ignorecase
+set noic
+set sm
+```
+
+```sh
+# .ashrc
+# Interactive shell check
+case "$-" in
+    *i*) ;;
+    *) return ;;
+esac
+
+# Environment variables
+LANG=en_AU.UTF-8
+LC_ALL=en_AU.UTF-8
+EDITOR=vi
+HISTSIZE=1000
+HISTFILE="${HOME}/.ash_history"
+PATH="${HOME}/bin:/usr/local/bin:${PATH}"
+
+# Development environment
+CC=musl-gcc
+CFLAGS="-std=c90 -D_POSIX_C_SOURCE=1 -D_XOPEN_SOURCE=500 -Wall -Wextra -pedantic"
+LDFLAGS="-static"
+
+# Directory trimming function
+polyglot_dirtrim() {
+    dir="${PWD}"
+    [ "$dir" = "${HOME}" ] && { printf "~"; return; }
+    [ "${dir##*/}" = "" ] && dir="${dir%/}"
+
+    elements="${1:-2}"
+    count=$(printf "%s" "$dir" | tr -cd '/' | wc -c)
+
+    if [ "$count" -le "$elements" ]; then
+        printf "%s" "$dir"
+    else
+        printf ".../%s" "${dir##*/}"
+    fi
+}
+
+# Git status function
+polyglot_git_status() {
+    branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+    [ -z "$branch" ] && return
+
+    status=""
+    git diff --quiet 2>/dev/null || status="${status}!"
+    git diff --cached --quiet 2>/dev/null || status="${status}+"
+
+    printf "(%s%s)" "$branch" "$status"
+}
+
+# Exit status display
+polyglot_exit_status() {
+    [ "$1" -ne 0 ] && printf "(%d) " "$1"
+}
+
+# Development aliases
+alias ll='ls -l'
+alias la='ls -la'
+alias mk='make'
+alias mkt='make test'
+alias mkc='make clean'
+alias gst='git status'
+alias gl='git log --oneline'
+
+# SSH agent setup
+if [ -z "$SSH_AUTH_SOCK" ] && command -v dropbear-agent >/dev/null 2>&1; then
+    eval "$(dropbear-agent)" >/dev/null 2>&1
+    trap 'dropbear-agent -k' EXIT
+fi
+
+# Add SSH key if exists
+if [ -f "${HOME}/.ssh/id_dropbear" ]; then
+    dbclient-add "${HOME}/.ssh/id_dropbear" >/dev/null 2>&1
+fi
+
+# Set prompt
+PS1='$(polyglot_exit_status $?)$(polyglot_dirtrim 2) $(polyglot_git_status) $ '
+
+# Source local customizations
+[ -f "${HOME}/.ashrc.local" ] && . "${HOME}/.ashrc.local"
+```
+
+```sh
+# .gitconfig
+[user]
+    name = 
+    email =
+    signingkey =
+
+[core]
+    editor = vi
+    compression = 9
+    whitespace = trailing-space,space-before-tab,tab-in-indent
+    autocrlf = input
+    eol = lf
+    safecrlf = true
+    fsmonitor = true
+    sshCommand = "dbclient -y -i ~/.ssh/id_dropbear"
+    # Add specific ignores for C development
+    excludesfile = ~/.gitignore_global
+    # Improve performance
+    preloadindex = true
+    fscache = true
+
+[init]
+    defaultBranch = main
+
+[color]
+    ui = auto
+    status = auto
+    diff = auto
+    branch = auto
+
+[http]
+    # Optimize for Alpine/musl
+    postBuffer = 157286400
+    maxRequestBuffer = 100M
+
+[ssh]
+    variant = ssh
+
+[gpg]
+    program = gpg
+
+[pull]
+    rebase = true
+    ff = only
+
+[rebase]
+    autoSquash = true
+    autoStash = true
+
+[commit]
+    gpgSign = true
+    verbose = true
+
+[diff]
+    algorithm = histogram
+    colormoved = dimmed-zebra
+    colormovedws = ignore-all-space
+
+[merge]
+    ff = false
+    conflictstyle = diff3
+    log = true
+
+[gc]
+    auto = 50
+    pruneExpire = now
+    # Reduce aggressiveness for musl systems
+    aggressive = false
+
+[pack]
+    # Optimize for low-memory systems
+    threads = 1
+    deltaCacheSize = 64m
+    windowMemory = 64m
+    packSizeLimit = 100m
+
+[fetch]
+    prune = true
+    parallel = 2
+    writeCommitGraph = true
+
+[maintenance]
+    auto = true
+    schedule = weekly
+    task = gc,commit-graph,loose-objects,incremental-repack
+
+[status]
+    showUntrackedFiles = all
+    submoduleSummary = true
+
+[transfer]
+    fsckObjects = true
+
+[receive]
+    fsckObjects = true
+    denyDeletes = true
+    denyNonFastForwards = true
+
+[push]
+    default = simple
+    autoSetupRemote = true
+    followTags = true
+
+[alias]
+    # Common operations
+    co = checkout
+    br = branch
+    ci = commit
+    st = status
+    # Enhanced logging
+    lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+    # Development workflow
+    unstage = reset HEAD --
+    last = log -1 HEAD
+    visual = !gitk
+    # Safety aliases
+    pushf = push --force-with-lease
+    # Code review helpers
+    files = !git diff --name-only $(git merge-base HEAD \"$REVIEW_BASE\")
+    stat = !git diff --stat $(git merge-base HEAD \"$REVIEW_BASE\")
+
+[url "ssh://git@github.com/"]
+    insteadOf = https://github.com/
 ```

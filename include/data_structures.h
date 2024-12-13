@@ -1,81 +1,117 @@
+/* include/data_structures.h */
 /**
- * \file data_structures.h
- * \brief Header file for data structures.
- * \author Adrian Gallo
- * \license AGPL-3.0-or-later
+ * Copyright 2024 Enveng Group - Adrian Gallo.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-
 #ifndef DATA_STRUCTURES_H
 #define DATA_STRUCTURES_H
 
-#include <stddef.h>  /* For size_t */
-#include "garbage_collector.h"
+#include <stddef.h>
+
+/* Maximum sizes for various fields */
+#define DS_MAX_HEADERS 50
+#define DS_MAX_URL_LEN 2048
+#define DS_MAX_USERNAME_LEN 32
+#define DS_MAX_PASSWORD_LEN 128
+#define DS_MAX_KEY_LEN 128
+#define DS_MAX_VALUE_LEN 1024
 
 /**
- * \struct Dictionary
- * \brief Dictionary structure for headers.
+ * Header structure for storing key-value pairs
  */
-typedef struct
-{
-    char **keys;   /**< Array of keys */
-    char **values; /**< Array of values */
-    size_t size;   /**< Number of key-value pairs */
-} Dictionary;
+struct Header {
+    char key[DS_MAX_KEY_LEN];
+    char value[DS_MAX_VALUE_LEN];
+};
 
 /**
- * \struct Request
- * \brief Request structure.
+ * Request structure for handling web requests
  */
-typedef struct
-{
-    Dictionary headers; /**< Dictionary of headers */
-    char *url;          /**< URL of the request */
-} Request;
+struct Request {
+    struct Header headers[DS_MAX_HEADERS];
+    size_t header_count;
+    char url[DS_MAX_URL_LEN];
+    char *body;
+    size_t body_length;
+    int method;  /* HTTP method (GET, POST, etc.) */
+};
 
 /**
- * \struct Response
- * \brief Response structure.
+ * Response structure for handling web responses
  */
-typedef struct
-{
-    int status_code; /**< Status code of the response */
-    char *body;      /**< Body of the response */
-} Response;
+struct Response {
+    int status_code;
+    struct Header headers[DS_MAX_HEADERS];
+    size_t header_count;
+    char *body;
+    size_t body_length;
+};
 
 /**
- * \struct UserCredentials
- * \brief User credentials structure.
+ * UserCredentials structure for authentication
  */
-typedef struct
-{
-    char *username; /**< Username */
-    char *password; /**< Password */
-} UserCredentials;
+struct UserCredentials {
+    char username[DS_MAX_USERNAME_LEN];
+    char password[DS_MAX_PASSWORD_LEN];
+};
 
-/* Function declarations */
+/* Function prototypes */
 
 /**
- * \brief Initializes the dictionary.
- *
- * \param dict Pointer to the dictionary to initialize.
+ * Initialize a new request structure
+ * @return Pointer to initialized Request structure or NULL on failure
  */
-void initDictionary(Dictionary *dict);
+struct Request *dsCreateRequest(void);
 
 /**
- * \brief Frees the dictionary.
- *
- * \param dict Pointer to the dictionary to free.
- * \param gc Pointer to the garbage collector.
+ * Initialize a new response structure
+ * @param status_code Initial status code
+ * @return Pointer to initialized Response structure or NULL on failure
  */
-void freeDictionary(Dictionary *dict, GarbageCollector *gc);
+struct Response *dsCreateResponse(int status_code);
 
 /**
- * \brief Adds a header to the dictionary.
- *
- * \param dict Pointer to the dictionary.
- * \param key Key of the header.
- * \param value Value of the header.
+ * Add a header to a request
+ * @param request Request structure
+ * @param key Header key
+ * @param value Header value
+ * @return 0 on success, -1 on failure
  */
-void addHeader(Dictionary *dict, const char *key, const char *value);
+int dsAddRequestHeader(struct Request *request, const char *key, const char *value);
+
+/**
+ * Add a header to a response
+ * @param response Response structure
+ * @param key Header key
+ * @param value Header value
+ * @return 0 on success, -1 on failure
+ */
+int dsAddResponseHeader(struct Response *response, const char *key, const char *value);
+
+/**
+ * Free a request structure and its contents
+ * @param request Request to free
+ */
+void dsFreeRequest(struct Request *request);
+
+/**
+ * Free a response structure and its contents
+ * @param response Response to free
+ */
+void dsFreeResponse(struct Response *response);
+
+/**
+ * Create new user credentials
+ * @param username Username string
+ * @param password Password string
+ * @return Pointer to new UserCredentials or NULL on failure
+ */
+struct UserCredentials *dsCreateUserCredentials(const char *username, const char *password);
+
+/**
+ * Free user credentials structure
+ * @param credentials UserCredentials to free
+ */
+void dsFreeUserCredentials(struct UserCredentials *credentials);
 
 #endif /* DATA_STRUCTURES_H */

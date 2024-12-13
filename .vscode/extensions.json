@@ -11,7 +11,6 @@
         "qiumingge.cpp-check-lint",
         "cs128.cs128-clang-tidy",
         "editorconfig.editorconfig",
-        "github.copilot",
         "github.copilot-chat",
         "github.github-vscode-theme",
         "ymotongpoo.licenser",
@@ -19,6 +18,8 @@
         "ms-vscode.remote-repositories",
         "willumz.generic-pseudocode",
         "maziac.asm-code-lens",
-        "nathanj.cppcheck-plugin"
+        "snyk-security.snyk-vulnerability-scanner",
+        "xaver.clang-format",
+        "ms-vscode.cmake-tools"
     ]
 }

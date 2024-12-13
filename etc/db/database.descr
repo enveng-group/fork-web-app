@@ -1,0 +1,257 @@
+%locale: en_AU.UTF-8
+
+%rec: Project
+%doc: Contains information about projects, including their environmental aspects, obligations, and statuses.
+%mandatory: Project_Name Primary_Environmental_Mechanism Procedure Environmental_Aspect Obligation_Number Obligation Accountability Responsibility ProjectPhase Action_DueDate Status
+%type: Project_Name string
+%type: Primary_Environmental_Mechanism string
+%type: Procedure string
+%type: Environmental_Aspect string
+%type: Obligation_Number string
+%type: Obligation string
+%type: Accountability string
+%type: Responsibility string
+%type: ProjectPhase string
+%type: Action_DueDate date
+%type: Close_Out_Date date
+%type: Status string
+%type: Supporting_Information string
+%type: General_Comments string
+%type: Compliance_Comments string
+%type: NonConformance_Comments string
+%type: Evidence string
+%type: PersonEmail email
+%type: Recurring_Obligation enum(Yes, No)
+%type: Recurring_Frequency int
+%type: Recurring_Status enum(Active, Inactive)
+%type: Recurring_Forcasted_Date date
+%type: Inspection enum(Yes, No)
+%type: Inspection_Frequency int
+%type: Site_or_Desktop enum(Site, Desktop)
+%type: New_Control_Action_Required string
+%type: Obligation_Type string
+%key: Obligation_Number
+%unique: Obligation_Number
+%index: Obligation_Number
+%index: Status
+%index: ProjectPhase
+%sort: Obligation_Number
+%constraint: "Recurring_Frequency > 0 if Recurring_Obligation == 'Yes'"
+%constraint: "Inspection_Frequency > 0 if Inspection == 'Yes'"
+%constraint: "Action_DueDate ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\+[0-9]{2}:[0-9]{2}$'"
+%constraint: "Close_Out_Date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\+[0-9]{2}:[0-9]{2}$'"
+%constraint: "Recurring_Forcasted_Date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\+[0-9]{2}:[0-9]{2}$'"
+%size: Project_Name 1-255
+%size: Primary_Environmental_Mechanism 1-255
+%size: Procedure 1-255
+%size: Environmental_Aspect 1-255
+%size: Obligation_Number 1-255
+%size: Obligation 1-1000
+%size: Accountability 1-255
+%size: Responsibility 1-255
+%size: ProjectPhase 1-255
+%size: Status 1-255
+%size: Supporting_Information 1-1000
+%size: General_Comments 1-1000
+%size: Compliance_Comments 1-1000
+%size: NonConformance_Comments 1-1000
+%size: Evidence 1-1000
+%size: PersonEmail 1-255
+%size: New_Control_Action_Required 1-255
+%size: Obligation_Type 1-255
+%singular: Obligation_Number
+%confidential: PersonEmail
+
+%rec: Accountability
+%doc: Contains accountability information, mapping IDs to accountability descriptions.
+%type: id int
+%type: accountability string
+%key: id
+%unique: accountability
+%index: accountability
+%auto: id
+%size: accountability 1-255
+
+%rec: ActionsStatus
+%doc: Contains status information for actions, mapping IDs to status descriptions.
+%type: id int
+%type: status string
+%key: id
+%unique: status
+%index: status
+%auto: id
+%size: status 1-255
+
+%rec: EnvironmentalAspects
+%doc: Contains information about environmental aspects, mapping IDs to aspect names.
+%type: id int
+%type: aspect_name string
+%key: id
+%unique: aspect_name
+%index: aspect_name
+%auto: id
+%size: aspect_name 1-255
+
+%rec: EnvironmentalMechanisms
+%doc: Contains information about environmental mechanisms, mapping IDs to mechanism names.
+%type: id int
+%type: mechanism_name string
+%key: id
+%unique: mechanism_name
+%index: mechanism_name
+%auto: id
+%size: mechanism_name 1-255
+
+%rec: InspectionFrequency
+%doc: Contains information about inspection frequencies, mapping IDs to frequency descriptions.
+%type: id int
+%type: frequency string
+%key: id
+%unique: frequency
+%index: frequency
+%auto: id
+%size: frequency 1-255
+
+%rec: InspectionsYesOrNo
+%doc: Contains information about whether inspections are required, mapping IDs to yes/no descriptions.
+%type: id int
+%type: require_inspection enum(Yes, No)
+%key: id
+%unique: require_inspection
+%index: require_inspection
+%auto: id
+
+%rec: ProjectPhases
+%doc: Contains information about project phases, mapping IDs to phase names.
+%type: id int
+%type: phase_name string
+%key: id
+%unique: phase_name
+%index: phase_name
+%auto: id
+%size: phase_name 1-255
+
+%rec: RecurringFrequency
+%doc: Contains information about recurring frequencies, mapping IDs to frequency descriptions.
+%type: id int
+%type: frequency string
+%key: id
+%unique: frequency
+%index: frequency
+%auto: id
+%size: frequency 1-255
+
+%rec: RecurringObligationYesOrNo
+%doc: Contains information about whether obligations are recurring, mapping IDs to yes/no descriptions.
+%type: id int
+%type: recurring_obligation enum(Yes, No)
+%key: id
+%unique: recurring_obligation
+%index: recurring_obligation
+%auto: id
+
+%rec: RecurringStatus
+%doc: Contains information about the status of recurring obligations, mapping IDs to status descriptions.
+%type: id int
+%type: status enum(Active, Inactive)
+%key: id
+%unique: status
+%index: status
+%auto: id
+
+%rec: SupportingInformation
+%doc: Contains supporting information for obligations, including evidence and comments.
+%mandatory: Obligation_Number Project_Name Evidence Category
+%type: Obligation_Number string
+%type: Project_Name string
+%type: Evidence string
+%type: General_Comments string
+%type: Category string
+%key: Obligation_Number
+%link: Obligation_Number -> Project[Obligation_Number]
+%index: Obligation_Number
+%size: Obligation_Number 1-255
+%size: Project_Name 1-255
+%size: Evidence 1-1000
+%size: General_Comments 1-1000
+%size: Category 1-255
+
+%rec: ActionComments
+%doc: Contains comments on actions, including compliance and non-conformance comments.
+%mandatory: Obligation_Number Project_Name Action_DueDate Status_Id Category
+%type: Obligation_Number string
+%type: Project_Name string
+%type: Action_DueDate date
+%type: Close_Out_Date date
+%type: General_Comments string
+%type: Compliance_Comments string
+%type: NonConformance_Comments string
+%type: Status_Id int
+%type: Category string
+%key: Obligation_Number
+%link: Obligation_Number -> Project[Obligation_Number]
+%link: Status_Id -> ActionsStatus[id]
+%index: Obligation_Number
+%index: Status_Id
+%size: Obligation_Number 1-255
+%size: Project_Name 1-255
+%size: General_Comments 1-1000
+%size: Compliance_Comments 1-1000
+%size: NonConformance_Comments 1-1000
+%size: Category 1-255
+
+%rec: InspectionScheduling
+%doc: Contains scheduling information for inspections, including frequency and inspection IDs.
+%mandatory: Obligation_Number Project_Name Inspection_Frequency_Id Inspection_Id Category
+%type: Obligation_Number string
+%type: Project_Name string
+%type: Inspection_Frequency_Id int
+%type: Inspection_Id int
+%type: Category string
+%key: Obligation_Number
+%link: Obligation_Number -> Project[Obligation_Number]
+%link: Inspection_Frequency_Id -> InspectionFrequency[id]
+%link: Inspection_Id -> InspectionsYesOrNo[id]
+%index: Obligation_Number
+%index: Inspection_Frequency_Id
+%index: Inspection_Id
+%size: Obligation_Number 1-255
+%size: Project_Name 1-255
+%size: Category 1-255
+
+%rec: RecurringObligations
+%doc: Contains information about recurring obligations, including forecast dates and status IDs.
+%mandatory: Obligation_Number Project_Name Recurring_Forecast_Date Recurring_Frequency_Id Recurring_Obligation_Id Recurring_Status_Id Category
+%type: Obligation_Number string
+%type: Project_Name string
+%type: Recurring_Forecast_Date date
+%type: Recurring_Frequency_Id int
+%type: Recurring_Obligation_Id int
+%type: Recurring_Status_Id int
+%type: Category string
+%key: Obligation_Number
+%link: Obligation_Number -> Project[Obligation_Number]
+%link: Recurring_Frequency_Id -> RecurringFrequency[id]
+%link: Recurring_Obligation_Id -> RecurringObligationYesOrNo[id]
+%link: Recurring_Status_Id -> RecurringStatus[id]
+%index: Obligation_Number
+%index: Recurring_Frequency_Id
+%index: Recurring_Obligation_Id
+%index: Recurring_Status_Id
+%size: Obligation_Number 1-255
+%size: Project_Name 1-255
+%size: Category 1-255
+%constraint: "Recurring_Frequency > 0 if Recurring_Obligation_Id == 1"
+%constraint: "Inspection_Frequency > 0 if Inspection_Id == 1"
+%constraint: "Recurring_Forecast_Date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\+[0-9]{2}:[0-9]{2}$'"
+
+%rec: UserProfile
+%type: username string
+%type: email string
+%type: title string
+%type: phone string
+%type: pronouns string
+%type: last_login date
+%type: responsibility string
+%key: username
+%link: responsibility -> Project[Responsibility]

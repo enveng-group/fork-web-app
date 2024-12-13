@@ -310,7 +310,7 @@ Unfortunately, this technique does not work for 'CONFIG_SHELL' due to an
 Autoconf limitation.  Until the limitation is lifted, you can use this
 workaround:
 
-     CONFIG_SHELL=/bin/bash ./configure CONFIG_SHELL=/bin/bash
+     CONFIG_SHELL=/bin/sh ./configure CONFIG_SHELL=/bin/sh
 
 'configure' Invocation
 ======================

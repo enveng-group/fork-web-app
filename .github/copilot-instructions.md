@@ -7,12 +7,23 @@ These instructions ensure Copilot's suggestions align with our project's technic
 ## **General Guidelines**
 - Adhere to **ISO/IEC 9899:1990 (C90 Standard)**, ** POSIX.1 (ISO/IEC 9945-1:1996 - IEEE Standard 1003.1)**, and **X/Open** compliance in all code suggestions.
 - Ensure code is **portable**, **cross-platform**, and **cross-architecture**:
-    - Prioritize compatibility with `musl libc`, and `musl-gcc`.
+    - Prioritize compatibility with `musl libc`, and `musl-clang`.
     - Avoid features requiring `glibc` or non-portable platform-specific APIs.
 - Write code optimized for lightweight environments (e.g. `musl`).
 - Data oriented design is preferred over object oriented design.
 - Format C Code following GNU Coding Standards.
 - Do not use C++ comments (`//`) in C code.
+- Do not use undeclared identifier.
+- Generate code that does not allow variable declarations in for loop initializers
+- Always define variables at the beginning of the block.
+- Always define functions before they are called.
+- Always define reference variables with the `&` operator.
+- Always define pointers with the `*` operator.
+- Always define arrays with the `[]` operator.
+- Never generate code that has undefined reference behaviour.
+- Never redefine a variable in the same scope.
+- Avoid generating code that are conflicting types for the same variable.
+- Avoid previous declarations of variables.
 
 ---
 
@@ -119,131 +130,34 @@ These instructions ensure Copilot's suggestions align with our project's technic
 - Ensure that the generated snippets adhere to the project's coding standards and practices as outlined in this document.
 - Provide context-specific suggestions that integrate seamlessly with the existing codebase.
 
-### File Organization
-
-- Maintain the following directory structure:
+## basic directory structure
 
 ```plaintext
 .
-├── ACKNOWLEDGEMENT.md
-├── app.log
-├── AUTHORS
-├── CHANGELOG
-├── CMakeLists.txt
-├── CODE_OF_CONDUCT.md
-├── compile_commands.json
-├── CONTRIBUTING.md
-├── COPYING
-├── docs
-│   ├── ARCHITECTURE.md
-│   ├── CONTACT.md
-│   ├── CONTRIBUTORS.md
-│   ├── CREDITS.md
-│   ├── DEVELOPERS.md
-│   ├── DISCLAIMER.md
-│   ├── EXAMPLES.md
-│   ├── FAQ.md
-│   ├── GLOSSARY.md
-│   ├── GOVERNANCE.md
-│   ├── HISTORY.md
-│   ├── MIGRATION.md
-│   ├── PRIVACY.md
-│   ├── REFERENCES.md
-│   ├── RELEASE_NOTES.md
-│   ├── REQUIREMENTS.md
-│   ├── ROADMAP.md
-│   ├── STYLEGUIDE.md
-│   ├── TERMS.md
-│   ├── TROUBLESHOOTING.md
-│   ├── TUTORIAL.md
-│   └── USAGE.md
-├── Doxyfile
-├── entries[config-
-├── entry_count++]
-├── etc
-│   ├── config.ini
-│   ├── letsencrypt
-│   │   └── live
-│   │       └── yourdomain.com
-│   │           ├── cert.pem
-│   │           └── privkey.pem
-│   └── server
-│       └── auth.passwd
-├── HACKING
-├── include
-│   ├── atomic_ops.h
-│   ├── compat.h
-│   ├── compat_layer.h
-│   ├── compat_types.h
-│   ├── config_loader.h
-│   ├── constants.h
-│   ├── csv_utils.h
-│   ├── data_structures.h
-│   ├── env_loader.h
-│   ├── error_codes.h
-│   ├── error_handler.h
-│   ├── external_includes.h
-│   ├── garbage_collector.h
-│   ├── http_parser.h
-│   ├── http_response.h
-│   ├── logger.h
-│   ├── project.h
-│   ├── records.h
-│   ├── rec_utils.h
-│   ├── server.h
-│   ├── socket_module.h
-│   ├── ssl_module.h
-│   ├── static_file_handler.h
-│   ├── test_framework.h
-│   ├── utils.h
-│   └── validator.h
-├── INSTALL
-├── LICENSE
-├── logfile.log
-├── MAINTAINERS
-├── MONITORING_AND_EVALUATION
-├── package.json
-├── package-lock.json
-├── README.md
-├── SECURITY.md
-├── src
-│   ├── add_custom_uint64.s
-│   ├── atomic_ops.c
-│   ├── compat.c
-│   ├── compat_layer.c
-│   ├── compatStrtol64_asm.s
-│   ├── config_loader.c
-│   ├── constants.c
-│   ├── csv_utils.c
-│   ├── data_structures.c
-│   ├── div_custom_uint64.s
-│   ├── env_loader.c
-│   ├── error_handler.c
-│   ├── garbage_collector.c
-│   ├── http_parser.c
-│   ├── http_response.c
+├── include/           # Header files
+│   ├── auth.h        # Authentication functions
+│   ├── config.h      # Configuration handling
+│   ├── database.h    # Database operations
+│   ├── http.h        # HTTP/HTTPS handling
+│   ├── logger.h      # Logging functionality
+│   ├── server.h      # Server core functionality
+│   └── utils.h       # Utility functions
+├── src/              # Source files
+│   ├── auth.c
+│   ├── config.c
+│   ├── database.c
+│   ├── http.c
 │   ├── logger.c
 │   ├── main.c
-│   ├── records.c
-│   ├── rec_utils.c
 │   ├── server.c
-│   ├── sha256_asm.c
-│   ├── socket_module.c
-│   ├── ssl_module.c
-│   ├── static_file_handler.c
-│   ├── utils.c
-│   └── validator.c
-├── SUPPORT.md
-├── TODO.md
-├── var
-│   └── www
-│       ├── data
-│       │   └── records.rec
-│       └── html
-│           └── index.html
-└── web-app.code-workspace
-
-13 directories, 105 files
+│   └── utils.c
+├── static/           # Static web content
+│   ├── index.html    # Login page
+│   ├── dashboard.html
+│   └── profile.html
+├── docs/            # Documentation
+├── tests/           # Unit tests
+└── Makefile
 ```
 
 ### POSIX Headers only allowed to use

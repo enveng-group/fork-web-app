@@ -1,97 +1,107 @@
+/* filepath: src/utils.c */
 /**
- * \file utils.c
- * \brief Implements utility functions.
- * \author Adrian Gallo
- * \copyright 2024 Enveng Group
- * \license AGPL-3.0-or-later
+ * Copyright 2024 Enveng Group - Adrian Gallo.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-#include "../include/utils.h"
-#include "../include/compat.h"
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <time.h>
+#include <sys/stat.h>
+#include <pwd.h>
+#include "../include/utils.h"
+#include "../include/logger.h"
 
-/**
- * \brief Safely copies a string to a destination buffer.
- *
- * \param dest Destination buffer.
- * \param src Source string.
- * \param n Size of the destination buffer.
- * \return 0 on success, -1 on failure.
- */
-int safeStringCopy(char *dest, const char *src, size_t n)
+char* generateUUID(void)
 {
-    size_t src_len;
+    static char uuid[37];
+    const char* hex = "0123456789abcdef";
+    int i;
 
-    if (n == 0)
-    {
+    srand((unsigned int)time(NULL) ^ (unsigned int)getpid());
+
+    for (i = 0; i < 36; i++) {
+        if (i == 8 || i == 13 || i == 18 || i == 23) {
+            uuid[i] = '-';
+        } else {
+            uuid[i] = hex[rand() % 16];
+        }
+    }
+    uuid[36] = '\0';
+
+    return uuid;
+}
+
+int createDirectoryIfNotExists(const char *path)
+{
+    struct stat st;
+
+    if (!path) {
+        logError("Invalid path provided");
         return -1;
     }
 
-    src_len = strlen(src);
-    if (src_len >= n)
-    {
-        return -1;
+    if (stat(path, &st) == -1) {
+        if (mkdir(path, 0755) == -1) {
+            logError("Failed to create directory: %s", path);
+            return -1;
+        }
     }
-
-    strncpy(dest, src, n - 1);
-    dest[n - 1] = '\0';
 
     return 0;
 }
 
-/**
- * \brief Example function that was causing warnings.
- *
- * \param str Input string.
- * \return Processed string.
- */
-char *processString(char *str)
+int fileExists(const char *path)
 {
-    char *end = str;
-
-    /* Example processing (use 'end' to avoid unused variable warning) */
-    while (*end != '\0')
-    {
-        end++;
-    }
-
-    /* Ensure the function returns a value */
-    return str;
+    struct stat st;
+    return stat(path, &st) == 0;
 }
 
-/**
- * \brief Trims leading and trailing whitespace from a string.
- *
- * \param str The string to trim.
- * \return The trimmed string.
- */
-char *trimWhitespace(char *str)
+int setFilePermissions(const char *path, mode_t mode)
 {
-    char *end;
-
-    /* Trim leading space */
-    while (isspace((unsigned char)*str))
-    {
-        str++;
+    if (!path) {
+        logError("Invalid path provided");
+        return -1;
     }
 
-    if (*str == 0) /* All spaces? */
-    {
-        return str;
+    if (chmod(path, mode) == -1) {
+        logError("Failed to set file permissions: %s", path);
+        return -1;
     }
 
-    /* Trim trailing space */
-    end = str + strlen(str) - 1;
-    while (end > str && isspace((unsigned char)*end))
-    {
-        end--;
+    return 0;
+}
+
+char* getCurrentUsername(void)
+{
+    struct passwd *pw;
+    uid_t uid;
+
+    uid = getuid();
+    pw = getpwuid(uid);
+
+    return pw ? pw->pw_name : NULL;
+}
+
+int validatePath(const char *path)
+{
+    if (!path || strlen(path) == 0) {
+        return 0;
     }
 
-    /* Write new null terminator */
-    *(end + 1) = 0;
+    if (access(path, F_OK) == -1) {
+        return 0;
+    }
 
-    return str;
+    return 1;
+}
+
+void secureZeroMemory(void *ptr, size_t size)
+{
+    volatile unsigned char *p = ptr;
+    while (size--) {
+        *p++ = 0;
+    }
 }

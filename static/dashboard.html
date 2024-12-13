@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Environmental Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+        }
+        .header {
+            background-color: #0056b3;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-menu {
+            background-color: #004494;
+            padding: 0.5rem;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+        }
+        .nav-menu a:hover {
+            background-color: #003470;
+            border-radius: 4px;
+        }
+        .container {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .project-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .project-card h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        .status-inprogress {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .project-details {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        .user-info {
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            background-color: #bd2130;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Environmental Management System</h1>
+        <div class="user-info">
+            <span id="username"></span>
+            <form action="/logout" method="POST" style="margin: 0;">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <nav class="nav-menu">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/profile">Profile</a>
+        <a href="/audit">Audit Log</a>
+    </nav>
+
+    <main class="container">
+        <h2>Projects Overview</h2>
+        <div class="projects-grid">
+            <div class="project-card">
+                <h3>Pilbara Ports</h3>
+                <span class="status-badge status-inprogress">In Progress</span>
+                <div class="project-details">
+                    <p><strong>Mechanism:</strong> Portside CEMP</p>
+                    <p><strong>Phase:</strong> Design and Construction</p>
+                    <p><strong>Active Obligations:</strong> PCEMP-01</p>
+                </div>
+                <form action="/project/details" method="GET">
+                    <input type="hidden" name="project_id" value="PCEMP-01">
+                    <button type="submit">View Details</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

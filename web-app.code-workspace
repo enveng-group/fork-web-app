@@ -218,6 +218,7 @@
         },
         "workbench.preferredHighContrastColorTheme": "Default Dark Modern",
         "workbench.colorTheme": "GitHub Dark Default",
+        "workbench.colorTheme": "GitHub Dark Default",
         "diffEditor.ignoreTrimWhitespace": false,
         "search.exclude": {
             "**/node_modules": true,
@@ -263,12 +264,15 @@
         "github.copilot.chat.inlineChatHint.enabled": true,
         "snyk.folderConfigs": [
             {
-                "folderPath": "/home/ubuntu/web-app",
-                "baseBranch": "main"
+                "folderPath": "/devcontainer/web-app",
+                "baseBranch": "main",
+                "localBranches": ["feature/boilerplate", "main"]
             }
         ],
         "snyk.scanningMode": "manual",
-        "snyk.trustedFolders": ["/home/ubuntu/web-app"],
+        "snyk.trustedFolders": [
+            "/devcontainer/web-app",
+        ],
         "workbench.startupEditor": "readme",
         "diffEditor.maxComputationTime": 0,
         "licenser.useSPDXLicenseFormat": true,
@@ -322,7 +326,6 @@
         "notebook.output.wordWrap": true,
         "notebook.variablesView": true,
         "chat.editor.wordWrap": "on",
-        "chat.experimental.detectParticipant.enabled": false,
         "application.experimental.rendererProfiling": true,
         "ipynb.experimental.serialization": true,
         "git.autoStash": true,
@@ -425,15 +428,38 @@
         "editor.semanticHighlighting.enabled": true,
         "C_Cpp.default.cStandard": "c11",
         "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
-        "C_Cpp.codeAnalysis.clangTidy.enabled": true,
-        "c-cpp-flylint.enable": false,
-        "c-cpp-flylint.language": "c",
-        "c-cpp-flylint.clang.enable": false,
-        "c-cpp-flylint.clang.blocks": false,
-        "c-cpp-flylint.cppcheck.platform": "unix64",
-        "c-cpp-flylint.flexelint.enable": false,
-        "c-cpp-flylint.flawfinder.enable": false,
-        "c-cpp-flylint.lizard.enable": false
+        "C_Cpp.codeAnalysis.clangTidy.enabled": false,
+        "C_Cpp.default.browse.databaseFilename": "/home/ubuntu/web-app/compile_commands.json",
+        "C_Cpp.clang_format_path": "/usr/bin/clang-format",
+        "C_Cpp.formatting": "clangFormat",
+        "C_Cpp.codeAnalysis.clangTidy.config": "/home/ubuntu/web-app/.clang-tidy",
+        "C_Cpp.codeAnalysis.clangTidy.path": "/usr/bin/clang-tidy",
+        "shellcheck.executablePath": "/usr/bin/shellcheck",
+        "C_Cpp.default.cppStandard": "c++98",
+        "C_Cpp.default.compilerPath": "/usr/bin/musl-gcc",
+        "clang-format.assumeFilename": ".clang-format",
+        "clang-format.executable": "/usr/bin/clang-format",
+        "clang-format.fallbackStyle": "GNU",
+        "clang-format.language.cpp.enable": false,
+        "clang-format.language.cuda.enable": false,
+        "clang-format.language.glsl.enable": false,
+        "clang-format.language.java.enable": false,
+        "clang-format.language.javascript.fallbackStyle": "GNU",
+        "clang-format.language.objective-c.enable": false,
+        "clang-format.language.objective-cpp.enable": false,
+        "clang-format.language.proto.enable": false,
+        "clang-format.language.typescript.enable": false,
+        "clang-tidy.fixOnSave": false,
+        "terminal.integrated.profiles.linux": {},
+        "clang-tidy.buildPath": "/home/ubuntu/web-app",
+        "cmake.cmakePath": "/usr/bin/cmake",
+        "cmake.cpackPath": "/usr/bin/cpack",
+        "cmake.allowCommentsInPresetsFile": false,
+        "cmake.ctestPath": "/usr/bin/ctest",
+        "cmake.generator": "/usr/bin/ninja",
+        "clang-tidy.lintOnSave": false,
+        "C_Cpp.codeAnalysis.clangTidy.codeAction.formatFixes": false,
+        "chat.detectParticipant.enabled": false
     },
     "extensions": {
         "recommendations": [
@@ -447,7 +473,6 @@
             "qiumingge.cpp-check-lint",
             "cs128.cs128-clang-tidy",
             "editorconfig.editorconfig",
-            "github.copilot",
             "github.copilot-chat",
             "github.github-vscode-theme",
             "ymotongpoo.licenser",
@@ -455,7 +480,10 @@
             "ms-vscode.remote-repositories",
             "willumz.generic-pseudocode",
             "maziac.asm-code-lens",
-            "nathanj.cppcheck-plugin"
+            "snyk-security.snyk-vulnerability-scanner",
+            "xaver.clang-format",
+            "ms-vscode.cmake-tools",
+            "ms-vscode.live-server"
         ]
     }
 }

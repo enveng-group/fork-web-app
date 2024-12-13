@@ -1,9 +1,9 @@
-# Set default behavior to automatically normalize line endings.
-* text=auto
+# Set default behavior to automatically normalize line endings
+* text=auto eol=lf
 
 # Define attributes for specific file types
-*.c      diff=c
-*.h      diff=c
+*.c      diff=c text eol=lf
+*.h      diff=c text eol=lf
 *.cpp    diff=cpp
 *.hpp    diff=cpp
 *.asm    diff=asm
@@ -24,6 +24,10 @@
 *.gz     binary
 *.bz2    binary
 *.xz     binary
+*.pem    binary
+*.der    binary
+*.key    binary
+*.db     binary
 
 # Custom diff for Dockerfile
 Dockerfile diff=dockerfile
@@ -37,30 +41,33 @@ containerfile diff=dockerfile
 *.yaml   diff=yaml
 
 # Custom diff for Markdown files
-*.md     diff=markdown
+*.md     diff=markdown text
 
 # Custom diff for HTML files
-*.html   diff=html
+*.html   diff=html text
 
 # Custom diff for CSS files
-*.css    diff=css
+*.css    diff=css text
 
 # Custom diff for JavaScript files
-*.js     diff=javascript
+*.js     diff=javascript text
 
 # Custom diff for INI files
 *.ini    diff=ini
 
 # Custom diff for plaintext files
-*.conf   diff=plaintext
-*.txt    diff=plaintext
-*.rec    diff=plaintext
+*.conf   diff=plaintext text
+*.txt    diff=plaintext text
+*.rec    diff=plaintext text
+*.doc    text
+*.desc   text
 
 # Custom diff for CSV files
 *.csv    diff=csv
 
 # Custom diff for dotenv files
-*.env*   diff=dotenv
+*.env*   diff=dotenv text
+.env.vault text
 
 # Custom diff for Docker ignore files
 .dockerignore diff=dockerfile
@@ -69,14 +76,14 @@ containerfile diff=dockerfile
 .vscode  diff=json
 
 # Custom diff for EditorConfig files
-.editorconfig diff=ini
+.editorconfig diff=ini text
 
 # Custom diff for CMake files
 CMakeLists.txt diff=cmake
 *.cmake  diff=cmake
 
 # Custom diff for Shell scripts
-*.sh     diff=shell
+*.sh     diff=shell text eol=lf
 
 # Custom diff for Python files
 *.py     diff=python
@@ -85,5 +92,10 @@ CMakeLists.txt diff=cmake
 *.xml    diff=xml
 
 # Custom diff for Makefiles
-Makefile diff=make
-*.mk     diff=make
+Makefile diff=make text eol=lf
+*.mk     diff=make text
+
+# Security-sensitive files
+privkey.pem binary
+cert.pem    binary
+passwd      text

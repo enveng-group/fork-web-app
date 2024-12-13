@@ -1,187 +1,212 @@
+/* filepath: /devcontainer/web-app/src/main.c */
 /**
- * \file main.c
- * \brief Main entry point for the application.
- * \author Adrian Gallo
- * \copyright 2024 Enveng Group
- * \license AGPL-3.0-or-later
+ * Copyright 2024 Enveng Group - Adrian Gallo.
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-#include "../include/atomic_ops.h"
-#include "../include/compat.h"
-#include "../include/config_loader.h"
-#include "../include/constants.h"
-#include "../include/csv_utils.h"
-#include "../include/data_structures.h"
-#include "../include/env_loader.h"
-#include "../include/error_codes.h"
-#include "../include/error_handler.h"
-#include "../include/garbage_collector.h"
-#include "../include/http_parser.h"
-#include "../include/http_response.h"
-#include "../include/logger.h"
-#include "../include/project.h"
-#include "../include/rec_utils.h"
-#include "../include/records.h"
-#include "../include/socket_module.h"
-#include "../include/ssl_module.h"
-#include "../include/static_file_handler.h"
-#include "../include/test_framework.h"
-#include "../include/validator.h"
+/* System headers */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
+#include <signal.h>
+#include <unistd.h>
+#include <locale.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <pwd.h>
+#include <openssl/ssl.h>
 
-#define ENV_FILE ".env"
-#define CONFIG_FILE "etc/config.ini"
-#define LOG_FILE "app.log"
+/* Project headers */
+#include "../include/config.h"
+#include "../include/server.h"
+#include "../include/logger.h"
+#include "../include/database.h"
+#include "../include/auth.h"
+#include "../include/audit.h"
+#include "../include/session.h"
+#include "../include/utils.h"
+#include "../include/data_structures.h"
 
-/* Global configuration variable */
-Config config;
+#define DEFAULT_CONFIG_PATH "/etc/env/.env"
+#define DEFAULT_LOG_PATH "/etc/log/app.log"
+#define DEFAULT_DB_PATH "/etc/db/records.rec"
+#define DEFAULT_AUTH_PATH "/etc/auth/passwd"
+#define DEFAULT_SSL_CERT "/etc/ssl/cert.pem"
+#define DEFAULT_SSL_KEY "/etc/ssl/privkey.pem"
+#define DEFAULT_AUDIT_PATH "/var/log/webapp/audit.log"
+#define DEFAULT_LOG_LEVEL 0
+#define HTTP_INTERNAL_ERROR 500
 
-/* Global garbage collector */
-GarbageCollector gc;
+/* Global variables */
+volatile sig_atomic_t running = 1;
+struct DBHandle db_handle;
+/* struct Config *g_config = NULL; */  /* Delete or comment out this line */
 
-/* Function prototypes */
-int initialize(void);
-void cleanup(void);
-void printLoadedConfig(void);
-void startServer(void);
+/* Forward declarations */
+static void cleanupHandler(int signum);
+int otherInit(void);
+static int initializeSubsystems(const struct Config *config);
+struct Config *configInit(const char *path);
+void configCleanup(struct Config *config);
+int serverStart(const struct ServerConfig *config);
 
-/**
- * \brief Main function.
- *
- * \return Exit status.
- */
 int main(void)
 {
-    /* Initialize the config structure */
-    memset(&config, 0, sizeof(Config));
+    struct ServerConfig server_config;
+    int status;
+    struct sigaction sa;
 
-    /* Initialize the garbage collector */
-    initGarbageCollector(&gc);
-
-    if (loadConfig(CONFIG_FILE, &config) != SUCCESS)
-    {
-        logError("Failed to load configuration");
+    /* Setup signal handler */
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = cleanupHandler;
+    if (sigaction(SIGINT, &sa, NULL) == -1 ||
+        sigaction(SIGTERM, &sa, NULL) == -1) {
+        fprintf(stderr, "Failed to setup signal handlers\n");
         return EXIT_FAILURE;
     }
 
-    logFinalConfig(&config);
-
-    if (initialize() != SUCCESS)
-    {
-        logError("Initialization failed");
+    /* Initialize config */
+    g_config = configInit(DEFAULT_CONFIG_PATH);
+    if (!g_config) {
+        fprintf(stderr, "Failed to initialize configuration\n");
         return EXIT_FAILURE;
     }
 
-    printLoadedConfig();
+    /* Initialize subsystems */
+    status = initializeSubsystems(g_config);
+    if (status != 0) {
+        configCleanup(g_config);
+        return EXIT_FAILURE;
+    }
 
-    /* Start the server */
-    startServer();
+    /* Initialize server config */
+    memset(&server_config, 0, sizeof(server_config));
+    server_config.port = g_config->server_port;
+    server_config.ssl_cert = g_config->ssl_cert_file;
+    server_config.ssl_key = g_config->ssl_key_file;
+    server_config.db_file = g_config->db_file;
+    server_config.max_streams = g_config->quic_max_streams;
+    server_config.quic_timeout = g_config->quic_timeout_ms;
 
-    cleanup();
+    /* Start server */
+    status = serverStart(&server_config);
+    if (status != 0) {
+        fprintf(stderr, "Server failed to start\n");
+        configCleanup(g_config);
+        return EXIT_FAILURE;
+    }
 
-    /* Free the configuration resources */
-    freeConfig(&config);
-
+    /* Cleanup */
+    configCleanup(g_config);
     return EXIT_SUCCESS;
 }
 
-/**
- * \brief Initializes the application.
- *
- * \return SUCCESS on success, otherwise an error code.
- */
-int initialize(void)
+static void cleanupHandler(int signum)
 {
-    initLogger(LOG_FILE);
-    logInfo("Application starting...");
-
-    if (loadEnvConfig(ENV_FILE) != SUCCESS)
-    {
-        logError("Failed to load environment configuration");
-        return ERROR_CONFIG_LOAD;
-    }
-
-    if (loadConfig(CONFIG_FILE, &config) != SUCCESS)
-    {
-        logError("Failed to load configuration");
-        return ERROR_CONFIG_LOAD;
-    }
-
-    logFinalConfig(&config);
-    logInfo("All modules initialized successfully");
-    return SUCCESS;
+    (void)signum; /* Suppress unused parameter warning */
+    running = 0;
 }
 
-/**
- * \brief Cleans up resources before exiting the application.
- */
-void cleanup(void)
+static int initializeSubsystems(const struct Config *config)
 {
-    cleanupGarbageCollector(&gc);
-    closeLogger();
-}
+    struct Response *response;
 
-/**
- * \brief Prints the loaded configuration.
- */
-void printLoadedConfig(void)
-{
-    logInfo("Loaded configuration:");
-    logInfo("Server IP: %s", config.server_ip);
-    logInfo("Log Level: %d", config.log_level);
-    logInfo("Max Connections: %d", config.max_connections);
-}
-
-/**
- * \brief Starts the server and handles incoming connections.
- */
-void startServer(void)
-{
-    int server_fd, client_fd;
-    pthread_t thread_id;
-    int *client_fd_ptr;
-
-    server_fd = createAndBindSocket();
-    if (server_fd < 0)
-    {
-        logError("Failed to create and bind socket");
-        return;
+    /* Initialize logging */
+    if (logInit(config->log_path, DEFAULT_LOG_LEVEL) != 0) {
+        fprintf(stderr, "Failed to initialize logging\n");
+        return -1;
     }
 
-    logInfo("Server is listening on %s:%d", getServerIp(), getServerPort());
-
-    while (1)
-    {
-        client_fd = acceptConnection(server_fd);
-        if (client_fd < 0)
-        {
-            logError("Failed to accept connection");
-            continue;
-        }
-
-        client_fd_ptr = malloc(sizeof(int));
-        if (client_fd_ptr == NULL)
-        {
-            logError("Failed to allocate memory for client_fd_ptr");
-            close(client_fd);
-            continue;
-        }
-
-        *client_fd_ptr = client_fd;
-        if (pthread_create(&thread_id, NULL, handle_client, client_fd_ptr) != 0)
-        {
-            logError("Failed to create thread for client");
-            free(client_fd_ptr);
-            close(client_fd);
-        }
-        else
-        {
-            pthread_detach(thread_id);
-        }
+    /* Initialize database */
+    if (dbInit(config->db_path, &db_handle) != 0) {
+        fprintf(stderr, "Failed to initialize database\n");
+        return -1;
     }
 
-    close(server_fd);
+    /* Initialize other subsystems */
+    if (otherInit() != 0) {
+        response = dsCreateResponse(HTTP_INTERNAL_ERROR);
+        if (response) {
+            dsFreeResponse(response);
+        }
+        return -1;
+    }
+
+    return 0;
+}
+
+struct Config *configInit(const char *path)
+{
+    struct Config *config;
+
+    config = (struct Config *)malloc(sizeof(struct Config));
+    if (!config) {
+        fprintf(stderr, "Failed to allocate config structure\n");
+        return NULL;
+    }
+
+    memset(config, 0, sizeof(struct Config));
+
+    /* Load configuration from file */
+    if (loadConfig(path, config) != 0) {
+        fprintf(stderr, "Failed to load configuration from %s\n", path);
+        free(config);
+        return NULL;
+    }
+
+    return config;
+}
+
+void configCleanup(struct Config *config)
+{
+    if (config) {
+        /* Clean up any allocated resources */
+        free(config);
+    }
+}
+
+int otherInit(void)
+{
+    /* Initialize any other required subsystems */
+    if (sessionInit() != 0) {
+        logError("Failed to initialize session management");
+        return -1;
+    }
+
+    /* Initialize audit subsystem */
+    if (auditInit(DEFAULT_AUDIT_PATH) != 0) {
+        logError("Failed to initialize audit subsystem");
+        return -1;
+    }
+
+    return 0;
+}
+
+int serverStart(const struct ServerConfig *config)
+{
+    int status;
+
+    if (!config) {
+        logError("Invalid server configuration");
+        return -1;
+    }
+
+    /* Initialize server */
+    status = initServer(config);
+    if (status != 0) {
+        logError("Failed to initialize server");
+        return -1;
+    }
+
+    /* Run server main loop */
+    status = runServer();
+    if (status != 0) {
+        logError("Server operation failed");
+        return -1;
+    }
+
+    /* Server stopped, clean up */
+    stopServer();
+    return 0;
 }

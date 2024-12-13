@@ -57,9 +57,6 @@ bin/
 build/
 etc/letsencrypt/
 
-# Configuration and build scripts
-config.*
-
 # Development environment files
 .vscode/
 *.db
@@ -108,5 +105,7 @@ yarn-error.log*
 .flaskenv*
 
 .env*
-etc/letsencrypt/live/yourdomain.com/cert.pem
-etc/letsencrypt/live/yourdomain.com/privkey.pem
+cert.pem
+privkey.pem
+records.rec
+etc/auth/passwd
