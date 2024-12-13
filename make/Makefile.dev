@@ -4,23 +4,19 @@ CC = gcc
 ARCH_FLAGS = -march=native
 
 OPT_FLAGS = -O0 -ggdb3 \
-            -fno-omit-frame-pointer \
-            -fno-inline
+			-fno-omit-frame-pointer \
+			-fno-inline
 
 DEBUG_FLAGS = -DDEBUG \
-             -DDEV_BUILD \
-             -fsanitize=address \
-             -fsanitize=undefined
+			 -DDEV_BUILD
 
 CFLAGS = $(SHARED_FLAGS) \
-         $(ARCH_FLAGS) \
-         $(OPT_FLAGS) \
-         $(DEBUG_FLAGS)
+		 $(ARCH_FLAGS) \
+		 $(OPT_FLAGS) \
+		 $(DEBUG_FLAGS)
 
-LDFLAGS = -pthread \
-          -fsanitize=address \
-          -fsanitize=undefined \
-          -lssl -lcrypto
+LDFLAGS = -static -pthread \
+		  -lssl -lcrypto
 
 # Development paths and users
 DEV_PREFIX = /devcontainer/dev
@@ -29,7 +25,7 @@ DEV_GROUP = appuser
 DEV_UID = 1000
 DEV_GID = 1000
 
-# Development file paths
+# Development file paths - update to match current structure
 DEV_SSL_CERT = $(PREFIX)/etc/ssl/cert.pem
 DEV_SSL_KEY = $(PREFIX)/etc/ssl/privkey.pem
 DEV_CONFIG = $(PREFIX)/etc/env/.env
@@ -40,33 +36,62 @@ DEV_AUDIT = $(PREFIX)/var/log/audit.log
 
 # Development targets
 dev-install: all
-    @echo "Installing in development environment..."
-    @install -d -m 755 $(DEV_PREFIX)/bin
-    @install -d -m 750 $(DEV_PREFIX)/etc/app/ssl
-    @install -d -m 750 $(DEV_PREFIX)/etc/app/auth
-    @install -d -m 750 $(DEV_PREFIX)/etc/app/env
-    @install -d -m 750 $(DEV_PREFIX)/var/log
-    @install -d -m 750 $(DEV_PREFIX)/var/lib
-    @install -m 755 $(TARGET) $(DEV_PREFIX)/bin/
-    @install -m 600 $(SSL_KEY) $(DEV_PREFIX)/etc/app/ssl/
-    @install -m 644 $(SSL_CERT) $(DEV_PREFIX)/etc/app/ssl/
-    @install -m 600 $(CONFIG_PATH) $(DEV_PREFIX)/etc/app/env/
-    @install -m 600 $(AUTH_PATH) $(DEV_PREFIX)/etc/app/auth/
-    @install -m 644 $(LOG_PATH) $(DEV_PREFIX)/var/log/
-    @install -m 600 $(AUDIT_PATH) $(DEV_PREFIX)/var/log/
+	@echo "Installing in development environment..."
+	@install -d -m 755 $(DEV_PREFIX)/bin
+	@install -d -m 750 $(DEV_PREFIX)/etc/app/ssl
+	@install -d -m 750 $(DEV_PREFIX)/etc/app/auth
+	@install -d -m 750 $(DEV_PREFIX)/etc/app/env
+	@install -d -m 750 $(DEV_PREFIX)/var/log
+	@install -d -m 750 $(DEV_PREFIX)/var/lib
+	@install -m 755 $(TARGET) $(DEV_PREFIX)/bin/
+	@install -m 600 $(SSL_KEY) $(DEV_PREFIX)/etc/app/ssl/
+	@install -m 644 $(SSL_CERT) $(DEV_PREFIX)/etc/app/ssl/
+	@install -m 600 $(CONFIG_PATH) $(DEV_PREFIX)/etc/app/env/
+	@install -m 600 $(AUTH_PATH) $(DEV_PREFIX)/etc/app/auth/
+	@install -m 644 $(LOG_PATH) $(DEV_PREFIX)/var/log/
+	@install -m 600 $(AUDIT_PATH) $(DEV_PREFIX)/var/log/
 
+# Modified dev-setup target to use existing files
 dev-setup: dirs
-    @echo "Setting up development environment..."
-    @install -m 644 config/cert.pem.example $(DEV_SSL_CERT)
-    @install -m 600 config/privkey.pem.example $(DEV_SSL_KEY)
-    @install -m 600 config/.env.example $(DEV_CONFIG)
-    @install -m 600 config/passwd.example $(DEV_AUTH)
-    @touch $(DEV_DB)
-    @touch $(DEV_LOG)
-    @touch $(DEV_AUDIT)
+	@echo "Setting up development environment..."
+	@install -d -m 750 $(DEV_PREFIX)/etc/app/ssl
+	@install -d -m 750 $(DEV_PREFIX)/etc/app/env
+	@install -d -m 750 $(DEV_PREFIX)/etc/app/auth
+	@install -d -m 750 $(DEV_PREFIX)/var/lib
+	@install -d -m 750 $(DEV_PREFIX)/var/log
+	@if [ -f $(PREFIX)/etc/ssl/cert.pem ]; then \
+		install -m 644 $(PREFIX)/etc/ssl/cert.pem $(DEV_PREFIX)/etc/app/ssl/cert.pem; \
+	else \
+		touch $(DEV_PREFIX)/etc/app/ssl/cert.pem; \
+		chmod 644 $(DEV_PREFIX)/etc/app/ssl/cert.pem; \
+	fi
+	@if [ -f $(PREFIX)/etc/ssl/privkey.pem ]; then \
+		install -m 600 $(PREFIX)/etc/ssl/privkey.pem $(DEV_PREFIX)/etc/app/ssl/privkey.pem; \
+	else \
+		touch $(DEV_PREFIX)/etc/app/ssl/privkey.pem; \
+		chmod 600 $(DEV_PREFIX)/etc/app/ssl/privkey.pem; \
+	fi
+	@if [ -f $(PREFIX)/etc/env/.env ]; then \
+		install -m 600 $(PREFIX)/etc/env/.env $(DEV_PREFIX)/etc/app/env/.env; \
+	else \
+		touch $(DEV_PREFIX)/etc/app/env/.env; \
+		chmod 600 $(DEV_PREFIX)/etc/app/env/.env; \
+	fi
+	@if [ -f $(PREFIX)/etc/auth/passwd ]; then \
+		install -m 600 $(PREFIX)/etc/auth/passwd $(DEV_PREFIX)/etc/app/auth/passwd; \
+	else \
+		touch $(DEV_PREFIX)/etc/app/auth/passwd; \
+		chmod 600 $(DEV_PREFIX)/etc/app/auth/passwd; \
+	fi
+	@touch $(DEV_PREFIX)/var/lib/records.rec
+	@touch $(DEV_PREFIX)/var/log/app.log
+	@touch $(DEV_PREFIX)/var/log/audit.log
+	@chmod 600 $(DEV_PREFIX)/var/lib/records.rec
+	@chmod 644 $(DEV_PREFIX)/var/log/app.log
+	@chmod 644 $(DEV_PREFIX)/var/log/audit.log
 
 clean-dev:
-    @echo "Cleaning development environment..."
-    @rm -rf $(DEV_PREFIX)/*
-    @rm -rf $(OBJ_DIR)/*
-    @rm -rf $(BIN_DIR)/*
+	@echo "Cleaning development environment..."
+	@rm -rf $(DEV_PREFIX)/*
+	@rm -rf $(OBJ_DIR)/*
+	@rm -rf $(BIN_DIR)/*

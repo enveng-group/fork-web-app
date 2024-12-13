@@ -86,11 +86,18 @@ int authLoadPasswdEntry(const char *username, struct PasswdEntry *entry)
     char *token;
 
     if (!username || !entry) {
+        logError("Invalid parameters in authLoadPasswdEntry");
+        return -1;
+    }
+
+    if (strlen(passwd_file_path) == 0) {
+        logError("Password file path not initialized");
         return -1;
     }
 
     fp = fopen(passwd_file_path, "r");
     if (!fp) {
+        logError("Cannot open password file: %s", passwd_file_path);
         return -1;
     }
 
@@ -515,4 +522,124 @@ void authCleanup(void)
 
     pthread_mutex_unlock(&session_mutex);
     pthread_mutex_destroy(&session_mutex);
+}
+
+int authVerifyPassword(const char *password, const char *hash)
+{
+    char *crypted;
+    char salt[13];
+    int i;
+
+    if (!password || !hash) {
+        logError("Invalid password or hash pointer");
+        return -1;
+    }
+
+    /* Extract salt from hash (first 12 chars) */
+    for (i = 0; i < 12 && hash[i] != '\0'; i++) {
+        salt[i] = hash[i];
+    }
+    salt[i] = '\0';
+
+    /* Use crypt() to hash the password with the same salt */
+    crypted = crypt(password, salt);
+    if (!crypted) {
+        logError("Password encryption failed");
+        return -1;
+    }
+
+    /* Compare the hashed password with stored hash */
+    if (strcmp(crypted, hash) != 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int authSavePasswdEntry(const struct PasswdEntry *entry)
+{
+    FILE *fp;
+    FILE *tmp;
+    char line[PASSWD_LINE_MAX];
+    char tmp_path[PATH_MAX];
+    char *username;
+    int found = 0;
+
+    if (!entry) {
+        logError("Invalid password entry pointer");
+        return -1;
+    }
+
+    /* Create temporary file path */
+    snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", passwd_file_path);
+
+    /* Open existing passwd file for reading */
+    fp = fopen(passwd_file_path, "r");
+    if (!fp) {
+        logError("Cannot open password file for reading");
+        return -1;
+    }
+
+    /* Open temporary file for writing */
+    tmp = fopen(tmp_path, "w");
+    if (!tmp) {
+        logError("Cannot open temporary password file for writing");
+        fclose(fp);
+        return -1;
+    }
+
+    /* Copy contents while replacing matching entry */
+    while (fgets(line, sizeof(line), fp)) {
+        if (line[0] == '#') {
+            fprintf(tmp, "%s", line);
+            continue;
+        }
+
+        username = strtok(line, ":");
+        if (username && strcmp(username, entry->username) == 0) {
+            /* Write new entry */
+            fprintf(tmp, "%s:%s:%d:%d:%s:%s:%s\n",
+                   entry->username,
+                   entry->password_hash,
+                   entry->uid,
+                   entry->gid,
+                   entry->full_name,
+                   entry->home_dir,
+                   entry->shell);
+            found = 1;
+        } else {
+            fprintf(tmp, "%s", line);
+        }
+    }
+
+    /* Add new entry if not found */
+    if (!found) {
+        fprintf(tmp, "%s:%s:%d:%d:%s:%s:%s\n",
+               entry->username,
+               entry->password_hash,
+               entry->uid,
+               entry->gid,
+               entry->full_name,
+               entry->home_dir,
+               entry->shell);
+    }
+
+    /* Close files */
+    fclose(fp);
+    fclose(tmp);
+
+    /* Replace original file with temporary file */
+    if (rename(tmp_path, passwd_file_path) != 0) {
+        logError("Failed to update password file");
+        unlink(tmp_path);
+        return -1;
+    }
+
+    /* Set correct permissions */
+    if (chmod(passwd_file_path, 0600) != 0) {
+        logError("Failed to set password file permissions");
+        return -1;
+    }
+
+    return 0;
 }

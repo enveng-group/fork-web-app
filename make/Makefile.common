@@ -18,33 +18,33 @@ TARGET = $(BIN_DIR)/app
 
 # Common targets
 dirs:
-    @mkdir -p $(OBJ_DIR)
-    @mkdir -p $(BIN_DIR)
-    @mkdir -p $(VAR_DIR)/log
-    @mkdir -p $(VAR_DIR)/lib
-    @mkdir -p $(ETC_DIR)/auth
-    @mkdir -p $(ETC_DIR)/ssl
-    @mkdir -p $(ETC_DIR)/env
-    @mkdir -p $(DOC_DIR)
+	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(BIN_DIR)
+	@mkdir -p $(VAR_DIR)/log
+	@mkdir -p $(VAR_DIR)/lib
+	@mkdir -p $(ETC_DIR)/auth
+	@mkdir -p $(ETC_DIR)/ssl
+	@mkdir -p $(ETC_DIR)/env
+	@mkdir -p $(DOC_DIR)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-    $(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
+	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
 
 $(TARGET): $(OBJS)
-    $(CC) $(OBJS) $(LDFLAGS) $(LIBS) -o $@
-    @chmod 755 $@
+	$(CC) $(OBJS) $(LDFLAGS) $(LIBS) -o $@
+	@chmod 755 $@
 
 # Shared library dependencies
 LIBS = -lssl -lcrypto -lpthread
 
 # Shared compiler flags
 SHARED_FLAGS = -std=c90 \
-               -D_POSIX_C_SOURCE=1 \
-               -D_XOPEN_SOURCE=500 \
-               -Wall -Wextra -pedantic
+			   -D_POSIX_C_SOURCE=1 \
+			   -D_XOPEN_SOURCE=500 \
+			   -Wall -Wextra -pedantic
 
 # Clean targets
 clean-common:
-    @rm -rf $(OBJ_DIR)/* $(BIN_DIR)/*
+	@rm -rf $(OBJ_DIR)/* $(BIN_DIR)/*
 
 .PHONY: dirs clean-common

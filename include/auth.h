@@ -6,6 +6,7 @@
 #define AUTH_H
 
 #include <pwd.h>
+#include <limits.h>  /* Add this for PATH_MAX */
 
 #define MAX_SESSION_ID 64
 #define MAX_USERNAME 32

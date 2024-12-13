@@ -9,11 +9,15 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <limits.h>
+#include <errno.h>
 #include "../include/audit.h"
 #include "../include/logger.h"
 
 #define MAX_LINE_LENGTH 512
 #define INITIAL_ENTRIES 32
+#define DEFAULT_MODE 0640
+#define DIR_MODE 0750
 
 static FILE *audit_file = NULL;
 static pthread_mutex_t audit_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -21,35 +25,43 @@ static char audit_file_path[PATH_MAX];
 
 int auditInit(const char *path)
 {
-    struct stat st;
     char *last_slash;
+    int result;
 
     if (!path) {
+        logError("Audit initialization failed: NULL path provided");
         return -1;
     }
 
     strncpy(audit_file_path, path, sizeof(audit_file_path) - 1);
+    audit_file_path[PATH_MAX - 1] = '\0';
 
     /* Create directory if needed */
     last_slash = strrchr(audit_file_path, '/');
     if (last_slash) {
         *last_slash = '\0';
-        mkdir(audit_file_path, 0750);
+        result = mkdir(audit_file_path, DIR_MODE);
+        if (result != 0 && errno != EEXIST) {
+            logError("Failed to create audit directory: %s", audit_file_path);
+            return -1;
+        }
         *last_slash = '/';
     }
 
     /* Open audit file */
-    audit_file = fopen(audit_file_path, "a");
+    audit_file = fopen(audit_file_path, "a+");
     if (!audit_file) {
+        logError("Failed to open audit file: %s", audit_file_path);
         return -1;
     }
 
-    /* Set permissions */
-    if (fstat(fileno(audit_file), &st) == 0) {
-        if (fchmod(fileno(audit_file), 0640) != 0) {
-            fclose(audit_file);
-            return -1;
-        }
+    /* Set file permissions */
+    result = chmod(audit_file_path, DEFAULT_MODE);
+    if (result != 0) {
+        logError("Failed to set audit file permissions");
+        fclose(audit_file);
+        audit_file = NULL;
+        return -1;
     }
 
     return 0;
