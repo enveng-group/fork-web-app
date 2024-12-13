@@ -10,7 +10,15 @@
 
 #define MAX_ENV_LINE 1024
 #define MAX_ENV_VALUE 256
-#define DEFAULT_AUDIT_PATH "/var/log/webapp/audit.log"
+
+/* Default paths */
+#define DEFAULT_CONFIG_PATH "/devcontainer/web-app/etc/env/.env"
+#define DEFAULT_LOG_PATH "/devcontainer/web-app/var/log/app.log"
+#define DEFAULT_DB_PATH "/devcontainer/web-app/var/lib/records.rec"
+#define DEFAULT_AUTH_PATH "/devcontainer/web-app/etc/auth/passwd"
+#define DEFAULT_SSL_CERT "/devcontainer/web-app/etc/ssl/cert.pem"
+#define DEFAULT_SSL_KEY "/devcontainer/web-app/etc/ssl/privkey.pem"
+#define DEFAULT_AUDIT_PATH "/devcontainer/web-app/var/log/audit.log"
 
 struct Config {
     char log_path[PATH_MAX];

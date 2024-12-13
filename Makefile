@@ -1,144 +1,82 @@
-# Compiler
-CC = gcc
+# Main Makefile
 
-# Architecture and CPU specific flags
-ARCH_FLAGS = -march=skylake -mtune=skylake \
-			-mavx2 -mfma -mpclmul -maes \
-			-msse4.2 -msse4.1 -mssse3
+# Detect environment
+ENV ?= dev
 
-# Optimization flags
-OPT_FLAGS = -O3 -fomit-frame-pointer \
-			-ffunction-sections -fdata-sections
+# Include makefiles
+include make/Makefile.common
+ifeq ($(ENV),prod)
+    include make/Makefile.prod
+else
+    include make/Makefile.dev
+endif
 
-# Security flags
-SEC_FLAGS = -fstack-protector-all \
-			-D_THREAD_SAFE \
-			-D_REENTRANT \
-			-D_FORTIFY_SOURCE=2 \
-			-Wformat \
-			-Wformat-security
+# Install prefix based on environment
+INSTALL_PREFIX = $(if $(filter prod,$(ENV)),$(PROD_PREFIX),$(DEV_PREFIX))
 
-# Base compiler flags
-CFLAGS = -std=c90 \
-		 -D_POSIX_C_SOURCE=1 \
-		 -D_XOPEN_SOURCE=500 \
-		 -Wall \
-		 -Wextra \
-		 -pedantic \
-		 -static \
-		 $(ARCH_FLAGS) \
-		 $(OPT_FLAGS) \
-		 $(SEC_FLAGS)
+# Set paths based on environment
+SSL_CERT = $(if $(filter prod,$(ENV)),$(PROD_SSL_CERT),$(DEV_SSL_CERT))
+SSL_KEY = $(if $(filter prod,$(ENV)),$(PROD_SSL_KEY),$(DEV_SSL_KEY))
+CONFIG_PATH = $(if $(filter prod,$(ENV)),$(PROD_CONFIG),$(DEV_CONFIG))
+AUTH_PATH = $(if $(filter prod,$(ENV)),$(PROD_AUTH),$(DEV_AUTH))
+DB_PATH = $(if $(filter prod,$(ENV)),$(PROD_DB),$(DEV_DB))
+LOG_PATH = $(if $(filter prod,$(ENV)),$(PROD_LOG),$(DEV_LOG))
+AUDIT_PATH = $(if $(filter prod,$(ENV)),$(PROD_AUDIT),$(DEV_AUDIT))
 
-# Add these if not already present
-CFLAGS += -I/usr/include/openssl
-
-# Linker flags
-LDFLAGS = -static -pthread \
-		  -Wl,-O1 -Wl,--gc-sections
-
-LDFLAGS += -lssl -lcrypto
-
-# Directories
-SRC_DIR = src
-INC_DIR = include
-OBJ_DIR = obj
-BIN_DIR = bin
-DOC_DIR = docs
-ETC_DIR = etc
-
-# Files
-SRCS = $(wildcard $(SRC_DIR)/*.c)
-OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
-TARGET = $(BIN_DIR)/app
-CONFIG = $(ETC_DIR)/env/.env
-
-# SSL files
-SSL_CERT = $(ETC_DIR)/ssl/cert.pem
-SSL_KEY = $(ETC_DIR)/ssl/privkey.pem
-
-# Database files
-DB_FILE = $(ETC_DIR)/db/records.rec
-DB_SCHEMA = $(ETC_DIR)/db/database.desc
-
-# Authentication
-AUTH_FILE = $(ETC_DIR)/auth/passwd
-
-.PHONY: all clean install docs package debug profile analyze validate
-
+# Default target
 all: dirs $(TARGET)
 
-# Create necessary directories
-dirs:
-	@mkdir -p $(OBJ_DIR) $(BIN_DIR) $(ETC_DIR)/log $(ETC_DIR)/db \
-		$(ETC_DIR)/auth $(ETC_DIR)/ssl $(ETC_DIR)/env
+# Installation selector
+install:
+    @if [ "$(ENV)" = "prod" ]; then \
+        $(MAKE) install-prod; \
+    else \
+        $(MAKE) install-dev; \
+    fi
 
-# Compile source files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
+# Rebuild targets
+rebuild: clean all
 
-# Link object files
-$(TARGET): $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS) -o $@
-	@chmod 755 $@
+rebuild-dev: clean-dev all
+    $(MAKE) dev-install
 
-# Install the application
-install: all
-	@mkdir -p /usr/local/bin
-	@cp $(TARGET) /usr/local/bin/
-	@mkdir -p /etc/app
-	@cp -r $(ETC_DIR)/* /etc/app/
-	@chmod 600 /etc/app/ssl/privkey.pem
-	@chmod 644 /etc/app/ssl/cert.pem
-	@chmod 600 /etc/app/auth/passwd
-	@chmod 600 /etc/app/env/.env
+rebuild-prod: clean-prod all
+    $(MAKE) ENV=prod install-prod
 
-# Generate documentation
-docs:
-	@mkdir -p $(DOC_DIR)
-	@echo "Generating documentation..."
-	# Add documentation generation commands here
+# Clean target
+clean: clean-common
+    @if [ "$(ENV)" = "prod" ]; then \
+        $(MAKE) clean-prod; \
+    else \
+        $(MAKE) clean-dev; \
+    fi
 
-# Create distribution package
+# Add after clean target
+uninstall:
+    @if [ "$(ENV)" = "prod" ]; then \
+        sudo rm -rf $(PROD_PREFIX)/bin/app; \
+        sudo rm -rf $(PROD_PREFIX)/etc/app; \
+        sudo rm -rf $(PROD_PREFIX)/var/log/app.*; \
+        sudo rm -rf $(PROD_PREFIX)/var/lib/records.*; \
+    else \
+        rm -rf $(DEV_PREFIX)/*; \
+    fi
+
+# Package target
 package: all
-	@echo "Creating package..."
-	tar -cJf $(BIN_DIR)/app.tar.xz \
-		-C $(BIN_DIR) app \
-		-C ../$(ETC_DIR) .
+    @echo "Creating distribution package..."
+    @mkdir -p dist/bin dist/etc/ssl dist/etc/env dist/etc/auth dist/setup
+    @cp $(TARGET) dist/bin/
+    @cp config/cert.pem.example dist/etc/ssl/
+    @cp config/privkey.pem.example dist/etc/ssl/
+    @cp config/.env.example dist/etc/env/
+    @cp config/passwd.example dist/etc/auth/
+    @cp scripts/setup.sh dist/setup/
+    @chmod +x dist/setup/setup.sh
+    @tar -czf app.tar.gz -C dist .
+    @rm -rf dist
 
-# Clean build artifacts
-clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
-
-# Check SSL certificate
-check-ssl:
-	@test -f $(SSL_CERT) || { echo "Missing $(SSL_CERT)"; exit 1; }
-	@test -f $(SSL_KEY) || { echo "Missing $(SSL_KEY)"; exit 1; }
-	@openssl verify $(SSL_CERT)
-
-# Security checks
-security-check:
-	@echo "Checking file permissions..."
-	@test $$(stat -c %a $(AUTH_FILE)) -eq 600 || \
-		{ echo "$(AUTH_FILE) permissions should be 600"; exit 1; }
-
-# Debug build
-debug: CFLAGS += -g3 -ggdb -O0 -DDEBUG
-debug: clean all
-
-# Profile build
-profile: CFLAGS += -pg -fprofile-generate
-profile: LDFLAGS += -pg -fprofile-generate
-profile: clean all
-
-# Analysis build
-analyze: CFLAGS += -fanalyzer -Wanalyzer-too-complex
-analyze: clean all
-
-# Validation target
-validate: $(TARGET)
-	@echo "Validating binary..."
-	@file $(TARGET)
-	@readelf -h $(TARGET)
-	@nm --demangle $(TARGET) | grep "T\|W" | sort
-	@ldd $(TARGET) || echo "Static binary - no dependencies"
+# Update PHONY targets
+.PHONY: all dirs clean clean-dev clean-prod uninstall distclean \
+        rebuild rebuild-dev rebuild-prod install install-dev install-prod package \
+        dev-setup prod-setup-help

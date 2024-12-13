@@ -28,13 +28,7 @@
 #include "../include/utils.h"
 #include "../include/data_structures.h"
 
-#define DEFAULT_CONFIG_PATH "/etc/env/.env"
-#define DEFAULT_LOG_PATH "/etc/log/app.log"
-#define DEFAULT_DB_PATH "/etc/db/records.rec"
-#define DEFAULT_AUTH_PATH "/etc/auth/passwd"
-#define DEFAULT_SSL_CERT "/etc/ssl/cert.pem"
-#define DEFAULT_SSL_KEY "/etc/ssl/privkey.pem"
-#define DEFAULT_AUDIT_PATH "/var/log/webapp/audit.log"
+/* Local definitions */
 #define DEFAULT_LOG_LEVEL 0
 #define HTTP_INTERNAL_ERROR 500
 

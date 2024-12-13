@@ -1,0 +1,50 @@
+# Common variables and targets
+
+# Base directories and shared paths
+PREFIX = /devcontainer/web-app
+SRC_DIR = $(PREFIX)/src
+INC_DIR = $(PREFIX)/include
+OBJ_DIR = $(PREFIX)/obj
+BIN_DIR = $(PREFIX)/bin
+ETC_DIR = $(PREFIX)/etc
+VAR_DIR = $(PREFIX)/var
+DOC_DIR = $(PREFIX)/docs
+TEST_DIR = $(PREFIX)/tests
+
+# Source files
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+OBJS = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+TARGET = $(BIN_DIR)/app
+
+# Common targets
+dirs:
+    @mkdir -p $(OBJ_DIR)
+    @mkdir -p $(BIN_DIR)
+    @mkdir -p $(VAR_DIR)/log
+    @mkdir -p $(VAR_DIR)/lib
+    @mkdir -p $(ETC_DIR)/auth
+    @mkdir -p $(ETC_DIR)/ssl
+    @mkdir -p $(ETC_DIR)/env
+    @mkdir -p $(DOC_DIR)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+    $(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
+
+$(TARGET): $(OBJS)
+    $(CC) $(OBJS) $(LDFLAGS) $(LIBS) -o $@
+    @chmod 755 $@
+
+# Shared library dependencies
+LIBS = -lssl -lcrypto -lpthread
+
+# Shared compiler flags
+SHARED_FLAGS = -std=c90 \
+               -D_POSIX_C_SOURCE=1 \
+               -D_XOPEN_SOURCE=500 \
+               -Wall -Wextra -pedantic
+
+# Clean targets
+clean-common:
+    @rm -rf $(OBJ_DIR)/* $(BIN_DIR)/*
+
+.PHONY: dirs clean-common

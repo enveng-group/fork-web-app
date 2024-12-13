@@ -1278,7 +1278,7 @@ PS1='$(polyglot_exit_status $?)$(polyglot_dirtrim 2) $(polyglot_git_status) $ '
 ```sh
 # .gitconfig
 [user]
-    name = 
+    name =
     email =
     signingkey =
 
@@ -1399,4 +1399,18 @@ PS1='$(polyglot_exit_status $?)$(polyglot_dirtrim 2) $(polyglot_git_status) $ '
 
 [url "ssh://git@github.com/"]
     insteadOf = https://github.com/
+```
+
+```sh
+# Development
+make ENV=dev            # Build
+make dev-install       # Install
+make dev-setup        # Setup configs
+make clean-dev        # Clean
+
+# Production
+make ENV=prod          # Build
+make package          # Create distribution
+sudo make install-prod # Install
+make clean-prod       # Clean
 ```
