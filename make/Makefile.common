@@ -1,15 +1,26 @@
 # Common variables and targets
 
-# Base directories and shared paths
-PREFIX = /devcontainer/web-app
-SRC_DIR = $(PREFIX)/src
-INC_DIR = $(PREFIX)/include
-OBJ_DIR = $(PREFIX)/obj
+# Base paths
+PREFIX = .
 BIN_DIR = $(PREFIX)/bin
 ETC_DIR = $(PREFIX)/etc
+INC_DIR = $(PREFIX)/include
+LIB_DIR = $(PREFIX)/lib
+OBJ_DIR = $(PREFIX)/obj
+SRC_DIR = $(PREFIX)/src
 VAR_DIR = $(PREFIX)/var
-DOC_DIR = $(PREFIX)/docs
 TEST_DIR = $(PREFIX)/tests
+
+# Data paths
+DB_DIR = $(VAR_DIR)/lib
+LOG_DIR = $(VAR_DIR)/log
+
+# Config paths
+AUTH_DIR = $(ETC_DIR)/auth
+ENV_DIR = $(ETC_DIR)/env
+SSL_DIR = $(ETC_DIR)/ssl
+
+DOC_DIR = $(PREFIX)/docs
 
 # Source files
 SRCS = $(wildcard $(SRC_DIR)/*.c)
@@ -18,13 +29,19 @@ TARGET = $(BIN_DIR)/app
 
 # Common targets
 dirs:
-	@mkdir -p $(OBJ_DIR)
-	@mkdir -p $(BIN_DIR)
-	@mkdir -p $(VAR_DIR)/log
-	@mkdir -p $(VAR_DIR)/lib
-	@mkdir -p $(ETC_DIR)/auth
-	@mkdir -p $(ETC_DIR)/ssl
-	@mkdir -p $(ETC_DIR)/env
+	@install -d -m 750 $(BIN_DIR)
+	@install -d -m 750 $(ETC_DIR)
+	@install -d -m 750 $(INC_DIR)
+	@install -d -m 750 $(LIB_DIR)
+	@install -d -m 750 $(OBJ_DIR)
+	@install -d -m 750 $(SRC_DIR)
+	@install -d -m 750 $(TEST_DIR)
+	@install -d -m 750 $(VAR_DIR)
+	@mkdir -p $(LOG_DIR)
+	@mkdir -p $(DB_DIR)
+	@mkdir -p $(AUTH_DIR)
+	@mkdir -p $(SSL_DIR)
+	@mkdir -p $(ENV_DIR)
 	@mkdir -p $(DOC_DIR)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
@@ -39,9 +56,13 @@ LIBS = -lssl -lcrypto -lpthread
 
 # Shared compiler flags
 SHARED_FLAGS = -std=c90 \
-			   -D_POSIX_C_SOURCE=1 \
-			   -D_XOPEN_SOURCE=500 \
-			   -Wall -Wextra -pedantic
+               -D_POSIX_C_SOURCE=1 \
+               -D_XOPEN_SOURCE=500 \
+               -Wall -Wextra -pedantic
+
+# Additional flags
+CFLAGS += -I/usr/local/ssl/include
+LDFLAGS += -L/usr/local/ssl/lib
 
 # Clean targets
 clean-common:

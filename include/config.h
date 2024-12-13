@@ -11,14 +11,31 @@
 #define MAX_ENV_LINE 1024
 #define MAX_ENV_VALUE 256
 
-/* Default paths */
-#define DEFAULT_CONFIG_PATH "/devcontainer/web-app/etc/env/.env"
-#define DEFAULT_LOG_PATH "/devcontainer/web-app/var/log/app.log"
-#define DEFAULT_DB_PATH "/devcontainer/web-app/var/lib/records.rec"
-#define DEFAULT_AUTH_PATH "/devcontainer/web-app/etc/auth/passwd"
-#define DEFAULT_SSL_CERT "/devcontainer/web-app/etc/ssl/cert.pem"
-#define DEFAULT_SSL_KEY "/devcontainer/web-app/etc/ssl/privkey.pem"
-#define DEFAULT_AUDIT_PATH "/devcontainer/web-app/var/log/audit.log"
+/* Default paths - all relative to binary location */
+#define DEFAULT_CONFIG_PATH "../etc/env/.env"
+#define DEFAULT_LOG_PATH "../var/log/app.log"
+#define DEFAULT_DB_PATH "../var/lib/records.rec"
+#define DEFAULT_AUTH_PATH "../etc/auth/passwd"
+#define DEFAULT_SSL_CERT "../etc/ssl/cert.pem"
+#define DEFAULT_SSL_KEY "../etc/ssl/privkey.pem"
+#define DEFAULT_AUDIT_PATH "../var/log/audit.log"
+
+/* Required directories */
+#define REQUIRED_DIRS_COUNT 6
+static const char *REQUIRED_DIRS[] = {
+    "../etc/env",
+    "../etc/ssl",
+    "../etc/auth",
+    "../var/log",
+    "../var/lib",
+    NULL
+};
+
+/* Path validation status codes */
+#define PATH_OK 0
+#define PATH_NOT_FOUND -1
+#define PATH_NO_ACCESS -2
+#define PATH_INVALID -3
 
 struct Config {
     char log_path[PATH_MAX];
@@ -41,6 +58,8 @@ struct Config {
     int quic_max_streams;
     int quic_timeout_ms;
     int quic_mtu_size;
+    char base_path[PATH_MAX];    /* Base path for relative paths */
+    int paths_validated;         /* Flag indicating path validation status */
 };
 
 /* Add this line for the global config variable */

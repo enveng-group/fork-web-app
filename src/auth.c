@@ -323,7 +323,7 @@ int setupAuthUsers(struct DBHandle *db)
     }
 
     /* Create passwd file entries */
-    passwd_file = fopen("/devcontainer/web-app/etc/auth/passwd", "w");
+    passwd_file = fopen("../etc/auth/passwd", "w");
     if (!passwd_file) {
         return -1;
     }

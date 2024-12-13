@@ -7,6 +7,15 @@
 
 #include <sys/types.h>
 
+/* Environment variable handling */
+#define ENV_MAX_LINE 1024
+#define ENV_MAX_KEY 128
+#define ENV_MAX_VALUE 512
+
+int parseEnvFile(const char *path, struct Config *config);
+char *expandEnvVars(const char *value, const struct Config *config);
+int setEnvValue(struct Config *config, const char *key, const char *value);
+
 /**
  * Generates a UUID string
  * Returns: Pointer to static buffer containing UUID string

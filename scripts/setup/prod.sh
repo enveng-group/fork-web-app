@@ -23,21 +23,17 @@ if ! getent passwd "${USER}"; then
         -c "EnvEng Web Service" "${USER}" || exit 1
 fi
 
-# Create directory structure
+# Create directory structure - align with config.h and utils.c
 install -d -m 755 "${PREFIX}/bin" || exit 1
-install -d -m 750 -o "${USER}" -g "${GROUP}" "${PREFIX}/etc/app/ssl" || exit 1
-install -d -m 750 -o "${USER}" -g "${GROUP}" "${PREFIX}/etc/app/auth" || exit 1
-install -d -m 750 -o "${USER}" -g "${GROUP}" "${PREFIX}/etc/app/env" || exit 1
+install -d -m 750 -o "${USER}" -g "${GROUP}" "${PREFIX}/etc/ssl" || exit 1
+install -d -m 750 -o "${USER}" -g "${GROUP}" "${PREFIX}/etc/auth" || exit 1
+install -d -m 750 -o "${USER}" -g "${GROUP}" "${PREFIX}/etc/env" || exit 1
 install -d -m 750 -o "${USER}" -g "${GROUP}" "${PREFIX}/var/log" || exit 1
 install -d -m 750 -o "${USER}" -g "${GROUP}" "${PREFIX}/var/lib" || exit 1
 
-# Create empty files with correct permissions
-install -m 600 -o "${USER}" -g "${GROUP}" /dev/null "${PREFIX}/etc/app/ssl/privkey.pem" || exit 1
-install -m 644 -o "${USER}" -g "${GROUP}" /dev/null "${PREFIX}/etc/app/ssl/cert.pem" || exit 1
-install -m 600 -o "${USER}" -g "${GROUP}" /dev/null "${PREFIX}/etc/app/env/.env" || exit 1
-install -m 600 -o "${USER}" -g "${GROUP}" /dev/null "${PREFIX}/etc/app/auth/passwd" || exit 1
-install -m 600 -o "${USER}" -g "${GROUP}" /dev/null "${PREFIX}/var/lib/records.rec" || exit 1
-install -m 644 -o "${USER}" -g "${GROUP}" /dev/null "${PREFIX}/var/log/app.log" || exit 1
-install -m 600 -o "${USER}" -g "${GROUP}" /dev/null "${PREFIX}/var/log/audit.log" || exit 1
+# Create empty files with aligned paths
+install -m 600 -o "${USER}" -g "${GROUP}" /dev/null "${PREFIX}/etc/ssl/privkey.pem" || exit 1
+install -m 644 -o "${USER}" -g "${GROUP}" /dev/null "${PREFIX}/etc/ssl/cert.pem" || exit 1
+install -m 600 -o "${USER}" -g "${GROUP}" /dev/null "${PREFIX}/etc/env/.env" || exit 1
 
 exit 0

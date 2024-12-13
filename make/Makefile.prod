@@ -38,11 +38,11 @@ PROD_GROUP = envapp
 PROD_UID = 900
 PROD_GID = 900
 
-# Production paths
-PROD_SSL_CERT = $(PROD_PREFIX)/etc/app/ssl/cert.pem
-PROD_SSL_KEY = $(PROD_PREFIX)/etc/app/ssl/privkey.pem
-PROD_CONFIG = $(PROD_PREFIX)/etc/app/env/.env
-PROD_AUTH = $(PROD_PREFIX)/etc/app/auth/passwd
+# Production paths - align with config.h
+PROD_SSL_CERT = $(PROD_PREFIX)/etc/ssl/cert.pem
+PROD_SSL_KEY = $(PROD_PREFIX)/etc/ssl/privkey.pem
+PROD_CONFIG = $(PROD_PREFIX)/etc/env/.env
+PROD_AUTH = $(PROD_PREFIX)/etc/auth/passwd
 PROD_DB = $(PROD_PREFIX)/var/lib/records.rec
 PROD_LOG = $(PROD_PREFIX)/var/log/app.log
 PROD_AUDIT = $(PROD_PREFIX)/var/log/audit.log

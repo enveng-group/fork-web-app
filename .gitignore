@@ -62,7 +62,7 @@ bin/
 *.flaskenv*
 
 # Temporary and backup files
-*.log
+#*.log
 *.tmp
 *.swp
 .DS_Store

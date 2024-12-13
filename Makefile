@@ -76,7 +76,12 @@ package: all
 	@tar -czf app.tar.gz -C dist .
 	@rm -rf dist
 
+# Check environment target
+check-env:
+	@command -v $(CC) >/dev/null 2>&1 || { echo "$(CC) not installed"; exit 1; }
+	@command -v openssl >/dev/null 2>&1 || { echo "OpenSSL not installed"; exit 1; }
+
 # Update PHONY targets
 .PHONY: all dirs clean clean-dev clean-prod uninstall distclean \
 		rebuild rebuild-dev rebuild-prod install install-dev install-prod package \
-		dev-setup prod-setup-help
+		dev-setup prod-setup-help check-env
