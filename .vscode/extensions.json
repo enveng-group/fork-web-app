@@ -1,6 +1,5 @@
 {
     "recommendations": [
-        "dotenv.dotenv-vscode",
         "ms-vscode.cpptools",
         "timonwong.shellcheck",
         "davidanson.vscode-markdownlint",
@@ -20,6 +19,7 @@
         "maziac.asm-code-lens",
         "snyk-security.snyk-vulnerability-scanner",
         "xaver.clang-format",
-        "ms-vscode.cmake-tools"
+        "ms-vscode.cmake-tools",
+        "dotenv.dotenv-vscode"
     ]
 }

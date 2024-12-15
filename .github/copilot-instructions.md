@@ -59,32 +59,183 @@ These instructions ensure Copilot's suggestions align with our project's technic
     - Implement logic in source files (`.c`).
 - Use immutable data structures whenever applicable for safety and clarity.
 
-## Optimised Directory Structyre
-
+## Optimised Directory Structure
 ```plaintext
-/devcontainer/web-app/
-├── bin/                    # Binaries
-│   └── app
-├── etc/                    # Configuration
-│   ├── auth/passwd        # Auth data
-│   ├── env/.env          # Environment config
-│   └── ssl/              # SSL certificates
-│       ├── cert.pem
-│       └── privkey.pem
-├── include/               # Header files
-├── lib/                   # Libraries
-├── obj/                   # Object files
-├── src/                   # Source files
-├── static/                # Static web files
-├── tests/                 # Test files
-└── var/                   # Variable data
-    ├── lib/              # Application data
-    │   ├── database.descr
-    │   └── records.rec
-    └── log/              # Logs
-        ├── app.log
-        └── audit.log
+/			# . (root directory)
+├── bin/                # Essential user binaries
+│   ├── sh              # POSIX-compliant shell
+│   ├── ls              # List directory contents
+│   ├── cp              # Copy files
+│   ├── mv              # Move/rename files
+│   ├── rm              # Remove files
+│   ├── mkdir           # Create directories
+│   └── ...             # Other essential commands
+├── sbin/               # Essential system binaries
+│   ├── init            # Init system
+│   ├── fsck            # Filesystem check
+│   ├── mount           # Mount filesystems
+│   ├── umount          # Unmount filesystems
+│   └── ...             # Other system utilities
+├── lib/                # Shared libraries for essential binaries
+│   ├── libc.so         # musl libc
+│   ├── libpthread.so   # POSIX threads
+│   ├── libm.so         # Math library
+│   └── ...             # Other essential shared libraries
+├── etc/                # System configuration files
+│   ├── passwd          # User account information
+│   ├── group           # Group account information
+│   ├── fstab           # Filesystem table
+│   ├── hosts           # Hostname resolution
+│   └── ...             # Other configuration files
+├── dev/                # Device files
+│   ├── null            # Null device
+│   ├── zero            # Zero device
+│   ├── tty             # Terminal device
+│   ├── random          # Random number generator
+│   ├── sda             # First disk device
+│   └── ...             # Other device nodes
+├── tmp/                # Temporary files
+├── var/                # Variable data
+│   ├── log/            # Log files
+│   │   ├── syslog      # System log
+│   │   ├── auth.log    # Authentication log
+│   │   └── ...         # Other log files
+│   ├── spool/          # Spool directories
+│   └── run/            # Runtime data
+├── usr/                # Secondary hierarchy for user programs
+│   ├── bin/            # Non-essential user binaries
+│   ├── lib/            # Shared libraries for `/usr/bin`
+│   ├── include/        # Header files
+│   ├── share/          # Architecture-independent files
+│   │   ├── man/        # Manual pages
+│   │   └── locale/     # Localization files
+│   └── src/            # Source code (optional)
+├── home/               # User home directories
+│   ├── user1/          # Example user
+│   └── user2/          # Another user
+├── opt/                # Optional software packages
+├── mnt/                # Mount points for temporary filesystems
+│   ├── usb/            # USB devices
+│   ├── cdrom/          # CD-ROM
+│   └── ...             # Other mount points
+├── proc/               # Virtual filesystem for processes
+├── sys/                # Virtual filesystem for system information
+└── boot/               # Bootloader files (if applicable)
+    ├── kernel          # Kernel image
+    ├── initrd          # Initial RAM disk
+    └── ...             # Other boot files
 ```
+
+## **1. Essential Components of a POSIX-Compliant Filesystem**
+### **Filesystem Hierarchy**
+Your filesystem must support the essential directories and their roles as outlined by POSIX and the Filesystem Hierarchy Standard (FHS). Key directories include:
+
+#### **Root Directory (`/`)**
+The root directory is the starting point of the filesystem and contains essential subdirectories:
+- `/bin`: Essential user binaries (e.g., `ls`, `cp`, `sh`).
+- `/sbin`: Essential system binaries (e.g., `init`, `fsck`).
+- `/lib`: Shared libraries needed by binaries in `/bin` and `/sbin`.
+- `/etc`: System configuration files.
+- `/dev`: Device files (e.g., `tty`, `null`, `random`).
+- `/tmp`: Temporary files (cleared on reboot).
+- `/var`: Variable data (e.g., logs, spools, runtime data).
+- `/usr`: Secondary hierarchy for user applications and libraries.
+  - `/usr/bin`: Non-essential user binaries.
+  - `/usr/lib`: Libraries for `/usr/bin`.
+  - `/usr/include`: Header files for development.
+  - `/usr/share`: Architecture-independent files (e.g., man pages, locale files).
+
+#### **Optional Directories**
+- `/home`: User home directories.
+- `/opt`: Optional application software packages.
+- `/mnt` or `/media`: Mount points for external filesystems.
+- `/proc`: Virtual filesystem for process and system information.
+- `/sys`: Virtual filesystem for system hardware and kernel information.
+
+---
+
+## **2. Key Filesystem Components**
+To build a fully functional POSIX filesystem, you need to consider the following:
+
+### **a. Kernel Interface**
+- Implement system calls for POSIX-compliant operations like file handling (`open`, `read`, `write`, `close`), process control (`fork`, `exec`, `wait`), and inter-process communication (IPC).
+- Ensure compatibility with the Virtual File System (VFS) layer if using a Linux kernel.
+
+### **b. Filesystem Implementation**
+- Support for at least one filesystem type (e.g., ext4, XFS, or a custom implementation).
+- Implement file metadata handling, including permissions, ownership, timestamps, and symbolic/hard links.
+
+### **c. Device Files**
+- Provide `/dev` with character and block device nodes for hardware interaction.
+- Use `mknod` to create device files with proper major and minor numbers.
+
+### **d. Shared Libraries**
+- Provide essential libraries in `/lib` and `/usr/lib`, including:
+  - **musl libc**: A lightweight, POSIX-compliant standard C library.
+  - **libm**: Math library.
+  - **libpthread**: POSIX threads library.
+
+---
+
+## **3. Tools and Utilities**
+### **a. Essential Utilities**
+Include the POSIX-mandated utilities, such as:
+- File management: `ls`, `cp`, `mv`, `rm`, `mkdir`.
+- Shell utilities: `sh`, `echo`, `test`, `kill`.
+- Text processing: `cat`, `grep`, `sed`, `awk`.
+- System management: `ps`, `top`, `df`, `du`, `mount`, `umount`.
+
+### **b. Development Tools**
+- A compliant C compiler (e.g., `musl-gcc` or a custom ANSI C compiler).
+- Tools for building and debugging, such as `make` and `gdb`.
+
+### **c. Init System**
+- Implement a minimal init system (e.g., `init`) to handle system startup and service management.
+
+---
+
+## **4. POSIX Compliance Checklist**
+To ensure POSIX compliance:
+- **File and Directory Structure**: Verify the existence of mandatory directories.
+- **System Calls**: Implement all required POSIX system calls.
+- **Threads and Concurrency**: Provide support for POSIX threads (pthreads).
+- **Signals and IPC**: Implement signal handling and IPC mechanisms (pipes, message queues, semaphores, shared memory).
+- **Filesystem Features**: Support file permissions, ownership, and links.
+
+---
+
+## **5. Standards Compliance**
+### **a. C89/C90 Compliance**
+- Use `musl libc` or a custom ANSI C library implementation.
+- Ensure strict adherence to C89/C90 for the entire codebase.
+
+### **b. X/Open Portability**
+- Implement the X/Open Portability Guide (XPG) features, including extended file attributes, locale support, and terminal interfaces.
+
+---
+
+## **6. Build and Deployment**
+### **a. Static Build**
+- Ensure all binaries are statically linked to avoid runtime dependencies.
+
+### **b. Cross-Platform Compatibility**
+- Use tools like `musl-gcc` to create cross-platform binaries.
+- Test on multiple architectures (e.g., x86, ARM).
+
+### **c. Build Tools**
+- Use a portable build system (e.g., `make`) to compile the filesystem and utilities.
+
+---
+
+## **7. Documentation and Testing**
+### **a. Documentation**
+- Provide detailed documentation for the filesystem structure and utilities in Markdown.
+- Include man pages for all commands and libraries.
+
+### **b. Testing**
+- Write unit tests for all libraries and utilities.
+- Use test suites like `POSIX Test Suite (PTS)` to validate compliance.
+
 
 ### **Error Handling**
 - Use errno for error reporting
@@ -132,17 +283,20 @@ These instructions ensure Copilot's suggestions align with our project's technic
     - Optimize for minimal dependencies, leveraging musl’s built-in features where possible.
 
 ## **Compiler Flags Reference**
-### Production Build (musl-gcc)
+### Production Build (musl-gcc because it runs on Trisquel)
 ```c
 CFLAGS = -std=c90 -D_POSIX_C_SOURCE=1 -D_XOPEN_SOURCE=500 -Wall -Wextra -pedantic -static
 LDFLAGS = -static -pthread -Wl,-O1 -Wl,--gc-sections -lssl -lcrypto
 ```
 
 ```c
-### **Development Build (musl-gcc)**
+### **Development Build (gcc as it ise alpine)**
 CFLAGS = -std=c90 -D_POSIX_C_SOURCE=1 -D_XOPEN_SOURCE=500 -Wall -Wextra -pedantic -O0 -ggdb3
 LDFLAGS = -static -pthread -lssl -lcrypto
 ```
+/lib/ld-musl-x86_64.so.1: This is the dynamic linker (or loader) for musl libc, which is responsible for loading shared libraries and starting the program.
+
+/lib/libc.musl-x86_64.so.1: This is the musl C library itself, which provides the standard C library functions (e.g., malloc, printf, etc.).
 
 ## Explicit code block examples:
 ## **Code Structure Examples**
@@ -252,7 +406,7 @@ process_data(struct data_block *block)
 ---
 
 ## **Testing and Validation**
-- Write unit tests for all functions using the following naming conventions:
+- Write unit tests using CUNit framework for all functions using the following naming conventions:
     - `test_<module_name>.c` for test files.
     - `test_<function_name>` for individual test cases.
 - Use memory analysis tools (e.g., `valgrind` or equivalent musl-compatible tools) to validate memory safety.
@@ -278,6 +432,7 @@ process_data(struct data_block *block)
 
 ## Tools and Practices
 - Use Git for version control, and ensure commit messages follow the format: `[Type] Short description`.
+- CUnit framework for testing
 - Use CI/CD pipelines to automate testing and code quality checks.
 - Regularly review and refactor code for maintainability and performance.
 
@@ -286,201 +441,109 @@ process_data(struct data_block *block)
 - Ensure that the generated snippets adhere to the project's coding standards and practices as outlined in this document.
 - Provide context-specific suggestions that integrate seamlessly with the existing codebase.
 
-## basic directory structure
+Here’s a comprehensive list of the **POSIX-compliant** and **ISO C89 (ANSI C)** headers and libraries provided by **musl libc**. These libraries and headers are essential for building a project that adheres to your requirements for compliance, portability, and lightweight environments.
 
-```plaintext
-.
-├── ACKNOWLEDGEMENT.md
-├── AUTHORS
-├── CHANGELOG
-├── CODE_OF_CONDUCT.md
-├── CONTRIBUTING.md
-├── COPYING
-├── HACKING
-├── INSTALL
-├── LICENSE
-├── MAINTAINERS
-├── MONITORING_AND_EVALUATION
-├── Makefile
-├── README.md
-├── SECURITY.md
-├── SUPPORT.md
-├── TODO.md
-├── bin
-│   └── app
-├── docs
-│   ├── ARCHITECTURE.md
-│   ├── CONTACT.md
-│   ├── CONTRIBUTORS.md
-│   ├── CREDITS.md
-│   ├── DEVELOPERS.md
-│   ├── DISCLAIMER.md
-│   ├── EXAMPLES.md
-│   ├── FAQ.md
-│   ├── GLOSSARY.md
-│   ├── GOVERNANCE.md
-│   ├── HISTORY.md
-│   ├── MIGRATION.md
-│   ├── PRIVACY.md
-│   ├── REFERENCES.md
-│   ├── RELEASE_NOTES.md
-│   ├── REQUIREMENTS.md
-│   ├── ROADMAP.md
-│   ├── STYLEGUIDE.md
-│   ├── TERMS.md
-│   ├── TROUBLESHOOTING.md
-│   ├── TUTORIAL.md
-│   └── USAGE.md
-├── etc
-│   ├── auth
-│   │   └── passwd
-│   ├── env
-│   └── ssl
-│       ├── cert.pem
-│       └── privkey.pem
-├── include
-│   ├── audit.h
-│   ├── audit_events.h
-│   ├── auth.h
-│   ├── config.h
-│   ├── data_structures.h
-│   ├── database.h
-│   ├── http.h
-│   ├── logger.h
-│   ├── quic_module.h
-│   ├── server.h
-│   ├── session.h
-│   ├── ssl_module.h
-│   └── utils.h
-├── lib
-├── make
-│   ├── Makefile.common
-│   ├── Makefile.dev
-│   └── Makefile.prod
-├── obj
-│   ├── audit.o
-│   ├── audit_events.o
-│   ├── auth.o
-│   ├── config.o
-│   ├── data_structures.o
-│   ├── database.o
-│   ├── http.o
-│   ├── logger.o
-│   ├── main.o
-│   ├── quic_module.o
-│   ├── server.o
-│   ├── session.o
-│   ├── ssl_module.o
-│   └── utils.o
-├── scripts
-│   └── setup
-│       ├── dev.sh
-│       └── prod.sh
-├── src
-│   ├── audit.c
-│   ├── audit_events.c
-│   ├── auth.c
-│   ├── config.c
-│   ├── data_structures.c
-│   ├── database.c
-│   ├── http.c
-│   ├── logger.c
-│   ├── main.c
-│   ├── quic_module.c
-│   ├── server.c
-│   ├── session.c
-│   ├── ssl_module.c
-│   └── utils.c
-├── static
-│   ├── dashboard.html
-│   ├── index.html
-│   └── profile.html
-├── tests
-├── var
-│   ├── lib
-│   │   ├── database.descr
-│   │   └── records.rec
-│   └── log
-│       ├── app.log
-│       └── audit.log
-└── web-app.code-workspace
+---
 
-19 directories, 96 files
-```
+## **ISO C89 Standard Headers**
+These headers are defined by the **ISO/IEC 9899:1990 (C89)** standard and are fully supported by musl libc.
 
-### POSIX Headers only allowed to use
-<aio.h>
-<arpa/inet.h>
-<assert.h>
-<complex.h>
-<cpio.h>
-<ctype.h>
-<dirent.h>
-<dlfcn.h>
-<errno.h>
-<fcntl.h>
-<fenv.h>
-<float.h>
-<fnmatch.h>
-<ftw.h>
-<glob.h>
-<grp.h>
-<iconv.h>
-<inttypes.h>
-<iso646.h>
-<langinfo.h>
-<libgen.h>
-<limits.h>
-<locale.h>
-<math.h>
-<monetary.h>
-<mqueue.h>
-<net/if.h>
-<netdb.h>
-<netinet/in.h>
-<netinet/tcp.h>
-<nl_types.h>
-<poll.h>
-<pthread.h>
-<pwd.h>
-<regex.h>
-<sched.h>
-<search.h>
-<semaphore.h>
-<setjmp.h>
-<signal.h>
-<stdarg.h>
-<stdbool.h>
-<stddef.h>
-<stdint.h>
-<stdio.h>
-<stdlib.h>
-<string.h>
-<strings.h>
-<sys/ipc.h>
-<sys/mman.h>
-<sys/msg.h>
-<sys/resource.h>
-<sys/select.h>
-<sys/sem.h>
-<sys/shm.h>
-<sys/socket.h>
-<sys/stat.h>
-<sys/statvfs.h>
-<sys/time.h>
-<sys/times.h>
-<sys/types.h>
-<sys/uio.h>
-<sys/un.h>
-<sys/utsname.h>
-<sys/wait.h>
-<syslog.h>
-<termios.h>
-<tgmath.h>
-<time.h>
-<ulimit.h>
-<unistd.h>
-<utime.h>
-<wchar.h>
-<wctype.h>
-<wordexp.h>
+### **Standard Library Headers**
+| Header         | Description                                                                 |
+|----------------|-----------------------------------------------------------------------------|
+| `<assert.h>`   | Diagnostics: `assert` macro for runtime error checking.                    |
+| `<ctype.h>`    | Character classification and conversion functions.                        |
+| `<errno.h>`    | Error codes used by library functions.                                     |
+| `<float.h>`    | Defines limits for floating-point types.                                   |
+| `<limits.h>`   | Defines limits for integral types.                                         |
+| `<locale.h>`   | Localization functions and macros.                                         |
+| `<math.h>`     | Mathematical functions.                                                   |
+| `<setjmp.h>`   | Non-local jumps (e.g., `setjmp` and `longjmp`).                            |
+| `<signal.h>`   | Signal handling.                                                          |
+| `<stdarg.h>`   | Variable argument list handling (`va_list`, `va_start`, etc.).            |
+| `<stddef.h>`   | Common definitions (e.g., `size_t`, `NULL`, `offsetof`).                  |
+| `<stdio.h>`    | Input/output functions (e.g., `printf`, `fopen`, `fread`).                |
+| `<stdlib.h>`   | General utilities (e.g., memory management, random numbers).              |
+| `<string.h>`   | String handling and memory manipulation functions.                        |
+| `<time.h>`     | Time and date functions.                                                  |
+| `<wchar.h>`    | Wide-character functions.                                                 |
+| `<wctype.h>`   | Wide-character classification and conversion functions.                   |
+
+---
+
+## **POSIX Standard Headers**
+Defined by **POSIX.1 (IEEE Std 1003.1)**, these headers extend the functionality of the ISO C standard and are fully supported by musl libc.
+
+### **System Interfaces**
+| Header           | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| `<aio.h>`        | Asynchronous I/O.                                                         |
+| `<dirent.h>`     | Directory entry manipulation (`opendir`, `readdir`, etc.).                |
+| `<fcntl.h>`      | File control options (`open`, `fcntl`).                                   |
+| `<grp.h>`        | Group database access (`getgrgid`, `getgrnam`).                           |
+| `<pwd.h>`        | User database access (`getpwuid`, `getpwnam`).                            |
+| `<sys/stat.h>`   | File status (`stat`, `fstat`, etc.).                                       |
+| `<sys/types.h>`  | Data types used in system calls (`pid_t`, `off_t`, etc.).                 |
+| `<sys/wait.h>`   | Process termination (`wait`, `waitpid`).                                  |
+| `<termios.h>`    | Terminal I/O interfaces.                                                  |
+| `<unistd.h>`     | POSIX API for system services (`fork`, `exec`, `read`, `write`, etc.).    |
+
+### **Signals and Threads**
+| Header           | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| `<pthread.h>`    | POSIX threads (Pthreads) interface.                                        |
+| `<signal.h>`     | Signal handling and manipulation.                                          |
+| `<sys/signal.h>` | Signal-related constants and macros (alias of `<signal.h>`).               |
+
+### **Networking and IPC**
+| Header           | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| `<arpa/inet.h>`  | Internet operations (`inet_ntoa`, `inet_addr`).                            |
+| `<netdb.h>`      | Network database operations (`gethostbyname`, `getaddrinfo`).              |
+| `<netinet/in.h>` | IPv4 and IPv6 definitions.                                                 |
+| `<sys/socket.h>` | Socket programming interface.                                              |
+| `<sys/un.h>`     | UNIX domain sockets.                                                      |
+| `<sys/ipc.h>`    | Interprocess communication (IPC) definitions.                              |
+| `<sys/msg.h>`    | Message queue operations.                                                 |
+| `<sys/sem.h>`    | Semaphore operations.                                                     |
+| `<sys/shm.h>`    | Shared memory operations.                                                 |
+
+### **Advanced File I/O**
+| Header           | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| `<sys/mman.h>`   | Memory management (`mmap`, `munmap`).                                      |
+| `<sys/statvfs.h>`| Filesystem statistics (`statvfs`, `fstatvfs`).                             |
+| `<utime.h>`      | File access and modification times.                                        |
+
+---
+
+## **Additional POSIX and X/Open 500 Headers**
+These headers are part of the **X/Open 500** standard, which extends POSIX functionality.
+
+| Header           | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| `<regex.h>`      | Regular expression handling.                                               |
+| `<fnmatch.h>`    | Filename matching (`fnmatch`).                                             |
+| `<tar.h>`        | Tar file format definitions.                                               |
+| `<fts.h>`        | File traversal utility functions.                                          |
+| `<libgen.h>`     | Path and filename manipulation (`basename`, `dirname`).                   |
+| `<utmp.h>`       | User accounting database.                                                 |
+| `<wordexp.h>`    | Word expansion (e.g., globbing).                                           |
+
+---
+
+## **Math and Floating-Point Extensions**
+| Header           | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| `<fenv.h>`       | Floating-point environment control.                                        |
+| `<tgmath.h>`     | Type-generic macros for mathematical functions.                           |
+
+---
+
+## **musl-Specific Features**
+While musl libc is designed to strictly follow standards, it also includes enhancements for better performance and compatibility:
+- **Static linking support**: Musl is optimized for creating fully static binaries.
+- **Thread safety**: Full support for POSIX threads (Pthreads).
+- **Lightweight implementations**: Many functions are rewritten to be smaller and faster compared to glibc.
+
+---

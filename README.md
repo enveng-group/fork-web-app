@@ -1414,3 +1414,10 @@ make package          # Create distribution
 sudo make install-prod # Install
 make clean-prod       # Clean
 ```
+
+
+## Testing
+
+```sh
+make clean && make test
+```

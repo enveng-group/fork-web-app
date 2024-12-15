@@ -1,87 +1,121 @@
-# Main Makefile
+# Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
+# SPDX-License-Identifier: 	AGPL-3.0-or-later
+# Makefile
 
-# Detect environment
-ENV ?= dev
+SRC_DIR = src
+BUILD_DIR = build
+BIN_DIR = bin
+TEST_DIR = test
 
-# Include makefiles
-include make/Makefile.common
-ifeq ($(ENV),prod)
-	include make/Makefile.prod
-else
-	include make/Makefile.dev
-endif
+# Compiler and flags
+CC = gcc
+CFLAGS = -std=c90 -D_POSIX_C_SOURCE=1 -D_XOPEN_SOURCE=500 -Wall -Wextra -pedantic
+INCLUDES = -I./include -I./src -I/usr/include
+LDFLAGS = -L/usr/lib
 
-# Install prefix based on environment
-INSTALL_PREFIX = $(if $(filter prod,$(ENV)),$(PROD_PREFIX),$(DEV_PREFIX))
+# Main program flags (static linking)
+MAIN_LDFLAGS = $(LDFLAGS) -static -pthread
 
-# Set paths based on environment
-SSL_CERT = $(if $(filter prod,$(ENV)),$(PROD_SSL_CERT),$(DEV_SSL_CERT))
-SSL_KEY = $(if $(filter prod,$(ENV)),$(PROD_SSL_KEY),$(DEV_SSL_KEY))
-CONFIG_PATH = $(if $(filter prod,$(ENV)),$(PROD_CONFIG),$(DEV_CONFIG))
-AUTH_PATH = $(if $(filter prod,$(ENV)),$(PROD_AUTH),$(DEV_AUTH))
-DB_PATH = $(if $(filter prod,$(ENV)),$(PROD_DB),$(DEV_DB))
-LOG_PATH = $(if $(filter prod,$(ENV)),$(PROD_LOG),$(DEV_LOG))
-AUDIT_PATH = $(if $(filter prod,$(ENV)),$(PROD_AUDIT),$(DEV_AUDIT))
+# Test flags (dynamic linking for CUnit)
+TEST_LDFLAGS = $(LDFLAGS) -pthread -lcunit
+
+# Main program sources and objects
+MAIN_SRC = $(SRC_DIR)/main.c
+LIB_SRCS = $(filter-out $(MAIN_SRC),$(wildcard $(SRC_DIR)/*.c))
+LIB_OBJS = $(LIB_SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+MAIN_OBJ = $(MAIN_SRC:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+
+# Test sources and objects (excluding main program objects)
+TEST_SRCS = $(wildcard $(TEST_DIR)/*.c)
+TEST_OBJS = $(TEST_SRCS:$(TEST_DIR)/%.c=$(BUILD_DIR)/%.o)
+TEST_LIB_OBJS = $(filter-out $(MAIN_OBJ),$(LIB_OBJS))
+
+# Test module objects
+TEST_APP_ERROR_OBJ = $(BUILD_DIR)/test_app_error.o
+TEST_CONFIG_OBJ = $(BUILD_DIR)/test_config.o
+TEST_CONSTANTS_OBJ = $(BUILD_DIR)/test_constants.o
+TEST_ENV_OBJ = $(BUILD_DIR)/test_env.o
+TEST_FS_OBJ = $(BUILD_DIR)/test_fs.o
+TEST_INIT_OBJ = $(BUILD_DIR)/test_init.o
+TEST_LOGGING_OBJ = $(BUILD_DIR)/test_logging.o
+TEST_SHELL_OBJ = $(BUILD_DIR)/test_shell.o
+TEST_MAIN_MODULE_OBJ = $(BUILD_DIR)/test_main_module.o
+TEST_MAIN_OBJ = $(BUILD_DIR)/test_main.o
+
+# Targets
+MAIN_TARGET = $(BIN_DIR)/enssol
+TEST_TARGET = $(BIN_DIR)/test_runner
 
 # Default target
-all: dirs $(TARGET)
+all: $(MAIN_TARGET)
 
-# Installation selector
-install:
-	@if [ "$(ENV)" = "prod" ]; then \
-		$(MAKE) install-prod; \
-	else \
-		$(MAKE) install-dev; \
-	fi
+# Directory creation targets
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
-# Rebuild targets
-rebuild: clean all
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
 
-rebuild-dev: clean-dev all
-	$(MAKE) dev-install
+# Main program build
+$(MAIN_TARGET): $(MAIN_OBJ) $(LIB_OBJS) | $(BIN_DIR)
+	$(CC) $(MAIN_OBJ) $(LIB_OBJS) $(MAIN_LDFLAGS) -o $@
 
-rebuild-prod: clean-prod all
-	$(MAKE) ENV=prod install-prod
+# Test build
+$(TEST_TARGET): $(TEST_APP_ERROR_OBJ) $(TEST_CONFIG_OBJ) $(TEST_CONSTANTS_OBJ) \
+				$(TEST_ENV_OBJ) $(TEST_FS_OBJ) $(TEST_INIT_OBJ) \
+				$(TEST_LOGGING_OBJ) $(TEST_SHELL_OBJ) $(TEST_MAIN_MODULE_OBJ) \
+				$(TEST_MAIN_OBJ) $(TEST_LIB_OBJS) | $(BIN_DIR)
+	$(CC) $^ $(TEST_LDFLAGS) -o $@
 
-# Clean target
-clean: clean-common
-	@if [ "$(ENV)" = "prod" ]; then \
-		$(MAKE) clean-prod; \
-	else \
-		$(MAKE) clean-dev; \
-	fi
+# Object file compilation
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-# Add after clean target
-uninstall:
-	@if [ "$(ENV)" = "prod" ]; then \
-		sudo rm -rf $(PROD_PREFIX)/bin/app; \
-		sudo rm -rf $(PROD_PREFIX)/etc/app; \
-		sudo rm -rf $(PROD_PREFIX)/var/log/app.*; \
-		sudo rm -rf $(PROD_PREFIX)/var/lib/records.*; \
-	else \
-		rm -rf $(DEV_PREFIX)/*; \
-	fi
+$(BUILD_DIR)/%.o: $(TEST_DIR)/%.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-# Package target
-package: all
-	@echo "Creating distribution package..."
-	@mkdir -p dist/bin dist/etc/ssl dist/etc/env dist/etc/auth dist/setup
-	@cp $(TARGET) dist/bin/
-	@cp config/cert.pem.example dist/etc/ssl/
-	@cp config/privkey.pem.example dist/etc/ssl/
-	@cp config/.env.example dist/etc/env/
-	@cp config/passwd.example dist/etc/auth/
-	@cp scripts/setup.sh dist/setup/
-	@chmod +x dist/setup/setup.sh
-	@tar -czf app.tar.gz -C dist .
-	@rm -rf dist
+# Build object file with directory creation
+build/test_init.o: test/test_init.c include/init.h include/app_error.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-# Check environment target
-check-env:
-	@command -v $(CC) >/dev/null 2>&1 || { echo "$(CC) not installed"; exit 1; }
-	@command -v openssl >/dev/null 2>&1 || { echo "OpenSSL not installed"; exit 1; }
+# Explicit test dependencies
+$(TEST_APP_ERROR_OBJ): $(TEST_DIR)/test_app_error.c include/app_error.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-# Update PHONY targets
-.PHONY: all dirs clean clean-dev clean-prod uninstall distclean \
-		rebuild rebuild-dev rebuild-prod install install-dev install-prod package \
-		dev-setup prod-setup-help check-env
+$(TEST_CONFIG_OBJ): $(TEST_DIR)/test_config.c include/config.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(TEST_CONSTANTS_OBJ): $(TEST_DIR)/test_constants.c include/constants.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(TEST_ENV_OBJ): $(TEST_DIR)/test_env.c include/env.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(TEST_FS_OBJ): $(TEST_DIR)/test_fs.c include/fs.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(TEST_INIT_OBJ): $(TEST_DIR)/test_init.c include/init.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(TEST_LOGGING_OBJ): $(TEST_DIR)/test_logging.c include/logging.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(TEST_SHELL_OBJ): $(TEST_DIR)/test_shell.c include/shell.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(TEST_MAIN_MODULE_OBJ): $(TEST_DIR)/test_main_module.c include/init.h include/fs.h include/shell.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(TEST_MAIN_OBJ): $(TEST_DIR)/test_main.c test/test_suite.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+# Test target with setup and run
+test: $(BUILD_DIR) $(BIN_DIR) $(TEST_TARGET)
+	mkdir -p test/fs_test
+	./$(TEST_TARGET)
+	rm -rf test/fs_test
+
+clean:
+	rm -rf $(BUILD_DIR) $(BIN_DIR)
+
+.PHONY: all clean test $(BUILD_DIR) $(BIN_DIR)
