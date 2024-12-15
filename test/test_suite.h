@@ -61,6 +61,18 @@ void test_log_cleanup(void);
 void test_shell_execute_command(void);
 void test_shell_invalid_command(void);
 
+/* Test case declarations for process */
+void test_process_create(void);
+void test_process_terminate(void);
+void test_process_invalid_create(void);
+
+/* Test case declarations for scheduler */
+void test_scheduler_init(void);
+void test_scheduler_start_stop(void);
+void test_scheduler_add_task(void);
+void test_scheduler_remove_task(void);
+void test_scheduler_execution(void);
+
 /* Test case declarations for main */
 void test_main_startup(void);
 void test_main_signal_handling(void);
@@ -77,5 +89,7 @@ int test_init(void);
 int test_logging(void);
 int test_shell(void);
 int test_main_module(void);
+int test_process(void);
+int test_scheduler(void);
 
 #endif /* TEST_SUITE_H */

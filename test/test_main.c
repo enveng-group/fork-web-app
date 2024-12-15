@@ -4,6 +4,8 @@
 #include "test_suite.h"
 #include "../include/init.h"
 #include "../include/shell.h"
+#include "../include/process.h"
+#include "../include/scheduler.h"
 
 /* Function declarations */
 int test_shell(void);
@@ -15,6 +17,8 @@ int test_env(void);
 int test_fs(void);
 int test_logging(void);
 int test_main_module(void);
+int test_process(void);
+int test_scheduler(void);
 
 int
 main(void)
@@ -34,6 +38,8 @@ main(void)
         test_fs() != 0 ||
         test_init() != 0 ||
         test_logging() != 0 ||
+        test_process() != 0 ||    /* Add process tests */
+        test_scheduler() != 0 ||  /* Add scheduler tests */
         test_shell() != 0 ||
         test_main_module() != 0) {
         CU_cleanup_registry();

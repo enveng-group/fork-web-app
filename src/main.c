@@ -8,6 +8,8 @@
 #include "../include/fs.h"
 #include "../include/app_error.h"
 #include "../include/shell.h"
+#include "../include/process.h"
+#include "../include/scheduler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -77,6 +79,30 @@ main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
+    /* Initialize process management */
+    status = processInit();
+    if (status != 0) {
+        errorLog(ERROR_CRITICAL, "Process initialization failed");
+        return EXIT_FAILURE;
+    }
+
+    /* Initialize scheduler */
+    status = schedulerInit();
+    if (status != SCHEDULER_SUCCESS) {
+        errorLog(ERROR_CRITICAL, "Scheduler initialization failed");
+        processCleanup();
+        return EXIT_FAILURE;
+    }
+
+    /* Start scheduler */
+    status = schedulerStart();
+    if (status != SCHEDULER_SUCCESS) {
+        errorLog(ERROR_CRITICAL, "Scheduler start failed");
+        schedulerCleanup();
+        processCleanup();
+        return EXIT_FAILURE;
+    }
+
     /* Main loop */
     while (running)
     {
@@ -84,6 +110,9 @@ main(int argc, char *argv[])
     }
 
     /* Cleanup */
+    schedulerStop();
+    schedulerCleanup();
+    processCleanup();
     shellShutdown();
     shutdownSystem();
     errorShutdown();

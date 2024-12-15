@@ -20,6 +20,8 @@
 #include "../include/fs.h"
 #include "../include/app_error.h"
 #include "../include/shell.h"
+#include "../include/process.h"
+#include "../include/scheduler.h"
 #include "test_suite.h"
 
 /* Test fixture */
@@ -44,9 +46,17 @@ void test_main_startup(void)
     /* Test basic initialization sequence */
     CU_ASSERT_EQUAL(initSystem(), INIT_SUCCESS);
     CU_ASSERT_EQUAL(fsInit("/"), FS_SUCCESS);
+    CU_ASSERT_EQUAL(processInit(), 0);
+    CU_ASSERT_EQUAL(schedulerInit(), SCHEDULER_SUCCESS);
     CU_ASSERT_EQUAL(shellInit(), 0);
 
+    /* Start scheduler */
+    CU_ASSERT_EQUAL(schedulerStart(), SCHEDULER_SUCCESS);
+
     /* Cleanup */
+    schedulerStop();
+    schedulerCleanup();
+    processCleanup();
     shellShutdown();
     shutdownSystem();
 }
@@ -86,10 +96,15 @@ void test_main_cleanup(void)
     errorInit(test_log_path);
     initSystem();
     fsInit("/");
+    processInit();
+    schedulerInit();
     shellInit();
 
     /* Test cleanup sequence */
     shellShutdown();
+    schedulerStop();
+    schedulerCleanup();
+    processCleanup();
     shutdownSystem();
     errorShutdown();
 
