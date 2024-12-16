@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Code Look</title>
+    <style>
+        body {
+            display: flex;
+            width: 1320px;
+            height: 933px;
+            padding: 10px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+            flex-shrink: 0;
+            border-radius: 8px;
+            background: #E2E7DD;
+            box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        }
+
+        .header {
+            padding: 9px 10px;
+            gap: 16px;
+            align-self: stretch;
+            border-radius: 8px;
+            background: var(--GreenPrimary, #909E77);
+        }
+
+        .header-padding {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            padding: 0px 20px;
+            justify-content: flex-start;
+            align-items: center;
+            flex-shrink: 0;
+            background: var(--GreenSecondary, #B5C495);
+        }
+
+        .header-left {
+            width: 205px;
+            height: 67px;
+            background-image: url('https://s3-alpha-sig.figma.com/img/408a/0553/85b58402aa6e392cd297249b2cb600c7?Expires=1734912000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=NWFYXZeW9dfkYvcvuTtmBQHTmJeMB~ymZOIM3QCJvORRZLu-hJIJ764tozGXfbXJ0nwSJhI1xek1pmKQNo9QA84F3Iw064LGxvqcH~CNnY4OyMfHLi24-Tbwv2ydpU8n1x3dptFHGZHkxNsmAzLemjDH~wWM7SIcdf1jWuvhH20JCxbjA-Y0DS4G8ohMOi-tlxlC-GoTT0dnhpv~e2OyZ7mkWTuCMLLvhxv2jMjDtrJIgqrN99RgSEm-~lma3KCk87HB4cJ-A-2MmecjyKQWwVyy8PKFXciO9Bfvxmr4kt-koG0H9fzyzDftFG8YW5UFc9OcvG~5udMmvmAsW7N~IA__');
+            background-color: lightgray;
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+
+        .header-content {
+            color: var(--TextPrimaryDark, #000);
+            font-family: Ubuntu;
+            font-size: 22px;
+            font-style: normal;
+            font-weight: 600;
+            line-height: normal;
+            margin-left: 20px;
+        }
+
+        .sub-header {
+            padding-right: 20px;
+            align-items: center;
+            gap: 23px;
+            align-self: stretch;
+            border-radius: 8px 8px 0px 0px;
+            background: var(--GreenPrimary, #909E77);
+            display: flex;  /* Use flex to align items */
+            justify-content: flex-start; /* Align items to the left */
+        }
+
+        .sub-header-content {
+            color: var(--TextSecondaryDark, #303030);
+            font-family: Ubuntu;
+            font-size: 13px;
+            font-style: normal;
+            font-weight: 600;
+            line-height: 139%;
+        }
+
+        .content {
+            display: flex;
+            align-items: center; /* Align the text and icon vertically */
+            gap: 3px; /* Space between text and icon */
+            border-radius: 3px;
+            background: var(--BeigePrimary, #E5DED0);
+            color: var(--TextSecondaryDark, #303030);
+            text-align: center;
+            font-family: Ubuntu;
+            font-size: 11px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 139%; /* 19.46px */
+            padding: 2px 10px;
+        }
+
+
+        /* Chevron icon size adjusted for consistency */
+        .icon-chevron-down {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            gap: 10px;
+            align-self: stretch;
+            border-radius: 8px 8px 0px 0px;
+            background: var(--GreenPrimary, #909E77);
+        }
+
+        .footercontent {
+            display: flex;
+            align-items: center;
+        }
+
+        .subfooter {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            align-self: stretch;
+            border-radius: 0px 0px 8px 8px;
+            background: var(--BeigePrimary, #E5DED0);
+        }
+
+        .subfootercontent {
+            color: var(--TextSecondaryDark, #303030);
+            font-family: Ubuntu;
+            gap: 10px;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 600;
+            line-height: 139%; /* 19.46px */
+        }
+
+        .header-right {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: left;
+            margin-left: 400px;
+        }
+
+        .content-right {
+            align-self: stretch;
+            color: var(--TextPrimaryDark, #000);
+            font-family: Ubuntu;
+            font-size: var(--sds-typography-body-size-medium);
+            font-style: normal;
+            font-weight: 700;
+            line-height: 200%; /* 22.4px */
+            margin-left: 10px;
+        }
+
+    </style>
+</head>
+    <div class="header">
+        <div class="header-padding">
+            <div class="header-left"></div>
+            <div class="header-content">Environmental Compliance Management System</div>
+            <div class="header-right" style="background-image: url('https://s3-alpha-sig.figma.com/img/408a/0553/85b58402aa6e392cd297249b2cb600c7?Expires=1734912000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=NWFYXZeW9dfkYvcvuTtmBQHTmJeMB~ymZOIM3QCJvORRZLu-hJIJ764tozGXfbXJ0nwSJhI1xek1pmKQNo9QA84F3Iw064LGxvqcH~CNnY4OyMfHLi24-Tbwv2ydpU8n1x3dptFHGZHkxNsmAzLemjDH~wWM7SIcdf1jWuvhH20JCxbjA-Y0DS4G8ohMOi-tlxlC-GoTT0dnhpv~e2OyZ7mkWTuCMLLvhxv2jMjDtrJIgqrN99RgSEm-~lma3KCk87HB4cJ-A-2MmecjyKQWwVyy8PKFXciO9Bfvxmr4kt-koG0H9fzyzDftFG8YW5UFc9OcvG~5udMmvmAsW7N~IA__');"></div>
+            <div class="content-right">
+                <div class="content-right">Name</div>
+                <div class="content-right">Role</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sub-header">
+        <div class="sub-header-content">Select Category</div>
+        <svg class="icon-chevron-down" viewBox="0 0 24 24">
+            <path d="M12 15.5l-7.071-7.071 1.414-1.414L12 12.671l5.657-5.656 1.414 1.414z"></path>
+        </svg>
+        <div class="content">
+            14 Day Lookahead
+            <svg class="icon-chevron-down" viewBox="0 0 24 24">
+                <path d="M12 15.5l-7.071-7.071 1.414-1.414L12 12.671l5.657-5.656 1.414 1.414z"></path>
+            </svg>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <div class="footercontent">
+            Primary Environmental Mechanism
+            <svg class="icon-chevron-down" viewBox="0 0 24 24">
+                <path d="M12 15.5l-7.071-7.071 1.414-1.414L12 12.671l5.657-5.656 1.414 1.414z"></path>
+            </svg>
+        </div>
+        <div class="footercontent">
+            Obligation
+            <svg class="icon-chevron-down" viewBox="0 0 24 24">
+                <path d="M12 15.5l-7.071-7.071 1.414-1.414L12 12.671l5.657-5.656 1.414 1.414z"></path>
+            </svg>
+        </div>
+        <div class="footercontent">
+            Accountability
+            <svg class="icon-chevron-down" viewBox="0 0 24 24">
+                <path d="M12 15.5l-7.071-7.071 1.414-1.414L12 12.671l5.657-5.656 1.414 1.414z"></path>
+            </svg>
+        </div>
+        <div class="footercontent">
+            Responsibility
+            <svg class="icon-chevron-down" viewBox="0 0 24 24">
+                <path d="M12 15.5l-7.071-7.071 1.414-1.414L12 12.671l5.657-5.656 1.414 1.414z"></path>
+            </svg>
+        </div>
+        <div class="footercontent">
+            Project Plan
+            <svg class="icon-chevron-down" viewBox="0 0 24 24">
+                <path d="M12 15.5l-7.071-7.071 1.414-1.414L12 12.671l5.657-5.656 1.414 1.414z"></path>
+            </svg>
+        </div>
+        <div class="footercontent">
+            Action Due Date
+            <svg class="icon-chevron-down" viewBox="0 0 24 24">
+                <path d="M12 15.5l-7.071-7.071 1.414-1.414L12 12.671l5.657-5.656 1.414 1.414z"></path>
+            </svg>
+        </div>
+        <div class="footercontent">
+            Status
+            <svg class="icon-chevron-down" viewBox="0 0 24 24">
+                <path d="M12 15.5l-7.071-7.071 1.414-1.414L12 12.671l5.657-5.656 1.414 1.414z"></path>
+            </svg>
+        </div>
+        <div class="footercontent">
+            Compliance Comments
+            <svg class="icon-chevron-down" viewBox="0 0 24 24">
+                <path d="M12 15.5l-7.071-7.071 1.414-1.414L12 12.671l5.657-5.656 1.414 1.414z"></path>
+            </svg>
+        </div>
+    </div>
+
+    <div class="subfooter">
+        <div class="subfootercontent">
+            Primary Environmental Mechanism
+        </div>
+        <div class="subfootercontent">
+            Obligation
+        </div>
+        <div class="subfootercontent">
+            Accountability
+        </div>
+        <div class="subfootercontent">
+            Responsibility
+        </div>
+        <div class="subfootercontent">
+            Project Plan
+        </div>
+        <div class="subfootercontent">
+            Action Due Date
+        </div>
+        <div class="subfootercontent">
+            Status
+        </div>
+        <div class="subfootercontent">
+            Compliance Comments
+        </div>
+    </div>
+</body>
+</html>
