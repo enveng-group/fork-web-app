@@ -15,62 +15,42 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <pthread.h>
 
-/* Static variables */
-static FILE *log_fp = NULL;
-static char log_file_path[MAX_LINE_LENGTH];
-static long current_log_size = 0;
+/* File-level variables */
+static char log_file_path[LOG_MAX_PATH_LEN];
+static FILE *log_file = NULL;
+static enum log_level current_level = LOG_INFO;
+static enum log_flags current_flags = LOG_FLAG_NONE;
+static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-/* Log level strings */
-static const char *log_level_str[] = {
-    "DEBUG",
-    "INFO",
-    "WARNING",
-    "ERROR",
-    "FATAL"
-};
-
-/* Internal helper functions */
-static int openLogFile(void);
-static int writeLogEntry(enum log_level level, const char *format, va_list args);
-static void formatTimestamp(char *buffer, size_t size);
-static int checkLogSize(void);
+/* Internal function prototypes */
+static int openLogFile(const char *path);
+static int rotateLogIfNeeded(void);
+static int writeLogEntry(enum log_level level, const char *msg);
+static int copyLogPath(const char *src);
 
 int
-logInit(const char *log_path)
+logInit(const char *log_path, enum log_flags flags)
 {
-    mode_t old_umask;
-
     if (log_path == NULL) {
-        errorLog(ERROR_WARNING, "Log path is NULL, using stderr");
-        log_fp = stderr;
         return -1;
     }
 
-    /* Store log path */
-    strncpy(log_file_path, log_path, MAX_LINE_LENGTH - 1);
-    log_file_path[MAX_LINE_LENGTH - 1] = '\0';
+    pthread_mutex_lock(&log_mutex);
 
-    /* Set restrictive permissions for log file */
-    old_umask = umask(077);
-
-    /* Open log file */
-    if (openLogFile() != 0) {
-        umask(old_umask);
+    if (log_file != NULL) {
+        pthread_mutex_unlock(&log_mutex);
         return -1;
     }
 
-    /* Restore original umask */
-    umask(old_umask);
-
-    /* Get initial file size */
-    if (fseek(log_fp, 0, SEEK_END) == 0) {
-        current_log_size = ftell(log_fp);
-        if (current_log_size == -1) {
-            current_log_size = 0;
-        }
+    if (openLogFile(log_path) != 0) {
+        pthread_mutex_unlock(&log_mutex);
+        return -1;
     }
 
+    current_flags = flags;
+    pthread_mutex_unlock(&log_mutex);
     return 0;
 }
 
@@ -78,149 +58,325 @@ void
 logWrite(enum log_level level, const char *format, ...)
 {
     va_list args;
+    char message[LOG_MAX_MSG_LEN];
 
-    if (format == NULL || level < LOG_DEBUG || level > LOG_FATAL) {
+    if (format == NULL || log_file == NULL) {
         return;
-    }
-
-    /* Check if log needs rotation */
-    if (checkLogSize() != 0) {
-        logRotate();
     }
 
     va_start(args, format);
-    writeLogEntry(level, format, args);
+    vsnprintf(message, sizeof(message), format, args);
     va_end(args);
-}
 
-void
-logRotate(void)
-{
-    char backup_path[MAX_LINE_LENGTH];
-    time_t now;
-    struct tm *tm_info;
-    char timestamp[32];
-
-    if (log_fp == NULL || log_fp == stderr) {
-        return;
-    }
-
-    /* Close current log file */
-    fclose(log_fp);
-
-    /* Generate backup filename with timestamp */
-    time(&now);
-    tm_info = localtime(&now);
-    if (tm_info == NULL) {
-        errorLog(ERROR_WARNING, "Failed to get local time for log rotation");
-        openLogFile();
-        return;
-    }
-
-    if (strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S", tm_info) == 0) {
-        errorLog(ERROR_WARNING, "Failed to format timestamp for log rotation");
-        openLogFile();
-        return;
-    }
-
-    snprintf(backup_path, sizeof(backup_path), "%s.%s", log_file_path, timestamp);
-
-    /* Rename current log to backup */
-    if (rename(log_file_path, backup_path) != 0 && errno != ENOENT) {
-        errorLog(ERROR_WARNING, "Failed to rename log file during rotation");
-    }
-
-    /* Open new log file */
-    openLogFile();
-    current_log_size = 0;
+    pthread_mutex_lock(&log_mutex);
+    rotateLogIfNeeded();
+    writeLogEntry(level, message);
+    pthread_mutex_unlock(&log_mutex);
 }
 
 void
 logCleanup(void)
 {
-    if (log_fp != NULL && log_fp != stderr) {
-        fclose(log_fp);
-        log_fp = NULL;
+    pthread_mutex_lock(&log_mutex);
+    if (log_file != NULL) {
+        fclose(log_file);
+        log_file = NULL;
     }
-    current_log_size = 0;
+    pthread_mutex_unlock(&log_mutex);
 }
 
-static int
-openLogFile(void)
+int
+logSetLevel(enum log_level level)
 {
-    log_fp = fopen(log_file_path, "a");
-    if (log_fp == NULL) {
-        errorLog(ERROR_WARNING, "Failed to open log file, using stderr");
-        log_fp = stderr;
+    if (level < LOG_EMERG || level > LOG_DEBUG) {
         return -1;
     }
+    current_level = level;
+    return 0;
+}
+
+enum log_level
+logGetLevel(void)
+{
+    return current_level;
+}
+
+const char *
+logLevelToString(enum log_level level)
+{
+    static const char *level_strings[] = {
+        "EMERG",
+        "ALERT",
+        "CRIT",
+        "ERROR",
+        "WARNING",
+        "NOTICE",
+        "INFO",
+        "DEBUG"
+    };
+
+    if (level <= LOG_DEBUG) {
+        return level_strings[level];
+    }
+    return "UNKNOWN";
+}
+
+enum log_level
+logStringToLevel(const char *level_str)
+{
+    if (level_str == NULL) {
+        return LOG_INFO;  /* Default level */
+    }
+
+    if (strcmp(level_str, "DEBUG") == 0) return LOG_DEBUG;
+    if (strcmp(level_str, "INFO") == 0) return LOG_INFO;
+    if (strcmp(level_str, "NOTICE") == 0) return LOG_NOTICE;
+    if (strcmp(level_str, "WARNING") == 0) return LOG_WARNING;
+    if (strcmp(level_str, "ERROR") == 0) return LOG_ERR;
+    if (strcmp(level_str, "CRIT") == 0) return LOG_CRIT;
+    if (strcmp(level_str, "ALERT") == 0) return LOG_ALERT;
+    if (strcmp(level_str, "EMERG") == 0) return LOG_EMERG;
+
+    return LOG_INFO;  /* Default level */
+}
+
+/* Internal helper functions */
+static int
+copyLogPath(const char *src)
+{
+    size_t len;
+    char temp[LOG_MAX_PATH_LEN];
+
+    if (src == NULL) {
+        return -1;
+    }
+
+    len = strlen(src);
+    if (len >= LOG_MAX_PATH_LEN) {
+        return -1;
+    }
+
+    /* First copy to temporary buffer to avoid overlap */
+    memcpy(temp, src, len);
+    temp[len] = '\0';
+
+    /* Then copy to destination */
+    memcpy(log_file_path, temp, len + 1);
+
     return 0;
 }
 
 static int
-writeLogEntry(enum log_level level, const char *format, va_list args)
+openLogFile(const char *path)
 {
-    char timestamp[32];
-    int written;
-    va_list args_copy;
+    FILE *new_file;
 
-    if (log_fp == NULL) {
+    if (path == NULL) {
+        return -1;
+    }
+
+    /* Open file first */
+    new_file = fopen(path, "a");
+    if (new_file == NULL) {
+        return -1;
+    }
+
+    /* Set permissions */
+    if (chmod(path, LOG_DEFAULT_MODE) != 0) {
+        fclose(new_file);
+        return -1;
+    }
+
+    /* Store file handle */
+    log_file = new_file;
+
+    /* Copy path safely */
+    if (copyLogPath(path) != 0) {
+        fclose(log_file);
+        log_file = NULL;
+        return -1;
+    }
+
+    return 0;
+}
+
+/* Static function to write log entry with proper formatting */
+static int
+writeLogEntry(enum log_level level, const char *msg)
+{
+    time_t now;
+    struct tm *timeinfo;
+    char timestamp[32];
+
+    if (log_file == NULL || msg == NULL) {
+        return -1;
+    }
+
+    /* Check log level */
+    if (level > current_level) {
+        return 0;
+    }
+
+    /* Get current time */
+    now = time(NULL);
+    if (now == (time_t)-1) {
+        return -1;
+    }
+
+    timeinfo = localtime(&now);
+    if (timeinfo == NULL) {
         return -1;
     }
 
     /* Format timestamp */
-    formatTimestamp(timestamp, sizeof(timestamp));
-
-    /* Write log entry header */
-    written = fprintf(log_fp, "[%s] [%s] ", timestamp, log_level_str[level]);
-    if (written < 0) {
+    if (strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", timeinfo) == 0) {
         return -1;
     }
-    current_log_size += written;
 
-    /* Write formatted message */
-    va_copy(args_copy, args);
-    written = vfprintf(log_fp, format, args_copy);
-    va_end(args_copy);
-
-    if (written < 0) {
+    /* Write log entry with timestamp and level */
+    if (fprintf(log_file, "[%s] [%s] %s\n",
+               timestamp,
+               logLevelToString(level),
+               msg) < 0) {
         return -1;
     }
-    current_log_size += written;
 
-    /* Add newline */
-    if (fputc('\n', log_fp) == EOF) {
+    /* Flush to disk immediately for reliability */
+    if (fflush(log_file) != 0) {
         return -1;
     }
-    current_log_size++;
 
-    fflush(log_fp);
     return 0;
 }
 
-static void
-formatTimestamp(char *buffer, size_t size)
+/* Static function to check and rotate logs if needed */
+static int
+rotateLogIfNeeded(void)
 {
+    struct stat st;
+    char new_name[LOG_MAX_PATH_LEN];
+    char temp_path[LOG_MAX_PATH_LEN];
+    int fd;
     time_t now;
-    struct tm *tm_info;
+    size_t path_len;
 
-    time(&now);
-    tm_info = localtime(&now);
-
-    if (tm_info == NULL) {
-        strncpy(buffer, "TIMESTAMP_ERROR", size - 1);
-        buffer[size - 1] = '\0';
-        return;
+    if (log_file == NULL) {
+        return -1;
     }
 
-    if (strftime(buffer, size, "%Y-%m-%d %H:%M:%S", tm_info) == 0) {
-        strncpy(buffer, "TIMESTAMP_ERROR", size - 1);
-        buffer[size - 1] = '\0';
+    fd = fileno(log_file);
+    if (fd == -1) {
+        return -1;
     }
+
+    if (fstat(fd, &st) != 0) {
+        return -1;
+    }
+
+    if (st.st_size >= LOG_MAX_SIZE) {
+        now = time(NULL);
+        if (now == (time_t)-1) {
+            return -1;
+        }
+
+        /* Save current path before closing */
+        path_len = strlen(log_file_path);
+        if (path_len >= LOG_MAX_PATH_LEN) {
+            return -1;
+        }
+        strncpy(temp_path, log_file_path, LOG_MAX_PATH_LEN - 1);
+        temp_path[LOG_MAX_PATH_LEN - 1] = '\0';
+
+        fclose(log_file);
+        log_file = NULL;
+
+        /* Generate new name with timestamp */
+        if (snprintf(new_name, sizeof(new_name), "%s.%ld",
+                    temp_path, (long)now) >= (int)sizeof(new_name)) {
+            return -1;
+        }
+
+        /* Rotate file */
+        if (rename(temp_path, new_name) != 0) {
+            return -1;
+        }
+
+        /* Reopen log file */
+        return openLogFile(temp_path);
+    }
+
+    return 0;
 }
 
-static int
-checkLogSize(void)
+/* Add missing logging rotation function */
+int
+logRotate(void)
 {
-    return (current_log_size >= MAX_LOG_SIZE);
+    char backup_path[LOG_MAX_PATH_LEN];
+    char temp_path[LOG_MAX_PATH_LEN];
+    time_t now;
+    struct tm *tm_info;
+    int result;
+    mode_t old_umask;
+    FILE *new_file;
+
+    /* Verify log file exists */
+    if (log_file == NULL) {
+        return -1;
+    }
+
+    pthread_mutex_lock(&log_mutex);
+
+    /* Store current path */
+    strncpy(temp_path, log_file_path, sizeof(temp_path) - 1);
+    temp_path[sizeof(temp_path) - 1] = '\0';
+
+    /* Close current log file */
+    fclose(log_file);
+    log_file = NULL;
+
+    /* Generate backup filename with timestamp */
+    time(&now);
+    tm_info = localtime(&now);
+    if (tm_info == NULL) {
+        pthread_mutex_unlock(&log_mutex);
+        return -1;
+    }
+
+    result = snprintf(backup_path, sizeof(backup_path),
+                     "%s.%04d%02d%02d-%02d%02d%02d",
+                     temp_path,
+                     tm_info->tm_year + 1900,
+                     tm_info->tm_mon + 1,
+                     tm_info->tm_mday,
+                     tm_info->tm_hour,
+                     tm_info->tm_min,
+                     tm_info->tm_sec);
+
+    if (result < 0 || (size_t)result >= sizeof(backup_path)) {
+        pthread_mutex_unlock(&log_mutex);
+        return -1;
+    }
+
+    /* Rename current log file to backup */
+    if (rename(temp_path, backup_path) != 0 && errno != ENOENT) {
+        pthread_mutex_unlock(&log_mutex);
+        return -1;
+    }
+
+    /* Create new log file with proper permissions */
+    old_umask = umask(077);
+    new_file = fopen(temp_path, "a");
+    umask(old_umask);
+
+    if (new_file == NULL) {
+        pthread_mutex_unlock(&log_mutex);
+        return -1;
+    }
+
+    /* Store new file handle */
+    log_file = new_file;
+
+    pthread_mutex_unlock(&log_mutex);
+    return 0;
 }

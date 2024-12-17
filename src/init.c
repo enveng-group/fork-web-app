@@ -2,128 +2,78 @@
  * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
  * SPDX-License-Identifier: 	AGPL-3.0-or-later
  */
-/* src/init.c */
+/* filepath: src/init.c */
+#include <sys/stat.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <limits.h>
 #include "../include/init.h"
 #include "../include/app_error.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <pwd.h>
-#include <grp.h>
-#include <errno.h>
 
-/* System state */
+/* Static variables */
 static enum system_state current_state = STATE_STARTUP;
-static char env_vars[MAX_ENV_VARS][MAX_PATH_LEN];
-static size_t env_count = 0;
 
-int
-initSystem(void)
+/* Essential directories - relative paths */
+static const char *system_dirs[] = {
+    "etc",
+    "etc/config",
+    "var",
+    "var/log",
+    "var/run",
+    NULL
+};
+
+/* Static function prototypes */
+static int create_directories(void);
+
+/* Create required directories */
+static int create_directories(void)
 {
+    const char **dir;
     mode_t old_umask;
+    int status = 0;
 
-    /* Set restrictive umask */
     old_umask = umask(022);
 
-    /* Set initial state */
-    current_state = STATE_STARTUP;
-
-    /* Initialize environment */
-    if (loadConfiguration("/etc/system.conf") != INIT_SUCCESS)
-    {
-        /* Non-fatal error, continue initialization */
-        errorLog(ERROR_WARNING, "Failed to load system configuration");
+    for (dir = system_dirs; *dir != NULL; dir++) {
+        if (mkdir(*dir, 0755) != 0) {
+            if (errno != EEXIST) {
+                status = -1;
+                break;
+            }
+        }
     }
 
-    /* Set up system directories */
-    if (mkdir("/var/run", 0755) == -1 && errno != EEXIST)
-    {
-        /* Non-fatal error, continue initialization */
-        errorLog(ERROR_WARNING, "Failed to create runtime directory");
-    }
-
-    /* Restore original umask */
     umask(old_umask);
+    return status;
+}
 
-    /* Set running state */
+/* Initialize the system */
+int initSystem(void)
+{
+    if (current_state == STATE_RUNNING) {
+        return INIT_ERR_ALREADY_RUNNING;
+    }
+
+    if (create_directories() != 0) {
+        current_state = STATE_ERROR;
+        return INIT_ERROR;
+    }
+
     current_state = STATE_RUNNING;
     return INIT_SUCCESS;
 }
 
-int
-shutdownSystem(void)
+/* Shutdown the system */
+int shutdownSystem(void)
 {
-    /* Cleanup environment */
-    env_count = 0;
-    memset(env_vars, 0, sizeof(env_vars));
-
     current_state = STATE_SHUTDOWN;
     return INIT_SUCCESS;
 }
 
-int
-rebootSystem(void)
-{
-    int status;
-
-    status = shutdownSystem();
-    if (status != INIT_SUCCESS)
-    {
-        return INIT_ERROR;
-    }
-
-    current_state = STATE_REBOOT;
-    return INIT_SUCCESS;
-}
-
-int
-loadConfiguration(const char *config_path)
-{
-    FILE *config;
-    char line[MAX_PATH_LEN];
-    char *ptr;
-
-    if (config_path == NULL)
-    {
-        errno = EINVAL;
-        return INIT_ERROR;
-    }
-
-    config = fopen(config_path, "r");
-    if (config == NULL)
-    {
-        errorLog(ERROR_CRITICAL, "Could not open configuration file");
-        return INIT_ERROR;
-    }
-
-    while (fgets(line, sizeof(line), config) != NULL && env_count < MAX_ENV_VARS)
-    {
-        /* Remove trailing newline */
-        if ((ptr = strchr(line, '\n')) != NULL)
-        {
-            *ptr = '\0';
-        }
-
-        /* Skip empty lines and comments */
-        if (line[0] == '\0' || line[0] == '#')
-        {
-            continue;
-        }
-
-        /* Store environment variable */
-        strncpy(env_vars[env_count], line, MAX_PATH_LEN - 1);
-        env_vars[env_count][MAX_PATH_LEN - 1] = '\0';
-        env_count++;
-    }
-
-    fclose(config);
-    return INIT_SUCCESS;
-}
-
-enum system_state
-getSystemState(void)
+/* Get current system state */
+enum system_state getSystemState(void)
 {
     return current_state;
 }

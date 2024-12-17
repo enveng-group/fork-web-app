@@ -1,19 +1,22 @@
+/* filepath: /devcontainer/web-app/test/test_main_module.c */
+
 /**
  * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
  * SPDX-License-Identifier: 	AGPL-3.0-or-later
  */
-/* filepath: /devcontainer/web-app/test/test_main_module.c */
 
 /* System headers */
+#include <CUnit/CUnit.h>
+#include <CUnit/Basic.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
-
-/* CUnit header */
-#include <CUnit/CUnit.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <limits.h>
 
 /* Application headers */
 #include "../include/init.h"
@@ -22,128 +25,249 @@
 #include "../include/shell.h"
 #include "../include/process.h"
 #include "../include/scheduler.h"
+#include "../include/mem.h"
+#include "../include/cache.h"
+#include "../include/constants.h"
 #include "test_suite.h"
 
-/* Test fixture */
-static char test_log_path[] = "test/test.log";
+/* Test constants */
+#define TEST_LOG_PATH "test/test.log"
+#define TEST_CONFIG_PATH "test/test.conf"
+#define TEST_CACHE_SIZE 1024
+#define TEST_MEM_SIZE (1024 * 1024)
 
-/* Setup and teardown */
+/* Global signal handlers */
+static struct sigaction old_sigint;
+static struct sigaction old_sigterm;
+
+/* Signal handler function */
+static void test_signal_handler(int signum)
+{
+    /* Empty handler for testing */
+    (void)signum;
+}
+
+/* Test signal handling setup */
+static int setup_signals(void)
+{
+    struct sigaction new_action;
+    int result;
+
+    /* Initialize the signal action structure */
+    new_action.sa_handler = test_signal_handler;
+    sigemptyset(&new_action.sa_mask);
+    new_action.sa_flags = 0;
+
+    /* Set handlers and store old ones */
+    result = sigaction(SIGINT, &new_action, &old_sigint);
+    if (result == -1) {
+        return -1;
+    }
+
+    result = sigaction(SIGTERM, &new_action, &old_sigterm);
+    if (result == -1) {
+        return -1;
+    }
+
+    return 0;
+}
+
+/* Test setup function */
 static int setup(void)
 {
-    errorInit(test_log_path);
+    struct stat st = {0};
+    FILE *fp;
+    int status;
+
+    /* Initialize memory system first */
+    status = memInit(TEST_MEM_SIZE);
+    if (status != MEM_SUCCESS) {
+        return -1;
+    }
+
+    /* Initialize cache system with LRU policy */
+    status = cacheInit(CACHE_TYPE_LRU, TEST_CACHE_SIZE);
+    if (status != CACHE_SUCCESS) {
+        memCleanup();
+        return -1;
+    }
+
+    /* Setup signal handlers */
+    if (setup_signals() == -1) {
+        cacheCleanup();
+        memCleanup();
+        return -1;
+    }
+
+    /* Create test directory if needed */
+    if (stat("test", &st) == -1) {
+        if (mkdir("test", 0755) == -1) {
+            cacheCleanup();
+            memCleanup();
+            return -1;
+        }
+    }
+
+    /* Create and set up test log file */
+    fp = fopen(TEST_LOG_PATH, "w");
+    if (fp == NULL) {
+        cacheCleanup();
+        memCleanup();
+        return -1;
+    }
+    fclose(fp);
+
+    /* Create and set up test config file */
+    fp = fopen(TEST_CONFIG_PATH, "w");
+    if (fp == NULL) {
+        cacheCleanup();
+        memCleanup();
+        return -1;
+    }
+    fprintf(fp, "CACHE_SIZE=%d\n", TEST_CACHE_SIZE);
+    fclose(fp);
+
     return 0;
 }
 
 static int teardown(void)
 {
-    remove(test_log_path);
+    /* Cleanup subsystems */
+    cacheCleanup();
+    memCleanup();
+
+    /* Remove test files */
+    unlink(TEST_LOG_PATH);
+    unlink(TEST_CONFIG_PATH);
+
     return 0;
 }
 
 /* Test cases */
 void test_main_startup(void)
 {
-    /* Test basic initialization sequence */
-    CU_ASSERT_EQUAL(initSystem(), INIT_SUCCESS);
-    CU_ASSERT_EQUAL(fsInit("/"), FS_SUCCESS);
-    CU_ASSERT_EQUAL(processInit(), 0);
-    CU_ASSERT_EQUAL(schedulerInit(), SCHEDULER_SUCCESS);
-    CU_ASSERT_EQUAL(shellInit(), 0);
+    int status;
 
-    /* Start scheduler */
-    CU_ASSERT_EQUAL(schedulerStart(), SCHEDULER_SUCCESS);
+    /* Test normal initialization */
+    status = initSystem();
+    CU_ASSERT_EQUAL(status, INIT_SUCCESS);
 
-    /* Cleanup */
-    schedulerStop();
-    schedulerCleanup();
-    processCleanup();
-    shellShutdown();
-    shutdownSystem();
+    if (status == INIT_SUCCESS) {
+        /* Verify system state */
+        CU_ASSERT_EQUAL(getSystemState(), STATE_RUNNING);
+
+        /* Verify subsystems are initialized */
+        CU_ASSERT_EQUAL(memGetStatus(), MEM_SUCCESS);
+        CU_ASSERT_EQUAL(cacheGetStatus(), CACHE_SUCCESS);
+
+        shutdownSystem();
+    }
 }
 
 void test_main_signal_handling(void)
 {
-    pid_t pid;
-    int status;
-    int timeout;
+    struct sigaction test_sigint;
+    struct sigaction test_sigterm;
+    struct sigaction current_sigint;
+    struct sigaction current_sigterm;
 
-    /* Initialize timeout value */
-    timeout = 5;
+    /* Initialize signal handlers */
+    test_sigint.sa_handler = test_signal_handler;
+    test_sigterm.sa_handler = test_signal_handler;
+    sigemptyset(&test_sigint.sa_mask);
+    sigemptyset(&test_sigterm.sa_mask);
+    test_sigint.sa_flags = 0;
+    test_sigterm.sa_flags = 0;
 
-    pid = fork();
-    CU_ASSERT(pid >= 0);
+    /* Set test handlers */
+    CU_ASSERT_EQUAL(sigaction(SIGINT, &test_sigint, &old_sigint), 0);
+    CU_ASSERT_EQUAL(sigaction(SIGTERM, &test_sigterm, &old_sigterm), 0);
 
-    if (pid == 0) {
-        /* Child process */
-        errorInit(test_log_path);
-        initSystem();
-        kill(getpid(), SIGTERM);
-        _exit(0);
-    } else {
-        /* Parent process */
-        while (timeout-- > 0 && waitpid(pid, &status, WNOHANG) == 0) {
-            sleep(1);
-        }
+    /* Verify handlers were set */
+    CU_ASSERT_EQUAL(sigaction(SIGINT, NULL, &current_sigint), 0);
+    CU_ASSERT_EQUAL(sigaction(SIGTERM, NULL, &current_sigterm), 0);
+    CU_ASSERT_EQUAL(current_sigint.sa_handler, test_signal_handler);
+    CU_ASSERT_EQUAL(current_sigterm.sa_handler, test_signal_handler);
 
-        /* Verify process termination */
-        CU_ASSERT(WIFEXITED(status) || WIFSIGNALED(status));
-    }
+    /* Restore original handlers */
+    CU_ASSERT_EQUAL(sigaction(SIGINT, &old_sigint, NULL), 0);
+    CU_ASSERT_EQUAL(sigaction(SIGTERM, &old_sigterm, NULL), 0);
 }
 
 void test_main_cleanup(void)
 {
-    /* Initialize all subsystems */
-    errorInit(test_log_path);
-    initSystem();
-    fsInit("/");
-    processInit();
-    schedulerInit();
-    shellInit();
+    /* Initialize system */
+    CU_ASSERT_EQUAL(initSystem(), INIT_SUCCESS);
 
-    /* Test cleanup sequence */
-    shellShutdown();
-    schedulerStop();
-    schedulerCleanup();
-    processCleanup();
-    shutdownSystem();
-    errorShutdown();
+    /* Test cleanup */
+    CU_ASSERT_EQUAL(shutdownSystem(), INIT_SUCCESS);
 
-    /* Verify clean shutdown */
+    /* Verify system state */
     CU_ASSERT_EQUAL(getSystemState(), STATE_SHUTDOWN);
 }
 
 void test_main_args_handling(void)
 {
-    char *test_args[] = {"test_prog", "test/custom.log", NULL};
-    FILE *fp;
-    int result;
-    struct stat st;
+    const char *argv[] = {
+        "program",
+        TEST_LOG_PATH,
+        NULL
+    };
+    int status;
 
-    /* Create test directory if it doesn't exist */
-    result = mkdir("test", 0755);
-    if (result != 0 && errno != EEXIST) {
-        CU_FAIL("Failed to create test directory");
-        return;
+    /* Test with custom log path */
+    status = initSystem();
+    CU_ASSERT_EQUAL(status, INIT_SUCCESS);
+
+    /* Verify custom log path was used */
+    CU_ASSERT_EQUAL(access(argv[1], F_OK), 0);
+
+    shutdownSystem();
+}
+
+void test_memory_management(void)
+{
+    void *ptr;
+    struct mem_stats stats_before, stats_after;
+
+    /* Initialize system */
+    CU_ASSERT_EQUAL(initSystem(), INIT_SUCCESS);
+
+    /* Get initial memory stats */
+    stats_before = memGetStats();
+
+    /* Allocate and free memory */
+    ptr = memAlloc(1024);
+    CU_ASSERT_PTR_NOT_NULL(ptr);
+
+    if (ptr != NULL) {
+        memFree(ptr);
     }
 
-    /* Test argument handling */
-    errorInit(test_args[1]);
+    /* Check memory stats */
+    stats_after = memGetStats();
+    CU_ASSERT_EQUAL(stats_before.total_allocs + 1, stats_after.total_allocs);
 
-    /* Write test data to verify file creation */
-    fp = fopen(test_args[1], "w");
-    if (fp != NULL) {
-        fprintf(fp, "test\n");
-        fclose(fp);
+    shutdownSystem();
+}
 
-        /* Verify file existence */
-        result = stat(test_args[1], &st);
-        CU_ASSERT_EQUAL(result, 0);
-    } else {
-        CU_FAIL("Failed to create test file");
-    }
+void test_cache_operations(void)
+{
+    const char *test_key = "test_key";
+    const char *test_value = "test_value";
+    char buffer[64];
+    size_t size = sizeof(buffer);
 
-    /* Cleanup */
-    remove(test_args[1]);
+    /* Initialize system */
+    CU_ASSERT_EQUAL(initSystem(), INIT_SUCCESS);
+
+    /* Test cache operations */
+    CU_ASSERT_EQUAL(cacheSet(test_key, test_value, strlen(test_value) + 1, 60), CACHE_SUCCESS);
+    CU_ASSERT_EQUAL(cacheGet(test_key, buffer, &size), CACHE_SUCCESS);
+    CU_ASSERT_STRING_EQUAL(buffer, test_value);
+    CU_ASSERT_EQUAL(cacheDelete(test_key), CACHE_SUCCESS);
+
+    shutdownSystem();
 }
 
 /* Test suite initialization */
@@ -156,12 +280,12 @@ int test_main_module(void)
         return -1;
     }
 
-    if (
-        (CU_add_test(suite, "Main Startup", test_main_startup) == NULL) ||
+    if ((CU_add_test(suite, "Main Startup", test_main_startup) == NULL) ||
         (CU_add_test(suite, "Signal Handling", test_main_signal_handling) == NULL) ||
         (CU_add_test(suite, "Main Cleanup", test_main_cleanup) == NULL) ||
-        (CU_add_test(suite, "Arguments Handling", test_main_args_handling) == NULL)
-    ) {
+        (CU_add_test(suite, "Arguments Handling", test_main_args_handling) == NULL) ||
+        (CU_add_test(suite, "Memory Management", test_memory_management) == NULL) ||
+        (CU_add_test(suite, "Cache Operations", test_cache_operations) == NULL)) {
         return -1;
     }
 

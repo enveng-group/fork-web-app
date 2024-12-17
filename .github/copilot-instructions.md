@@ -24,6 +24,139 @@ These instructions ensure Copilot's suggestions align with our project's technic
 - Never redefine a variable in the same scope.
 - Avoid generating code that are conflicting types for the same variable.
 - Avoid previous declarations of variables.
+- Code must compile with gcc using: `-std=c90 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500 -Wall -ansi -Wextra -pedantic -Werror -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes -fanalyzer -fstack-protector-strong -fstack-check -fdata-sections -ffunction-sections -fno-common -fstrict-aliasing -Warray-bounds -Wstack-protector -Wformat=2 -Wformat-security -Wformat-overflow=2 -Wformat-truncation=2 -Walloca -Wvla -fno-omit-frame-pointer`
+- Code Safety Requirements:
+    - No VLAs (enforced by -Wvla)
+    - No array bounds violations (enforced by -Warray-bounds)
+    - No stack buffer overflows (enforced by -fstack-protector-strong -fstack-check)
+    - No undefined behavior
+    - No memory leaks
+    - No floating-point issues
+- Memory Safety:
+
+```c
+/* Always initialize pointers */
+int *ptr = NULL;
+
+/* Check malloc results */
+ptr = malloc(size);
+if (ptr == NULL) {
+    /* Handle error */
+    return -1;
+}
+```
+- Array Safety:
+
+```c
+/* Define array size as constant */
+#define ARRAY_SIZE 100
+
+/* Use size_t for array indices */
+size_t i;
+int array[ARRAY_SIZE];
+
+/* Array bounds checking */
+for (i = 0; i < ARRAY_SIZE; i++) {
+    array[i] = 0;
+}
+```
+
+- Function Prototypes:
+
+```c
+/* Complete prototype with parameter names */
+int function_name(int parameter_one, char *parameter_two);
+
+/* Implementation matches exactly */
+int
+function_name(int parameter_one, char *parameter_two)
+{
+    /* Function body */
+    return 0;
+}
+```
+
+- Variable Declaration:
+
+```c
+void function(void)
+{
+    /* All declarations at start */
+    int i;
+    char *ptr = NULL;
+    const char *str = "example";
+
+    /* Code follows */
+    i = 0;
+}
+```
+
+- String Handling:
+
+```c
+/* Safe string operations */
+char buffer[MAX_SIZE];
+size_t len;
+
+if (snprintf(buffer, sizeof(buffer), "%s", input) >= sizeof(buffer)) {
+    /* Handle truncation */
+    return -1;
+}
+```
+
+- Format String Safety
+
+```c
+/* Use format string prototypes */
+int print_value(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+
+/* Check format string usage */
+printf("%s", str);  /* correct */
+printf(str);        /* wrong - format string vulnerability */
+```
+
+- Thread Safety
+
+```c
+/* Thread-local storage when needed */
+static __thread int thread_local_var;
+
+/* Proper mutex usage */
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_lock(&mutex);
+/* Critical section */
+pthread_mutex_unlock(&mutex);
+```
+
+- Error Handling
+
+```c
+/* Check system calls */
+if (write(fd, buf, len) < 0) {
+    /* Handle error with errno */
+    return -1;
+}
+
+/* Check library functions */
+if (pthread_mutex_lock(&mutex) != 0) {
+    /* Handle error */
+    return -1;
+}
+```
+
+- Type Safety
+
+```c
+/* Use explicit types */
+uint32_t unsigned_val;
+int32_t signed_val;
+
+/* Type conversion with checks */
+if (val > INT_MAX || val < INT_MIN) {
+    /* Handle overflow */
+    return -1;
+}
+```
 
 ---
 

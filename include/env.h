@@ -6,7 +6,8 @@
 #ifndef ENV_H
 #define ENV_H
 
-#include <sys/types.h>
+/* Dependencies */
+#include "common.h"
 #include "constants.h"
 
 /* Constants */

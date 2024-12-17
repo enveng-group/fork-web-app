@@ -19,6 +19,10 @@ int test_logging(void);
 int test_main_module(void);
 int test_process(void);
 int test_scheduler(void);
+int test_mem(void);
+int test_cache(void);
+int init_consistency_suite(void);
+int init_path_validation_suite(void);
 
 int
 main(void)
@@ -33,24 +37,28 @@ main(void)
     /* Add test suites */
     if (test_app_error() != 0 ||
         test_config() != 0 ||
+        init_consistency_suite() != 0 ||    /* Changed */
+        init_path_validation_suite() != 0 || /* Changed */
         test_constants() != 0 ||
         test_env() != 0 ||
         test_fs() != 0 ||
         test_init() != 0 ||
         test_logging() != 0 ||
-        test_process() != 0 ||    /* Add process tests */
-        test_scheduler() != 0 ||  /* Add scheduler tests */
+        test_mem() != 0 ||     /* Add memory tests */
+        test_cache() != 0 ||   /* Add cache tests */
+        test_process() != 0 ||
+        test_scheduler() != 0 ||
         test_shell() != 0 ||
         test_main_module() != 0) {
         CU_cleanup_registry();
         return CU_get_error();
     }
 
-    /* Run tests */
+    /* Run tests using the basic interface */
     CU_basic_set_mode(CU_BRM_VERBOSE);
     result = CU_basic_run_tests();
 
-    /* Clean up and return */
+    /* Clean up registry and return */
     CU_cleanup_registry();
     printf("All tests completed with status: %d\n", result);
     return CU_get_error();

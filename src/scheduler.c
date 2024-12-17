@@ -2,185 +2,115 @@
  * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
  * SPDX-License-Identifier: 	AGPL-3.0-or-later
  */
-/* src/scheduler.c */
-#include "../include/scheduler.h"
-#include "../include/app_error.h"
-#include <stdio.h>
-#include <stdlib.h>
+/* filepath: src/scheduler.c */
 #include <string.h>
-#include <errno.h>
+#include "../include/scheduler.h"
 
 /* Static variables */
 static struct process *task_queue[MAX_TASKS];
 static size_t task_count = 0;
-static enum scheduler_state current_state = SCHEDULER_STATE_STOPPED;
-static pthread_mutex_t scheduler_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int is_initialized = 0;
+static enum scheduler_state current_state = SCHEDULER_STATE_INIT;
 
+/* Initialize the scheduler */
 int
-schedulerInit(void)
+scheduler_init(void)
 {
-    pthread_mutex_lock(&scheduler_mutex);
-
-    /* Check if already initialized */
     if (is_initialized) {
-        pthread_mutex_unlock(&scheduler_mutex);
-        return SCHEDULER_ALREADY_INIT;
+        return SCHEDULER_ERROR_ALREADY_INITIALIZED;
     }
 
     memset(task_queue, 0, sizeof(task_queue));
     task_count = 0;
-    current_state = SCHEDULER_STATE_INIT;
     is_initialized = 1;
-
-    pthread_mutex_unlock(&scheduler_mutex);
-    return SCHEDULER_SUCCESS;
-}
-
-int
-schedulerStart(void)
-{
-    size_t i;
-
-    pthread_mutex_lock(&scheduler_mutex);
-
-    if (current_state == SCHEDULER_STATE_RUNNING) {
-        pthread_mutex_unlock(&scheduler_mutex);
-        return SCHEDULER_ALREADY_RUNNING;
-    }
-
-    current_state = SCHEDULER_STATE_RUNNING;
-
-    /* Execute tasks */
-    i = 0;
-    while (i < task_count) {
-        if (task_queue[i] && task_queue[i]->task) {
-            task_queue[i]->state = PROCESS_RUNNING;
-            task_queue[i]->task(task_queue[i]->arg);
-        }
-        i++;
-    }
-
-    pthread_mutex_unlock(&scheduler_mutex);
-    return SCHEDULER_SUCCESS;
-}
-
-int
-schedulerStop(void)
-{
-    pthread_mutex_lock(&scheduler_mutex);
-
-    if (current_state == SCHEDULER_STATE_STOPPED) {
-        pthread_mutex_unlock(&scheduler_mutex);
-        return SCHEDULER_ALREADY_STOPPED;
-    }
-
     current_state = SCHEDULER_STATE_STOPPED;
 
-    pthread_mutex_unlock(&scheduler_mutex);
     return SCHEDULER_SUCCESS;
 }
 
+/* Add a task to the queue */
 int
-schedulerPause(void)
+scheduler_add_task(struct process *task)
 {
-    pthread_mutex_lock(&scheduler_mutex);
-    if (current_state != SCHEDULER_STATE_RUNNING) {
-        pthread_mutex_unlock(&scheduler_mutex);
-        errno = EINVAL;
+    if (!is_initialized) {
+        return SCHEDULER_ERROR_NOT_INITIALIZED;
+    }
+
+    if (task == NULL) {
         return SCHEDULER_ERROR;
     }
-    current_state = SCHEDULER_STATE_PAUSED;
-    pthread_mutex_unlock(&scheduler_mutex);
-    return SCHEDULER_SUCCESS;
-}
-
-int
-schedulerResume(void)
-{
-    pthread_mutex_lock(&scheduler_mutex);
-    if (current_state != SCHEDULER_STATE_PAUSED) {
-        pthread_mutex_unlock(&scheduler_mutex);
-        errno = EINVAL;
-        return SCHEDULER_ERROR;
-    }
-    current_state = SCHEDULER_STATE_RUNNING;
-    pthread_mutex_unlock(&scheduler_mutex);
-    return SCHEDULER_SUCCESS;
-}
-
-int
-schedulerAddTask(struct process *proc)
-{
-    if (proc == NULL) {
-        return SCHEDULER_INVALID_TASK;
-    }
-
-    pthread_mutex_lock(&scheduler_mutex);
 
     if (task_count >= MAX_TASKS) {
-        pthread_mutex_unlock(&scheduler_mutex);
-        errno = EAGAIN;
-        return SCHEDULER_ERROR;
+        return SCHEDULER_ERROR_QUEUE_FULL;
     }
 
-    task_queue[task_count++] = proc;
-    proc->state = PROCESS_READY;
-
-    pthread_mutex_unlock(&scheduler_mutex);
+    task_queue[task_count++] = task;
     return SCHEDULER_SUCCESS;
 }
 
-int
-schedulerRemoveTask(pid_t pid)
+/* Process all tasks in queue */
+static int
+process_tasks(void)
 {
     size_t i;
-    int found;
+    struct process *task;
 
-    found = 0;
-    pthread_mutex_lock(&scheduler_mutex);
-
-    i = 0;
-    while (i < task_count) {
-        if (task_queue[i]->pid == pid) {
-            /* Shift remaining tasks */
-            if (i < task_count - 1) {
-                memmove(&task_queue[i], &task_queue[i + 1],
-                        (task_count - i - 1) * sizeof(struct process *));
-            }
-            task_count--;
-            found = 1;
-            break;
+    for (i = 0; i < task_count; i++) {
+        task = task_queue[i];
+        if (task != NULL && task->task != NULL) {
+            task->task(task->arg);
+            task_queue[i] = NULL;
         }
-        i++;
     }
 
-    pthread_mutex_unlock(&scheduler_mutex);
+    task_count = 0;
+    return SCHEDULER_SUCCESS;
+}
 
-    if (!found) {
-        return SCHEDULER_TASK_NOT_FOUND;
+/* Start the scheduler */
+int
+scheduler_start(void)
+{
+    if (!is_initialized) {
+        return SCHEDULER_ERROR_NOT_INITIALIZED;
     }
+
+    current_state = SCHEDULER_STATE_RUNNING;
+    process_tasks();
+    return SCHEDULER_SUCCESS;
+}
+
+/* Stop the scheduler */
+int
+scheduler_stop(void)
+{
+    if (!is_initialized) {
+        return SCHEDULER_ERROR_NOT_INITIALIZED;
+    }
+
+    current_state = SCHEDULER_STATE_STOPPED;
+    return SCHEDULER_SUCCESS;
+}
+
+/* Shutdown the scheduler */
+int
+scheduler_shutdown(void)
+{
+    if (!is_initialized) {
+        return SCHEDULER_ERROR_NOT_INITIALIZED;
+    }
+
+    memset(task_queue, 0, sizeof(task_queue));
+    task_count = 0;
+    is_initialized = 0;
+    current_state = SCHEDULER_STATE_INIT;
 
     return SCHEDULER_SUCCESS;
 }
 
+/* Get current scheduler state */
 enum scheduler_state
-schedulerGetState(void)
+scheduler_get_state(void)
 {
-    enum scheduler_state state;
-    pthread_mutex_lock(&scheduler_mutex);
-    state = current_state;
-    pthread_mutex_unlock(&scheduler_mutex);
-    return state;
-}
-
-void
-schedulerCleanup(void)
-{
-    pthread_mutex_lock(&scheduler_mutex);
-    memset(task_queue, 0, sizeof(task_queue));
-    task_count = 0;
-    current_state = SCHEDULER_STATE_STOPPED;
-    is_initialized = 0;
-    pthread_mutex_unlock(&scheduler_mutex);
+    return current_state;
 }

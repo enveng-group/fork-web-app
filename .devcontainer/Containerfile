@@ -1,49 +1,39 @@
-FROM debian:stable-slim
+# Use the Alpine Linux base image
+FROM docker.io/alpine:latest
 
-# Install essential packages
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    clang-format \
-    clang-tidy \
+# Install necessary packages
+RUN apk update && apk add --no-cache \
+    build-base \
+    musl \
+        musl-utils \
+        musl-obstack-dev \
+        musl-libintl \
+        musl-nscd-dev \
+        musl-fts-dev \
+        gdb \
+        valgrind \
+        musl-legacy-error \
+        dropbear \
+    dropbear-dbclient \
+    dropbear-ssh \
+    gpg \
+    gpg-agent \
+    pinentry \
+        tree \
     git \
-    dropbear \
-    gnupg \
-    tree \
-    ne \
-    shellcheck \
-    cppcheck \
-    clang \
-    llvm \
-    cmake \
-    valgrind \
-    splint \
-    indent \
-    groff \
-    binutils \
-    wget \
-    && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    ca-certificates \
+        musl-locales \
+        musl-locales-lang \
+        cunit-dev
 
+# Set locale environment variables
+ENV LANG=en_AU.UTF-8 \
+        LC_ALL=en_AU.UTF-8 \
+        LANGUAGE=en_AU.UTF:en
 
-RUN wget https://musl.libc.org/releases/musl-1.2.5.tar.gz && \
-    tar -xzf musl-1.2.5.tar.gz && \
-    cd musl-1.2.5 && \
-    ./configure --prefix=/usr/local/musl --target=x86_64-linux-gnu && \
-    make && \
-    make install && \
-    cd .. && \
-    rm -rf musl-1.2.5 musl-1.2.5.tar.gz
+# Add a user for non-root execution
+RUN adduser -D appuser -u 1000 -g 1000 appuser
+USER appuser
 
-# Set up a user for development
-RUN useradd -ms /bin/bash devuser
-
-# Switch to the new user
-USER devuser
-WORKDIR /home/devuser
-
-# Expose SSH and GPG for use in the container
-RUN mkdir -p ~/.ssh && chmod 700 ~/.ssh
-RUN mkdir -p ~/.gnupg && chmod 700 ~/.gnupg
-
-# Set the default command to start a shell
-CMD ["/bin/sh"]
+# Expose port 80
+EXPOSE 80

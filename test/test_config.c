@@ -22,12 +22,12 @@ static int setup(void)
     fprintf(fp, "key2=value2\n");
     fclose(fp);
 
-    return config_init(TEST_CONFIG_PATH);
+    return configInit(TEST_CONFIG_PATH);
 }
 
 static int teardown(void)
 {
-    config_cleanup();
+    configCleanup();
     return remove(TEST_CONFIG_PATH);
 }
 
@@ -37,7 +37,7 @@ void test_config_get_valid(void)
     char value[MAX_ENV_VALUE];
     int result;
 
-    result = config_get("key1", value, sizeof(value));
+    result = configGet("key1", value, sizeof(value));
     CU_ASSERT_EQUAL(result, 0);
     CU_ASSERT_STRING_EQUAL(value, "value1");
 }
@@ -47,7 +47,7 @@ void test_config_get_invalid(void)
     char value[MAX_ENV_VALUE];
     int result;
 
-    result = config_get("nonexistent", value, sizeof(value));
+    result = configGet("nonexistent", value, sizeof(value));
     CU_ASSERT_EQUAL(result, -1);
 }
 
@@ -56,8 +56,8 @@ void test_config_cleanup(void)
     char value[MAX_ENV_VALUE];
     int result;
 
-    config_cleanup();
-    result = config_get("key1", value, sizeof(value));
+    configCleanup();
+    result = configGet("key1", value, sizeof(value));
     CU_ASSERT_EQUAL(result, -1);
 }
 

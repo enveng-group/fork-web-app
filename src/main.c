@@ -10,9 +10,14 @@
 #include "../include/shell.h"
 #include "../include/process.h"
 #include "../include/scheduler.h"
+#include "../include/mem.h"
+#include "../include/cache.h"
+#include "../include/constants.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <string.h>
+#include <errno.h>
 
 static volatile sig_atomic_t running = 1;
 
@@ -25,20 +30,16 @@ sigHandler(int signo)
     }
 }
 
-int
-main(int argc, char *argv[])
+static int
+initializeSubsystems(const char *log_path)
 {
     int status;
     struct sigaction sa;
-    const char *log_path = LOG_PATH;
 
-    /* Use argc/argv if specified */
-    if (argc > 1)
-    {
-        log_path = argv[1];
-    }
+    /* Initialize error handling first */
+    errorInit(log_path);
 
-    /* Initialize signal handling */
+    /* Set up signal handlers */
     sa.sa_handler = sigHandler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
@@ -46,76 +47,109 @@ main(int argc, char *argv[])
     if (sigaction(SIGINT, &sa, NULL) == -1 ||
         sigaction(SIGTERM, &sa, NULL) == -1)
     {
-        fprintf(stderr, "Failed to set up signal handlers\n");
-        return EXIT_FAILURE;
+        errorLog(ERROR_CRITICAL, "Failed to set up signal handlers");
+        return -1;
     }
 
-    /* Initialize error handling with optional custom log path */
-    errorInit(log_path);
-
-    /* Initialize system */
-    status = initSystem();
-    if (status != INIT_SUCCESS)
-    {
-        errorLog(ERROR_CRITICAL, "System initialization failed");
-        return EXIT_FAILURE;
+    /* Initialize core subsystems in correct order */
+    if ((status = constants_init()) != 0) {
+        errorLog(ERROR_CRITICAL, "Failed to initialize constants");
+        return -1;
     }
 
-    /* Initialize filesystem */
-    status = fsInit("/");
-    if (status != FS_SUCCESS)
-    {
-        errorLog(ERROR_CRITICAL, "Filesystem initialization failed");
-        shutdownSystem();
-        return EXIT_FAILURE;
+    if ((status = memInit(MEM_POOL_SIZE)) != 0) {
+        errorLog(ERROR_CRITICAL, "Failed to initialize memory management");
+        return -1;
     }
 
-    /* Initialize shell */
-    status = shellInit();
-    if (status != 0)
-    {
-        errorLog(ERROR_CRITICAL, "Shell initialization failed");
-        shutdownSystem();
-        return EXIT_FAILURE;
+    if ((status = cacheInit(CACHE_TYPE_LRU, CACHE_MAX_ENTRIES)) != 0) {
+        errorLog(ERROR_CRITICAL, "Failed to initialize cache");
+        memCleanup();
+        return -1;
     }
 
-    /* Initialize process management */
-    status = processInit();
-    if (status != 0) {
-        errorLog(ERROR_CRITICAL, "Process initialization failed");
-        return EXIT_FAILURE;
+    if ((status = fsInit("/")) != FS_SUCCESS) {
+        errorLog(ERROR_CRITICAL, "Failed to initialize filesystem");
+        cacheCleanup();
+        memCleanup();
+        return -1;
     }
 
-    /* Initialize scheduler */
-    status = schedulerInit();
-    if (status != SCHEDULER_SUCCESS) {
-        errorLog(ERROR_CRITICAL, "Scheduler initialization failed");
+    if ((status = processInit()) != 0) {
+        errorLog(ERROR_CRITICAL, "Failed to initialize process management");
+        cacheCleanup();
+        memCleanup();
+        return -1;
+    }
+
+    if ((status = schedulerInit()) != SCHEDULER_SUCCESS) {
+        errorLog(ERROR_CRITICAL, "Failed to initialize scheduler");
         processCleanup();
+        cacheCleanup();
+        memCleanup();
+        return -1;
+    }
+
+    if ((status = shellInit()) != 0) {
+        errorLog(ERROR_CRITICAL, "Failed to initialize shell");
+        schedulerCleanup();
+        processCleanup();
+        cacheCleanup();
+        memCleanup();
+        return -1;
+    }
+
+    return 0;
+}
+
+static void
+cleanupSubsystems(void)
+{
+    shellShutdown();
+    schedulerStop();
+    schedulerCleanup();
+    processCleanup();
+    cacheCleanup();
+    memCleanup();
+    shutdownSystem();
+    errorShutdown();
+}
+
+int
+main(int argc, char *argv[])
+{
+    const char *log_path = DEFAULT_LOG_PATH;
+    int status;
+
+    /* Use custom log path if provided */
+    if (argc > 1) {
+        log_path = argv[1];
+    }
+
+    /* Initialize all subsystems */
+    status = initializeSubsystems(log_path);
+    if (status != 0) {
+        fprintf(stderr, "System initialization failed\n");
         return EXIT_FAILURE;
     }
 
     /* Start scheduler */
     status = schedulerStart();
     if (status != SCHEDULER_SUCCESS) {
-        errorLog(ERROR_CRITICAL, "Scheduler start failed");
-        schedulerCleanup();
-        processCleanup();
+        errorLog(ERROR_CRITICAL, "Failed to start scheduler");
+        cleanupSubsystems();
         return EXIT_FAILURE;
     }
 
-    /* Main loop */
-    while (running)
-    {
-        shellPrompt();
+    /* Main event loop */
+    while (running) {
+        status = shellPrompt();
+        if (status != 0) {
+            errorLog(ERROR_WARNING, "Shell error occurred");
+        }
     }
 
-    /* Cleanup */
-    schedulerStop();
-    schedulerCleanup();
-    processCleanup();
-    shellShutdown();
-    shutdownSystem();
-    errorShutdown();
-
+    /* Clean shutdown */
+    cleanupSubsystems();
     return EXIT_SUCCESS;
 }

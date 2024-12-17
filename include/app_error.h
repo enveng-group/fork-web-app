@@ -2,11 +2,18 @@
  * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
  * SPDX-License-Identifier: 	AGPL-3.0-or-later
  */
-/* include/app_error.h */
+/* filepath: /devcontainer/web-app/include/app_error.h */
 #ifndef APP_ERROR_H
 #define APP_ERROR_H
 
-#include <stdio.h>
+/* Dependencies */
+#include "common.h"
+
+/* Documentation for dependent modules:
+ * - Used by fs.h for error logging
+ * - Used by scheduler.h for error reporting
+ * - Core error handling facility
+ */
 
 /* Constants */
 #define MAX_ERROR_MSG 256

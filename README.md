@@ -1421,3 +1421,223 @@ make clean-prod       # Clean
 ```sh
 make clean && make test
 ```
+
+
+# Compile with debug symbols
+make ENV=dev
+
+# Run tests with GDB
+gdb --args ./test_runner
+
+# Common GDB commands
+break test_mem_alloc    # Set breakpoint at specific function
+break test_cache_lfu    # Set breakpoint at failing test
+run                     # Start program
+next                    # Step over
+step                    # Step into
+print ptr              # Print variable value
+bt                     # Show backtrace
+
+# Check for memory leaks and errors
+valgrind --leak-check=full \
+         --show-leak-kinds=all \
+         --track-origins=yes \
+         --verbose \
+         ./test_runner
+
+# More detailed memory access tracking
+valgrind --tool=memcheck \
+         --leak-check=full \
+         --track-origins=yes \
+         ./test_runner
+
+
+### ** Memory Management**
+- **Purpose**: Manage memory allocation, caching, and efficient data handling.
+- **Components**:
+  - `mem.c`: Implement a custom memory pool or wrapper for `malloc`/`free`.
+  - `cache.c`: Design an LRU or LFU cache for frequently accessed data.
+- **Order of Development**:
+  1. `mem.c` to ensure efficient memory allocation.
+  2. `cache.c` for application-level caching.
+
+---
+
+## **2. Networking Modules**
+Networking modules act as the "I/O system" of your web application.
+
+### **2.1. Socket Communication**
+- **Purpose**: Handle low-level socket operations.
+- **Components**:
+  - `net.c`: Create, bind, and listen on sockets.
+  - `tcp.c`: Handle TCP connections (blocking/non-blocking).
+  - `udp.c`: Handle UDP datagrams (if required).
+- **Order of Development**:
+  1. `net.c` for socket setup and teardown.
+  2. `tcp.c` for request/response handling.
+  3. `udp.c` if needed for stateless communication.
+
+---
+
+### **2.2. HTTP Protocol**
+- **Purpose**: Parse HTTP requests and construct responses.
+- **Components**:
+  - `http_parser.c`: Parse HTTP requests into structured data.
+  - `http_response.c`: Generate HTTP responses.
+  - `mime.c`: Map file extensions to MIME types.
+- **Order of Development**:
+  1. `http_parser.c` for request parsing.
+  2. `http_response.c` for response generation.
+  3. `mime.c` for content type mapping.
+
+---
+
+### **2.3. Routing and Request Handling**
+- **Purpose**: Route HTTP requests to the correct handler.
+- **Components**:
+  - `router.c`: Match URLs to handler functions.
+  - `middleware.c`: Implement middleware for preprocessing requests.
+  - `handler.c`: Define handlers for specific routes.
+- **Order of Development**:
+  1. `router.c` for basic URL matching.
+  2. `middleware.c` for logging, authentication, etc.
+  3. `handler.c` for route-specific logic.
+
+---
+
+## **3. Data Management Modules**
+Data management modules serve as the "filesystem" of your web application.
+
+### **3.1. Database Integration**
+- **Purpose**: Handle persistent storage using a flat-file database or SQLite.
+- **Components**:
+  - `db.c`: Manage database connections and queries.
+  - `schema.c`: Define the database schema.
+- **Order of Development**:
+  1. `db.c` for database operations.
+  2. `schema.c` for defining tables and relations.
+
+---
+
+### **3.2. Session Management**
+- **Purpose**: Handle user sessions and authentication.
+- **Components**:
+  - `session.c`: Manage session tokens and expiration.
+  - `auth.c`: Implement user authentication and authorization.
+- **Order of Development**:
+  1. `session.c` for token-based session management.
+  2. `auth.c` for user authentication logic.
+
+---
+
+### **3.3. Static File Serving**
+- **Purpose**: Serve static files (HTML, CSS, JS) efficiently.
+- **Components**:
+  - `static.c`: Locate and serve files from a `static/` directory.
+  - `mime.c`: Reuse MIME mapping for file types.
+- **Order of Development**:
+  1. `static.c` for file reading and response generation.
+
+---
+
+## **4. Utility Modules**
+Utility modules act as the "standard library" of your web application.
+
+### **4.1. String Utilities**
+- **Purpose**: Handle common string operations.
+- **Components**:
+  - `string_utils.c`: Implement functions for splitting, trimming, etc.
+
+### **4.2. Error Handling**
+- **Purpose**: Provide consistent error handling and reporting.
+- **Components**:
+  - `error.c`: Centralize error codes and messages.
+
+---
+
+## **5. Environment Variables and Configuration**
+Environment variables and configuration files allow dynamic customization.
+
+### **Configuration File (`config.conf`)**
+```conf
+SERVER_PORT=8080
+DB_PATH=data/database.db
+LOG_LEVEL=INFO
+STATIC_DIR=static/
+```
+
+### **Environment Variable Access**
+- Use `getenv` and `setenv` to access environment variables.
+- Implement a wrapper function for fallback to default values.
+
+**Example: `config.c`**
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "config.h"
+
+const char *get_env(const char *key, const char *default_value) {
+    const char *value = getenv(key);
+    return value ? value : default_value;
+}
+
+void load_config(AppConfig *config) {
+    config->server_port = atoi(get_env("SERVER_PORT", "8080"));
+    strcpy(config->db_path, get_env("DB_PATH", "data/database.db"));
+    strcpy(config->log_level, get_env("LOG_LEVEL", "INFO"));
+    strcpy(config->static_dir, get_env("STATIC_DIR", "static/"));
+}
+```
+
+**Header: `config.h`**
+```c
+#ifndef CONFIG_H
+#define CONFIG_H
+
+typedef struct {
+    int server_port;
+    char db_path[256];
+    char log_level[16];
+    char static_dir[256];
+} AppConfig;
+
+void load_config(AppConfig *config);
+
+#endif
+```
+
+---
+
+## **6. Build and Deployment**
+### **Makefile**
+Automate building the application with environment-specific configurations.
+```makefile
+CC = musl-gcc
+CFLAGS = -Wall -Wextra -O2
+LDFLAGS = -lpthread
+
+SRC = src/main.c src/http_server.c src/router.c src/util.c src/db.c src/config.c
+OBJ = $(SRC:.c=.o)
+TARGET = webapp
+
+all: $(TARGET)
+
+$(TARGET): $(OBJ)
+    $(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+clean:
+    rm -f $(OBJ) $(TARGET)
+```
+
+---
+
+## **Development Order**
+1. **Core Modules**: `config.c`, `env.c`, `logging.c`.
+2. **Networking**: `net.c`, `tcp.c`, `http_parser.c`.
+3. **Routing and Request Handling**: `router.c`, `handler.c`.
+4. **Data Management**: `db.c`, `session.c`, `auth.c`.
+5. **Static File Serving**: `static.c`, `mime.c`.
+6. **Utility Modules**: `string_utils.c`, `error.c`.
+
+This approach ensures a logical progression from foundational to application-specific functionality. Would you like implementation details for any specific module?

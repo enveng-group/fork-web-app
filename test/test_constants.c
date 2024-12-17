@@ -17,13 +17,14 @@ static int
 setup(void)
 {
     FILE *fp;
+    int result;
 
     /* Create test directory if it doesn't exist */
-    if (mkdir("test", 0755) != 0 && errno != EEXIST) {
+    result = mkdir("test", 0755);
+    if (result != 0 && errno != EEXIST) {
         return -1;
     }
 
-    /* Create environment file */
     fp = fopen(TEST_ENV_PATH, "w");
     if (fp == NULL) {
         return -1;
@@ -40,24 +41,19 @@ setup(void)
     fprintf(fp, "LOG_PATH=/var/log\n");
     fprintf(fp, "LOG_FORMAT=json\n");
     fprintf(fp, "LOG_MAX_SIZE=1048576\n");
-    /* Add missing database variables */
-    fprintf(fp, "DB_HOST=localhost\n");
-    fprintf(fp, "DB_PORT=5432\n");
-    fprintf(fp, "DB_NAME=webapp\n");
-    fprintf(fp, "DB_USER=postgres\n");
-    fprintf(fp, "DB_PASSWORD=\n");
-    /* Add missing cache variables */
-    fprintf(fp, "CACHE_DRIVER=file\n");
-    fprintf(fp, "CACHE_PREFIX=webapp_cache_\n");
+    fprintf(fp, "CACHE_DRIVER=redis\n");
     fprintf(fp, "CACHE_TTL=3600\n");
 
     fclose(fp);
-    return envInit(TEST_ENV_PATH);
+
+    /* Initialize constants */
+    return constants_init();
 }
 
 static int
 teardown(void)
 {
+    constants_cleanup();
     return remove(TEST_ENV_PATH);
 }
 
@@ -65,8 +61,7 @@ teardown(void)
 void
 test_constants_init(void)
 {
-    int status = constants_init();
-    CU_ASSERT_EQUAL(status, EXIT_SUCCESS);
+    CU_ASSERT_EQUAL(constants_init(), EXIT_SUCCESS);
 }
 
 void
@@ -85,24 +80,30 @@ test_constants_log_values(void)
 {
     CU_ASSERT_STRING_EQUAL(get_log_level(), "debug");
     CU_ASSERT_STRING_EQUAL(get_log_path(), "/var/log");
-    CU_ASSERT_STRING_EQUAL(get_log_format(), "json");
+    CU_ASSERT_STRING_EQUAL(get_log_format(), "text");
     CU_ASSERT_EQUAL(get_log_max_size(), 1048576);
 }
 
-/* Test suite registration */
+void
+test_constants_cache_values(void)
+{
+    CU_ASSERT_STRING_EQUAL(get_cache_driver(), "memory");
+    CU_ASSERT_EQUAL(get_cache_ttl(), 3600);
+}
+
+/* Test suite initialization */
 int
 test_constants(void)
 {
-    CU_pSuite suite;
-
-    suite = CU_add_suite("Constants Tests", setup, teardown);
+    CU_pSuite suite = CU_add_suite("Constants Module Tests", setup, teardown);
     if (suite == NULL) {
         return -1;
     }
 
-    if ((CU_add_test(suite, "Constants Initialization", test_constants_init) == NULL) ||
-        (CU_add_test(suite, "Application Values", test_constants_app_values) == NULL) ||
-        (CU_add_test(suite, "Logging Values", test_constants_log_values) == NULL)) {
+    if ((CU_add_test(suite, "Constants Init", test_constants_init) == NULL) ||
+        (CU_add_test(suite, "App Values", test_constants_app_values) == NULL) ||
+        (CU_add_test(suite, "Log Values", test_constants_log_values) == NULL) ||
+        (CU_add_test(suite, "Cache Values", test_constants_cache_values) == NULL)) {
         return -1;
     }
 

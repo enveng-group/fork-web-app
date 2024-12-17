@@ -6,8 +6,10 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <sys/types.h>
-#include <stdio.h>
+/* Dependencies */
+#include "common.h"
+#include "cache.h"
+#include "fs.h"
 
 /* Constants */
 #define MAX_ENV_VALUE 1024
@@ -28,9 +30,5 @@ int configLoad(void);
 int configGet(const char *key, char *value, size_t size);
 void configCleanup(void);
 enum config_status configGetStatus(void);
-
-int config_init(const char *filename);
-int config_get(const char *key, char *value, size_t value_size);
-void config_cleanup(void);
 
 #endif /* CONFIG_H */

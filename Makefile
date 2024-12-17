@@ -1,130 +1,133 @@
 # Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
-# SPDX-License-Identifier: 	AGPL-3.0-or-later
-# Makefile
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
+# Directory structure
 SRC_DIR = src
 BUILD_DIR = build
 BIN_DIR = bin
 TEST_DIR = test
 
-# Compiler and flags
+# Compiler and basic flags
 CC = gcc
-CFLAGS = -std=c90 -D_POSIX_C_SOURCE=1 -D_XOPEN_SOURCE=500 -Wall -Wextra -pedantic
+CFLAGS = -std=c90 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500 -Wall \
+-ansi -Wextra -pedantic -Werror -Wshadow -Wconversion \
+-Wstrict-prototypes -Wmissing-prototypes \
+-fanalyzer \
+-fstack-protector-strong -fstack-check \
+-fdata-sections -ffunction-sections \
+-fno-common -fstrict-aliasing \
+-Warray-bounds -Wstack-protector \
+-Wformat=2 -Wformat-security \
+-Wformat-overflow=2 -Wformat-truncation=2 \
+-Walloca -Wvla \
+-fno-omit-frame-pointer
 INCLUDES = -I./include -I./src -I/usr/include
 LDFLAGS = -L/usr/lib
 
-# Main program flags (static linking)
-MAIN_LDFLAGS = $(LDFLAGS) -static -pthread
+# Debug flags
+DEBUG_CFLAGS = -ggdb3 -O0 -DDEBUG -fno-omit-frame-pointer
+DEBUG_LDFLAGS = -ggdb3
 
-# Test flags (dynamic linking for CUnit)
+# Set flags based on build type
+ifeq ($(DEBUG),1)
+	CFLAGS += $(DEBUG_CFLAGS)
+	LDFLAGS += $(DEBUG_LDFLAGS)
+endif
+
+# Profiling flags
+PROF_CFLAGS = -pg -ggdb3 -fno-omit-frame-pointer
+PROF_LDFLAGS = -pg
+
+# Add profiling flags when PROFILE=1 is specified
+ifeq ($(PROFILE),1)
+	CFLAGS += $(PROF_CFLAGS)
+	LDFLAGS += $(PROF_LDFLAGS)
+endif
+
+# Specific linking flags
+MAIN_LDFLAGS = $(LDFLAGS) -static -pthread
 TEST_LDFLAGS = $(LDFLAGS) -pthread -lcunit
 
-# Main program sources and objects
+# Source files
 MAIN_SRC = $(SRC_DIR)/main.c
 LIB_SRCS = $(filter-out $(MAIN_SRC),$(wildcard $(SRC_DIR)/*.c))
 LIB_OBJS = $(LIB_SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 MAIN_OBJ = $(MAIN_SRC:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 
-# Test sources and objects (excluding main program objects)
+# Test files
 TEST_SRCS = $(wildcard $(TEST_DIR)/*.c)
 TEST_OBJS = $(TEST_SRCS:$(TEST_DIR)/%.c=$(BUILD_DIR)/%.o)
 TEST_LIB_OBJS = $(filter-out $(MAIN_OBJ),$(LIB_OBJS))
 
-# Test module objects
-TEST_APP_ERROR_OBJ = $(BUILD_DIR)/test_app_error.o
-TEST_CONFIG_OBJ = $(BUILD_DIR)/test_config.o
-TEST_CONSTANTS_OBJ = $(BUILD_DIR)/test_constants.o
-TEST_ENV_OBJ = $(BUILD_DIR)/test_env.o
-TEST_FS_OBJ = $(BUILD_DIR)/test_fs.o
-TEST_INIT_OBJ = $(BUILD_DIR)/test_init.o
-TEST_LOGGING_OBJ = $(BUILD_DIR)/test_logging.o
-TEST_SHELL_OBJ = $(BUILD_DIR)/test_shell.o
-TEST_MAIN_MODULE_OBJ = $(BUILD_DIR)/test_main_module.o
-TEST_MAIN_OBJ = $(BUILD_DIR)/test_main.o
-TEST_PROCESS_OBJ = $(BUILD_DIR)/test_process.o
-TEST_SCHEDULER_OBJ = $(BUILD_DIR)/test_scheduler.o
-
-# Targets
+# Final targets
 MAIN_TARGET = $(BIN_DIR)/enssol
 TEST_TARGET = $(BIN_DIR)/test_runner
 
 # Default target
+.PHONY: all clean clean-profile profile clean-profile debug test clean-test clean-logs
 all: $(MAIN_TARGET)
 
-# Directory creation targets
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+# Directory creation
+$(BUILD_DIR) $(BIN_DIR):
+	mkdir -p $@
 
-$(BIN_DIR):
-	mkdir -p $(BIN_DIR)
-
-# Main program build
-$(MAIN_TARGET): $(MAIN_OBJ) $(LIB_OBJS) | $(BIN_DIR)
-	$(CC) $(MAIN_OBJ) $(LIB_OBJS) $(MAIN_LDFLAGS) -o $@
-
-# Test build
-$(TEST_TARGET): $(TEST_APP_ERROR_OBJ) $(TEST_CONFIG_OBJ) $(TEST_CONSTANTS_OBJ) \
-				$(TEST_ENV_OBJ) $(TEST_FS_OBJ) $(TEST_INIT_OBJ) \
-				$(TEST_LOGGING_OBJ) $(TEST_SHELL_OBJ) $(TEST_MAIN_MODULE_OBJ) \
-				$(TEST_MAIN_OBJ) $(TEST_PROCESS_OBJ) $(TEST_SCHEDULER_OBJ) \
-				$(TEST_LIB_OBJS) | $(BIN_DIR)
-	$(CC) $^ $(TEST_LDFLAGS) -o $@
-
-# Object file compilation
+# Pattern rules for object files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 $(BUILD_DIR)/%.o: $(TEST_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-# Build object file with directory creation
-build/test_init.o: test/test_init.c include/init.h include/app_error.h | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+# Main program build
+$(MAIN_TARGET): $(MAIN_OBJ) $(LIB_OBJS) | $(BIN_DIR)
+	$(CC) $^ $(MAIN_LDFLAGS) -o $@
 
-# Explicit test dependencies
-$(TEST_APP_ERROR_OBJ): $(TEST_DIR)/test_app_error.c include/app_error.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+# Test program build
+$(TEST_TARGET): $(TEST_OBJS) $(TEST_LIB_OBJS) | $(BIN_DIR)
+	$(CC) $^ $(TEST_LDFLAGS) -o $@
 
-$(TEST_CONFIG_OBJ): $(TEST_DIR)/test_config.c include/config.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-$(TEST_CONSTANTS_OBJ): $(TEST_DIR)/test_constants.c include/constants.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-$(TEST_ENV_OBJ): $(TEST_DIR)/test_env.c include/env.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-$(TEST_FS_OBJ): $(TEST_DIR)/test_fs.c include/fs.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-$(TEST_INIT_OBJ): $(TEST_DIR)/test_init.c include/init.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-$(TEST_LOGGING_OBJ): $(TEST_DIR)/test_logging.c include/logging.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-$(TEST_SHELL_OBJ): $(TEST_DIR)/test_shell.c include/shell.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-$(TEST_MAIN_MODULE_OBJ): $(TEST_DIR)/test_main_module.c include/init.h include/fs.h include/shell.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-$(TEST_MAIN_OBJ): $(TEST_DIR)/test_main.c test/test_suite.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-$(TEST_PROCESS_OBJ): $(TEST_DIR)/test_process.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-$(TEST_SCHEDULER_OBJ): $(TEST_DIR)/test_scheduler.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-# Test target with setup and run
-test: $(BUILD_DIR) $(BIN_DIR) $(TEST_TARGET)
-	mkdir -p test/fs_test
+# Test target
+test: $(TEST_TARGET)
 	./$(TEST_TARGET)
-	rm -rf test/fs_test
+
+# Debug target
+debug: DEBUG=1
+debug: all
+
+# Clean targets
+clean-all: clean clean-profile
 
 clean:
-	rm -rf $(BUILD_DIR) $(BIN_DIR)
+	rm -rf $(BUILD_DIR)
+	rm -rf $(BIN_DIR)
 
-.PHONY: all clean test $(BUILD_DIR) $(BIN_DIR)
+clean-profile:
+	rm -f gmon.out profile.txt
+
+# Profile target
+profile: PROFILE=1
+profile: clean-profile all
+	./$(MAIN_TARGET)
+	gprof $(MAIN_TARGET) gmon.out > profile.txt
+
+# Add these cleanup targets
+
+clean-test:
+	rm -rf test_tmp
+	rm -f test/*.log
+	rm -rf test/shell_test/
+
+clean-logs:
+	rm -f var/log/*.log
+	rm -f logs/*.log
+
+clean: clean-all clean-test clean-logs
+
+# Include dependency files (only if not cleaning)
+ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),clean-profile)
+-include $(LIB_DEPS)
+-include $(MAIN_DEPS)
+-include $(TEST_DEPS)
+endif
+endif

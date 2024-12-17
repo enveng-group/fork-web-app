@@ -51,6 +51,27 @@ void test_process_invalid_create(void)
     CU_ASSERT_EQUAL(processCreate("test", NULL, NULL, PRIORITY_NORMAL), -1);
 }
 
+void test_process_resource_cleanup(void)
+{
+    struct process *proc;
+    int i;
+
+    /* Initialize process system */
+    CU_ASSERT_EQUAL(processInit(), 0);
+
+    /* Create maximum number of processes */
+    for (i = 0; i < MAX_PROCESSES; i++) {
+        CU_ASSERT_EQUAL(processCreate("test_proc", test_task, NULL, PRIORITY_NORMAL), 0);
+    }
+
+    /* Force cleanup */
+    processCleanup();
+
+    /* Verify all resources are released */
+    proc = processGetCurrent();
+    CU_ASSERT_PTR_NULL(proc);
+}
+
 /* Test suite initialization */
 int test_process(void)
 {

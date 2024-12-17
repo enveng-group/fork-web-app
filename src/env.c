@@ -144,23 +144,35 @@ envGetStatus(void)
 static int
 parseEnvLine(const char *line, char *name, char *value)
 {
-    char *eq_pos;
+    const char *eq_pos;
     size_t name_len;
 
+    if (line == NULL || name == NULL || value == NULL) {
+        return -1;
+    }
+
+    /* Find equals sign */
     eq_pos = strchr(line, '=');
     if (eq_pos == NULL) {
         return -1;
     }
 
-    name_len = eq_pos - line;
+    /* Calculate name length safely */
+    if (eq_pos < line) {
+        return -1;
+    }
+
+    name_len = (size_t)(eq_pos - line); /* Safe cast since we verified eq_pos > line */
     if (name_len >= MAX_ENV_NAME) {
         return -1;
     }
 
-    strncpy(name, line, name_len);
+    /* Copy name and add null terminator */
+    memcpy(name, line, name_len);
     name[name_len] = '\0';
 
-    eq_pos++; /* Skip '=' */
+    /* Skip equals sign and copy value */
+    eq_pos++; /* Move past '=' */
     strncpy(value, eq_pos, MAX_ENV_VALUE - 1);
     value[MAX_ENV_VALUE - 1] = '\0';
 

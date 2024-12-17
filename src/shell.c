@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <errno.h>
 
 #define SHELL_PROMPT "$ "
 
@@ -23,7 +24,7 @@ static int executeBuiltin(const char *cmd);
 int
 shellInit(void)
 {
-    /* Clear command buffer */
+    /* Clear command buffer and args array */
     memset(command_buffer, 0, sizeof(command_buffer));
     memset(args, 0, sizeof(args));
 
@@ -128,31 +129,42 @@ shellShutdown(void)
 static int
 parseCommand(const char *cmd)
 {
+    char temp[MAX_CMD_LEN];
     char *token;
     char *saveptr;
-    char temp[MAX_CMD_LEN];
-    size_t arg_count = 0;
+    size_t cmd_len;
+    size_t arg_count;
 
-    if (cmd == NULL)
-    {
+    /* Input validation */
+    if (cmd == NULL) {
         return -1;
     }
 
-    /* Make a copy of the command for strtok_r */
-    strncpy(temp, cmd, sizeof(temp) - 1);
-    temp[sizeof(temp) - 1] = '\0';
+    /* Get command length and check bounds */
+    cmd_len = strlen(cmd);
+    if (cmd_len >= MAX_CMD_LEN) {
+        return -1;
+    }
+
+    /* Make safe copy of command */
+    memcpy(temp, cmd, cmd_len);
+    temp[cmd_len] = '\0';
 
     /* Reset args array */
     memset(args, 0, sizeof(args));
+    arg_count = 0;
 
     /* Parse command into arguments */
     token = strtok_r(temp, " \t", &saveptr);
-    while (token != NULL && arg_count < MAX_ARGS)
-    {
+    while (token != NULL && arg_count < MAX_ARGS) {
+        /* Copy token to args array */
         args[arg_count] = token;
         arg_count++;
         token = strtok_r(NULL, " \t", &saveptr);
     }
+
+    /* Ensure args array is NULL-terminated */
+    args[arg_count] = NULL;
 
     return 0;
 }

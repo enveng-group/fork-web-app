@@ -261,6 +261,7 @@
             ]
         },
         "terminal.integrated.defaultProfile.osx": "zsh",
+        "terminal.integrated.defaultProfile.osx": "zsh",
         "github.gitProtocol": "ssh",
         "extensions.ignoreRecommendations": true,
         "github.copilot.chat.inlineChatCompletionTrigger.enabled": true,
@@ -268,12 +269,14 @@
         "snyk.folderConfigs": [
             {
                 "folderPath": "/devcontainer/web-app",
+                "folderPath": "/devcontainer/web-app",
                 "baseBranch": "main",
                 "localBranches": ["feature/boilerplate", "main"]
             }
         ],
         "snyk.scanningMode": "manual",
         "snyk.trustedFolders": [
+            "/devcontainer/web-app",
             "/devcontainer/web-app",
         ],
         "workbench.startupEditor": "readme",
