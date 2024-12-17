@@ -28,6 +28,9 @@
 #include "../include/mem.h"
 #include "../include/cache.h"
 #include "../include/constants.h"
+#include "../include/socket.h"
+#include "../include/net.h"
+#include "../include/tcp.h"
 #include "test_suite.h"
 
 /* Test constants */
@@ -35,16 +38,29 @@
 #define TEST_CONFIG_PATH "test/test.conf"
 #define TEST_CACHE_SIZE 1024
 #define TEST_MEM_SIZE (1024 * 1024)
+#define TEST_PORT 8080
+#define TEST_HOST "127.0.0.1"
+
+/* Forward declarations */
+static int setup(void);
+static int teardown(void);
+static int setup_signals(void);
+static void test_socket_operations(void);
+static void test_signal_handler(int signum);
 
 /* Global signal handlers */
 static struct sigaction old_sigint;
 static struct sigaction old_sigterm;
 
 /* Signal handler function */
-static void test_signal_handler(int signum)
+static void
+test_signal_handler(int signum)
 {
-    /* Empty handler for testing */
-    (void)signum;
+    /* Handle test signals */
+    if (signum == SIGINT || signum == SIGTERM) {
+        teardown();
+        exit(1);
+    }
 }
 
 /* Test signal handling setup */
@@ -58,13 +74,24 @@ static int setup_signals(void)
     sigemptyset(&new_action.sa_mask);
     new_action.sa_flags = 0;
 
-    /* Set handlers and store old ones */
-    result = sigaction(SIGINT, &new_action, &old_sigint);
+    /* Save old handlers */
+    result = sigaction(SIGINT, NULL, &old_sigint);
     if (result == -1) {
         return -1;
     }
 
-    result = sigaction(SIGTERM, &new_action, &old_sigterm);
+    result = sigaction(SIGTERM, NULL, &old_sigterm);
+    if (result == -1) {
+        return -1;
+    }
+
+    /* Install new handlers */
+    result = sigaction(SIGINT, &new_action, NULL);
+    if (result == -1) {
+        return -1;
+    }
+
+    result = sigaction(SIGTERM, &new_action, NULL);
     if (result == -1) {
         return -1;
     }
@@ -85,9 +112,17 @@ static int setup(void)
         return -1;
     }
 
+    /* Initialize socket system */
+    status = socketInit(SOCKET_INIT_DEFAULT);
+    if (status != SOCKET_SUCCESS) {
+        memCleanup();
+        return -1;
+    }
+
     /* Initialize cache system with LRU policy */
     status = cacheInit(CACHE_TYPE_LRU, TEST_CACHE_SIZE);
     if (status != CACHE_SUCCESS) {
+        socketCleanup();
         memCleanup();
         return -1;
     }
@@ -95,6 +130,7 @@ static int setup(void)
     /* Setup signal handlers */
     if (setup_signals() == -1) {
         cacheCleanup();
+        socketCleanup();
         memCleanup();
         return -1;
     }
@@ -103,6 +139,7 @@ static int setup(void)
     if (stat("test", &st) == -1) {
         if (mkdir("test", 0755) == -1) {
             cacheCleanup();
+            socketCleanup();
             memCleanup();
             return -1;
         }
@@ -112,6 +149,7 @@ static int setup(void)
     fp = fopen(TEST_LOG_PATH, "w");
     if (fp == NULL) {
         cacheCleanup();
+        socketCleanup();
         memCleanup();
         return -1;
     }
@@ -121,6 +159,7 @@ static int setup(void)
     fp = fopen(TEST_CONFIG_PATH, "w");
     if (fp == NULL) {
         cacheCleanup();
+        socketCleanup();
         memCleanup();
         return -1;
     }
@@ -132,7 +171,12 @@ static int setup(void)
 
 static int teardown(void)
 {
+    /* Restore signal handlers */
+    sigaction(SIGINT, &old_sigint, NULL);
+    sigaction(SIGTERM, &old_sigterm, NULL);
+
     /* Cleanup subsystems */
+    socketCleanup();
     cacheCleanup();
     memCleanup();
 
@@ -270,6 +314,47 @@ void test_cache_operations(void)
     shutdownSystem();
 }
 
+void test_socket_operations(void)
+{
+    struct socket_info sock;
+    int status;
+
+    /* Initialize socket subsystem */
+    status = socketInit(SOCKET_INIT_DEFAULT);
+    CU_ASSERT_EQUAL(status, 0);
+    if (status != 0) {
+        return;
+    }
+
+    /* Test error string retrieval */
+    CU_ASSERT_STRING_EQUAL(socketGetErrorStr(SOCKET_SUCCESS), "Success");
+
+    /* Create socket */
+    status = netCreateSocket(&sock, SOCKET_TCP);
+    CU_ASSERT_EQUAL(status, 0);
+    if (status != 0) {
+        socketCleanup();
+        return;
+    }
+
+    /* Test binding */
+    status = netBind(&sock, TEST_HOST, TEST_PORT);
+    CU_ASSERT_EQUAL(status, 0);
+    if (status != 0) {
+        netClose(&sock);
+        socketCleanup();
+        return;
+    }
+
+    /* Test listening */
+    status = netListen(&sock);
+    CU_ASSERT_EQUAL(status, 0);
+
+    /* Cleanup */
+    netClose(&sock);
+    socketCleanup();
+}
+
 /* Test suite initialization */
 int test_main_module(void)
 {
@@ -285,7 +370,8 @@ int test_main_module(void)
         (CU_add_test(suite, "Main Cleanup", test_main_cleanup) == NULL) ||
         (CU_add_test(suite, "Arguments Handling", test_main_args_handling) == NULL) ||
         (CU_add_test(suite, "Memory Management", test_memory_management) == NULL) ||
-        (CU_add_test(suite, "Cache Operations", test_cache_operations) == NULL)) {
+        (CU_add_test(suite, "Cache Operations", test_cache_operations) == NULL) ||
+        (CU_add_test(suite, "Socket Operations", test_socket_operations) == NULL)) {
         return -1;
     }
 

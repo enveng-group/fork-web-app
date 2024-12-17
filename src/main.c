@@ -99,6 +99,11 @@ initializeSubsystems(const char *log_path)
         return -1;
     }
 
+    if ((status = socketInit(SOCKET_INIT_DEFAULT)) != 0) {
+        errorLog(ERROR_CRITICAL, "Failed to initialize socket subsystem");
+        return -1;
+    }
+
     return 0;
 }
 
@@ -111,6 +116,7 @@ cleanupSubsystems(void)
     processCleanup();
     cacheCleanup();
     memCleanup();
+    socketCleanup();
     shutdownSystem();
     errorShutdown();
 }

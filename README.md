@@ -327,129 +327,7 @@ Install and ensure the availability of the following **POSIX-compliant tools** a
 
 ---
 
-## **2. Installing musl**
-
-You will need to install **musl** on your system or download a prebuilt version. To build and use musl with `clang`, follow these steps:
-
-### **Install musl**
-
-You can either download a precompiled musl package or build it from source. Here's how to build musl from source:
-
-1. **Download musl source code**:
-    ```sh
-    wget https://musl.libc.org/releases/musl-1.2.3.tar.gz
-    tar -xzf musl-1.2.3.tar.gz
-    cd musl-1.2.3
-    ```
-
-2. **Configure and build musl**:
-    ```sh
-    export CC=clang
-    ./configure --prefix=/usr/local/musl --target=x86_64-linux-gnu --thread=posix
-    make
-    sudo make install
-    ```
-
-### **Set Up musl with Clang**
-After musl is installed, configure Clang to use musl as its standard C library by setting the `-target` and `-nostdlib` flags and linking against musl.
-
-For **Clang**, use the following flags:
-```sh
-clang -target x86_64-linux-musl -nostdlib -L/usr/local/musl/lib -I/usr/local/musl/include -static <your_source_files> -o <output_file> -lm
-```
-
-### **Verify musl Installation**
-To verify that musl is installed correctly and is being used:
-
-```sh
-/usr/local/musl/bin/musl-gcc --version
-```
-
-You can also check the runtime with the `file` command to ensure that musl is being used:
-```sh
-file ./my_program
-```
-
----
-
-## **3. Updated Directory Structure**
-
-```sh
-.
-├── build/          # Build artifacts and temporary files.
-├── bin/            # Compiled binary executables.
-├── include/        # Header files.
-├── lib/            # Static libraries.
-├── src/            # Source files.
-├── tests/          # Unit tests.
-├── docs/           # Documentation (e.g., man pages).
-└── tmp/            # Temporary files.
-```
-
----
-
-## **4. Updated Makefile Setup**
-
-The **Makefile** is updated to use musl for static linking, with Clang configured to target musl.
-
-#### **Root `Makefile`**
-
-```makefile
-# POSIX-compliant Makefile for building and testing with musl
-
-CC = clang
-CFLAGS = -std=c17 -D_POSIX_C_SOURCE -Wall -Wextra -O0 -pedantic
-LDFLAGS = -static -L/usr/local/musl/lib -I/usr/local/musl/include -lm
-SRC_DIR = src
-BUILD_DIR = build
-BIN_DIR = bin
-TEST_DIR = tests
-INCLUDE_DIR = include
-OBJ_FILES = $(BUILD_DIR)/main.o $(BUILD_DIR)/logger.o
-TARGET = $(BIN_DIR)/my_program
-TEST_TARGET = $(BIN_DIR)/test_runner
-
-.PHONY: all clean test doc
-
-all: $(TARGET)
-
-# Build the main executable
-$(TARGET): $(OBJ_FILES)
-	mkdir -p $(BIN_DIR)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
-
-# Compile source files
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-# Clean up build artifacts
-clean:
-	rm -rf $(BUILD_DIR) $(BIN_DIR)
-
-# Build and run tests
-test: $(TEST_TARGET)
-	./$(TEST_TARGET)
-
-$(TEST_TARGET): $(TEST_DIR)/test_logger.o $(BUILD_DIR)/logger.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
-
-$(TEST_DIR)/%.o: $(TEST_DIR)/%.c
-	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@
-
-# Generate documentation (man pages)
-doc:
-	groff -man docs/my_program.1 > $(BIN_DIR)/my_program.1.pdf
-```
-
-### **Important Points**:
-- **`-static`**: Ensures the program is statically linked.
-- **`-L/usr/local/musl/lib`** and **`-I/usr/local/musl/include`**: Directs Clang to use the musl library and include paths.
-- **`-target x86_64-linux-musl`**: Specifies the musl target for Clang.
-
----
-
----
+--
 
 ## **6. Building and Running**
 
@@ -1452,30 +1330,21 @@ valgrind --tool=memcheck \
          ./test_runner
 
 
-### ** Memory Management**
-- **Purpose**: Manage memory allocation, caching, and efficient data handling.
-- **Components**:
-  - `mem.c`: Implement a custom memory pool or wrapper for `malloc`/`free`.
-  - `cache.c`: Design an LRU or LFU cache for frequently accessed data.
-- **Order of Development**:
-  1. `mem.c` to ensure efficient memory allocation.
-  2. `cache.c` for application-level caching.
-
----
-
 ## **2. Networking Modules**
 Networking modules act as the "I/O system" of your web application.
 
-### **2.1. Socket Communication**
+### **Socket Communication**
 - **Purpose**: Handle low-level socket operations.
 - **Components**:
   - `net.c`: Create, bind, and listen on sockets.
   - `tcp.c`: Handle TCP connections (blocking/non-blocking).
   - `udp.c`: Handle UDP datagrams (if required).
+  - `index.html`: Sample HTML file for testing.
 - **Order of Development**:
   1. `net.c` for socket setup and teardown.
   2. `tcp.c` for request/response handling.
   3. `udp.c` if needed for stateless communication.
+  4. `index.html` for testing static file serving.
 
 ---
 

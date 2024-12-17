@@ -170,4 +170,18 @@ int test_cache(void);
 
 void test_scheduler_stress(void); /* Add stress test declaration */
 
+/* Socket test case declarations */
+void test_socket_init(void);
+void test_socket_error_str(void);
+void test_socket_init_flags(void);
+void test_socket_cleanup(void);
+void test_socket_tcp_operations(void);
+void test_socket_udp_operations(void);
+void test_socket_nonblock(void);
+void test_socket_reuse_addr(void);
+void test_socket_integration(void);
+
+/* Add to suite initialization functions */
+int test_socket(void);
+
 #endif /* TEST_SUITE_H */

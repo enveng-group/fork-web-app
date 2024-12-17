@@ -21,6 +21,7 @@ int test_process(void);
 int test_scheduler(void);
 int test_mem(void);
 int test_cache(void);
+int test_socket(void); /* Add this line */
 int init_consistency_suite(void);
 int init_path_validation_suite(void);
 
@@ -49,6 +50,7 @@ main(void)
         test_process() != 0 ||
         test_scheduler() != 0 ||
         test_shell() != 0 ||
+        test_socket() != 0 ||      /* Add this line */
         test_main_module() != 0) {
         CU_cleanup_registry();
         return CU_get_error();
