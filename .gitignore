@@ -1,13 +1,109 @@
+# Build output directories
+/bin/
+/build/
+/dist/
+/lib/
+/obj/
+/out/
+
+# C build artifacts
+*.o
+*.ko
+*.obj
+*.elf
+*.lib
+*.a
+*.la
+*.lo
+*.dll
+*.so
+*.so.*
+*.dylib
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Dependency directories
+/deps/
+/vendor/
+/node_modules/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.cproject
+*.sublime-workspace
+*.sublime-project
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Configuration files that should not be tracked
+*.env
+!example.env
+.env.*
+!.env.example
+*.ini
+!example.ini
+*.conf
+!example.conf
+*.pem
+*.key
+*.crt
+*.cer
+*.der
+
+# Documentation and text files (only if generated)
+/docs/generated/
+*.pdf
+*.doc
+*.docx
+
+# Web assets (only if generated)
+/dist/css/
+/dist/js/
+/dist/html/
+
+# Log files
+*.log
+log/
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# Specific to C development
 # Prerequisites
 *.d
 
 # Object files
 *.o
-*.ko
-*.obj
-*.elf
-*.lo
-*.Plo
 
 # Linker output
 *.ilk
@@ -22,8 +118,9 @@
 *.lib
 *.a
 *.la
+*.lo
 
-# Shared objects (including Windows DLLs)
+# Shared objects
 *.dll
 *.so
 *.so.*
@@ -52,50 +149,46 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# Build artifacts
-bin/
+# Custom project files that should not be tracked
+/config/local.*
+/config/private.*
+/secrets/
 
-# Development environment files
-.vscode/
-*.db
-*.db-*
-*.flaskenv*
+# Test coverage reports
+/coverage/
+*.gcno
+*.gcda
+*.gcov
 
-# Temporary and backup files
-#*.log
-*.tmp
-*.swp
-.DS_Store
+# Backup files
+*.bak
+*.backup
+*~
 
-# GTK-Doc and SGML artifacts
-*.stamp
-*-doc.*
-*-decl.*
-*.xml
-gtk-doc.make
-stamp-h1
+# Patch files
+*.patch
+*.diff
 
-# Node.js dependencies and logs
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# recfiles
+*.rec
+*.rec~
+*.rec.bak
 
+# Allow specific example files
+!example.rec
+!example.conf
+!example.env
+!example.ini
 
-# Ignoring sensitive or system-specific files
-.env.me
-.env.previous
-*.vault
+# Docker
+.docker/data/
+docker-compose.override.yml
 
-# Exceptions
-!.env.project
-!.env.vault
-!.vscode/c_cpp_properties.json
-!.vscode/launch.json
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/extensions.json
-etc/config/env
-etc/config/system.conf
-test/shell_test/test.txt
-test.log.*
+# Keep these files (add ! to track them even if ignored above)
+!.gitignore
+!.gitattributes
+!LICENSE
+!README.md
+!CHANGELOG.md
+!AUTHORS
+!example/**/*

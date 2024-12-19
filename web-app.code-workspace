@@ -12,22 +12,6 @@
         },
         "editor.detectIndentation": false,
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "ms-vscode.cpptools",
-        "[javascript]": {
-            "editor.defaultFormatter": "esbenp.prettier-vscode"
-        },
-        "[c]": {
-            "editor.defaultFormatter": "ms-vscode.cpptools",
-            "editor.tabSize": 4,
-            "editor.insertSpaces": true,
-            "editor.trimAutoWhitespace": true
-        },
-        "[cpp]": {
-            "editor.defaultFormatter": "ms-vscode.cpptools",
-            "editor.tabSize": 4,
-            "editor.insertSpaces": true,
-            "editor.trimAutoWhitespace": true
-        },
         "[json]": {
             "editor.tabSize": 2,
             "editor.insertSpaces": true
@@ -117,13 +101,13 @@
             ".conf": "ini",
             ".rec": "recfile"
         },
-        "git.alwaysSignOff": true,
+        "git.alwaysSignOff": false,
         "git.autofetch": true,
         "git.autofetchPeriod": 180,
         "git.autorefresh": true,
         "git.closeDiffOnOperation": true,
         "git.confirmSync": false,
-        "git.enableCommitSigning": true,
+        "git.enableCommitSigning": false,
         "git.enableSmartCommit": true,
         "git.enabled": true,
         "git.fetchOnPull": true,
@@ -203,7 +187,8 @@
             "cfg",
             "Makefile",
             "Makefile.am",
-            "Makefile.in"
+            "Makefile.in",
+            "auth.passwd"
         ],
         "licenser.license": "AGPLv3",
         "licenser.projectName": "Enveng Group - Obligation Register",
@@ -261,8 +246,7 @@
             ]
         },
         "terminal.integrated.defaultProfile.osx": "zsh",
-        "terminal.integrated.defaultProfile.osx": "zsh",
-        "github.gitProtocol": "ssh",
+        "github.gitProtocol": "https",
         "extensions.ignoreRecommendations": true,
         "github.copilot.chat.inlineChatCompletionTrigger.enabled": true,
         "github.copilot.chat.inlineChatHint.enabled": true,
@@ -316,7 +300,7 @@
         },
         "extensions.closeExtensionDetailsOnViewChange": true,
         "terminal.integrated.cursorBlinking": true,
-        "terminal.integrated.defaultProfile.linux": "sh",
+        "terminal.integrated.defaultProfile.linux": "ash",
         "terminal.integrated.detectLocale": "on",
         "terminal.integrated.enableMultiLinePasteWarning": "never",
         "terminal.integrated.environmentChangesIndicator": "off",
@@ -429,43 +413,9 @@
         "githubPullRequests.showPullRequestNumberInTree": true,
         "githubPullRequests.terminalLinksHandler": "vscode",
         "remoteHub.commitDirectlyWarning": "off",
-        "remoteHub.gitProtocol": "ssh",
+        "remoteHub.gitProtocol": "https",
         "remoteHub.richNavigation.enabled": true,
-        "editor.semanticHighlighting.enabled": true,
-        "C_Cpp.default.cStandard": "c11",
-        "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
-        "C_Cpp.codeAnalysis.clangTidy.enabled": false,
-        "C_Cpp.default.browse.databaseFilename": "/home/ubuntu/web-app/compile_commands.json",
-        "C_Cpp.clang_format_path": "/usr/bin/clang-format",
-        "C_Cpp.formatting": "clangFormat",
-        "C_Cpp.codeAnalysis.clangTidy.config": "/home/ubuntu/web-app/.clang-tidy",
-        "C_Cpp.codeAnalysis.clangTidy.path": "/usr/bin/clang-tidy",
-        "shellcheck.executablePath": "/usr/bin/shellcheck",
-        "C_Cpp.default.cppStandard": "c++98",
-        "C_Cpp.default.compilerPath": "/usr/bin/musl-gcc",
-        "clang-format.assumeFilename": ".clang-format",
-        "clang-format.executable": "/usr/bin/clang-format",
-        "clang-format.fallbackStyle": "GNU",
-        "clang-format.language.cpp.enable": false,
-        "clang-format.language.cuda.enable": false,
-        "clang-format.language.glsl.enable": false,
-        "clang-format.language.java.enable": false,
-        "clang-format.language.javascript.fallbackStyle": "GNU",
-        "clang-format.language.objective-c.enable": false,
-        "clang-format.language.objective-cpp.enable": false,
-        "clang-format.language.proto.enable": false,
-        "clang-format.language.typescript.enable": false,
-        "clang-tidy.fixOnSave": false,
-        "terminal.integrated.profiles.linux": {},
-        "clang-tidy.buildPath": "/home/ubuntu/web-app",
-        "cmake.cmakePath": "/usr/bin/cmake",
-        "cmake.cpackPath": "/usr/bin/cpack",
-        "cmake.allowCommentsInPresetsFile": false,
-        "cmake.ctestPath": "/usr/bin/ctest",
-        "cmake.generator": "/usr/bin/ninja",
-        "clang-tidy.lintOnSave": false,
-        "C_Cpp.codeAnalysis.clangTidy.codeAction.formatFixes": false,
-        "chat.detectParticipant.enabled": false
+        "chat.detectParticipant.enabled": false,
     },
     "extensions": {
         "recommendations": [
@@ -489,7 +439,6 @@
             "snyk-security.snyk-vulnerability-scanner",
             "xaver.clang-format",
             "ms-vscode.cmake-tools",
-            "ms-vscode.live-server",
             "dotenv.dotenv-vscode"
         ]
     }

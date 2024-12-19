@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body>
+    <h1>Login</h1>
+    <form id="loginForm" method="GET">
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username"
+             pattern="john" required
+             title="Wrong Username"><br><br>
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password"
+             pattern="smith" required
+             title="Wrong Password"><br><br>
+
+      <button type="submit" formaction="/dashboard.html">Login</button>
+    </form>
+  </body>
+</html>

@@ -1,101 +1,101 @@
 # Set default behavior to automatically normalize line endings
 * text=auto eol=lf
 
-# Define attributes for specific file types
-*.c      diff=c text eol=lf
-*.h      diff=c text eol=lf
-*.cpp    diff=cpp
-*.hpp    diff=cpp
-*.asm    diff=asm
-*.s      diff=asm
-*.so     binary
-*.a      binary
-*.o      binary
-*.wasm   binary
-*.png    binary
-*.jpg    binary
-*.jpeg   binary
-*.gif    binary
-*.webp   binary
-*.ico    binary
-*.pdf    binary
-*.zip    binary
-*.tar    binary
-*.gz     binary
-*.bz2    binary
-*.xz     binary
-*.pem    binary
-*.der    binary
-*.key    binary
-*.db     binary
+# C source files
+*.c     text diff=cpp linguist-language=C
+*.h     text diff=cpp linguist-language=C
 
-# Custom diff for Dockerfile
-Dockerfile diff=dockerfile
-containerfile diff=dockerfile
+# Build system files
+Makefile        text diff=make linguist-language=Makefile
+Makefile.*      text diff=make linguist-language=Makefile
+*.mk            text diff=make linguist-language=Makefile
 
-# Custom diff for JSON files
-*.json   diff=json
+# Documentation
+*.md            text diff=markdown
+*.txt           text
+LICENSE         text
+AUTHORS         text
+CHANGELOG       text
 
-# Custom diff for YAML files
-*.yml    diff=yaml
-*.yaml   diff=yaml
+# Web files
+*.html          text diff=html
+*.css           text diff=css
+*.js            text diff=javascript
 
-# Custom diff for Markdown files
-*.md     diff=markdown text
+# Configuration files
+*.json          text linguist-language=JSON-with-Comments
+*.jsonc         text linguist-language=JSON-with-Comments
+*.yml           text linguist-language=YAML
+*.yaml          text linguist-language=YAML
+.editorconfig   text
+*.ini           text
+*.conf          text
+*.rec           text linguist-language=Recfiles
+*.desc          text linguist-language=Recfiles
 
-# Custom diff for HTML files
-*.html   diff=html text
+# Shell scripts
+*.sh            text eol=lf
+*.bash          text eol=lf
+*.zsh           text eol=lf
 
-# Custom diff for CSS files
-*.css    diff=css text
+# Environment files (keep line endings consistent)
+.env*           text eol=lf
+*.env           text eol=lf
 
-# Custom diff for JavaScript files
-*.js     diff=javascript text
+# Security files (treat as binary to prevent modifications)
+*.pem           binary
+*.key           binary
+*.crt           binary
+*.cer           binary
+*.der           binary
 
-# Custom diff for INI files
-*.ini    diff=ini
+# Binary files (no EOL conversion)
+*.png           binary
+*.jpg           binary
+*.gif           binary
+*.ico           binary
+*.gz            binary
+*.zip           binary
+*.7z            binary
+*.pdf           binary
 
-# Custom diff for plaintext files
-*.conf   diff=plaintext text
-*.txt    diff=plaintext text
-*.rec    diff=plaintext text
-*.doc    text
-*.desc   text
+# Git specific files
+.gitattributes  text eol=lf
+.gitignore      text eol=lf
+.gitconfig      text eol=lf
 
-# Custom diff for CSV files
-*.csv    diff=csv
+# Build artifacts and generated files
+*.o             binary
+*.so            binary
+*.a             binary
+*.lib           binary
+*.dll           binary
+*.exe           binary
 
-# Custom diff for dotenv files
-*.env*   diff=dotenv text
-.env.vault text
+# Debugging files
+*.dSYM          binary
+*.pdb           binary
 
-# Custom diff for Docker ignore files
-.dockerignore diff=dockerfile
+# IDE and editor files
+.vscode/*       text
+*.sublime-*     text
+*.swp           binary
+*.swo           binary
 
-# Custom diff for VS Code settings files
-.vscode  diff=json
+# Docker files
+Dockerfile      text
+.dockerignore   text
+docker-compose*.yml    text
 
-# Custom diff for EditorConfig files
-.editorconfig diff=ini text
+# Ensure shell scripts are not modified on Windows
+gradlew         text eol=lf
+mvnw            text eol=lf
 
-# Custom diff for CMake files
-CMakeLists.txt diff=cmake
-*.cmake  diff=cmake
+# Patch files
+*.patch         -text
+*.diff          -text
 
-# Custom diff for Shell scripts
-*.sh     diff=shell text eol=lf
-
-# Custom diff for Python files
-*.py     diff=python
-
-# Custom diff for XML files
-*.xml    diff=xml
-
-# Custom diff for Makefiles
-Makefile diff=make text eol=lf
-*.mk     diff=make text
-
-# Security-sensitive files
-privkey.pem binary
-cert.pem    binary
-passwd      text
+# Linguist overrides
+docs/*          linguist-documentation
+test/*          linguist-documentation=false
+*.h             linguist-language=C

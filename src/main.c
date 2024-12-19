@@ -2,160 +2,103 @@
  * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
  * SPDX-License-Identifier: 	AGPL-3.0-or-later
  */
-
-/* src/main.c */
-#include "../include/init.h"
-#include "../include/fs.h"
-#include "../include/app_error.h"
-#include "../include/shell.h"
-#include "../include/process.h"
-#include "../include/scheduler.h"
-#include "../include/mem.h"
-#include "../include/cache.h"
-#include "../include/constants.h"
+/* filepath: /home/appuser/web-app/src/main.c */
+#include "../include/web_server.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>  /* For memset */
 #include <signal.h>
-#include <string.h>
-#include <errno.h>
+#include <errno.h>   /* For errno and EINTR */
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
 
-static volatile sig_atomic_t running = 1;
+static volatile sig_atomic_t server_running = 1;
+static int server_socket = -1;
 
 static void
-sigHandler(int signo)
+cleanup(void)
 {
-    if (signo == SIGINT || signo == SIGTERM)
-    {
-        running = 0;
+    if (server_socket != -1) {
+        close(server_socket);
+        server_socket = -1;
+    }
+}
+
+static void
+signal_handler(int sig)
+{
+    switch (sig) {
+        case SIGTERM:
+        case SIGINT:
+            server_running = 0;
+            break;
+        default:
+            break;
     }
 }
 
 static int
-initializeSubsystems(const char *log_path)
+setup_signals(void)
 {
-    int status;
     struct sigaction sa;
 
-    /* Initialize error handling first */
-    errorInit(log_path);
-
-    /* Set up signal handlers */
-    sa.sa_handler = sigHandler;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = signal_handler;
     sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
 
-    if (sigaction(SIGINT, &sa, NULL) == -1 ||
-        sigaction(SIGTERM, &sa, NULL) == -1)
-    {
-        errorLog(ERROR_CRITICAL, "Failed to set up signal handlers");
-        return -1;
-    }
-
-    /* Initialize core subsystems in correct order */
-    if ((status = constants_init()) != 0) {
-        errorLog(ERROR_CRITICAL, "Failed to initialize constants");
-        return -1;
-    }
-
-    if ((status = memInit(MEM_POOL_SIZE)) != 0) {
-        errorLog(ERROR_CRITICAL, "Failed to initialize memory management");
-        return -1;
-    }
-
-    if ((status = cacheInit(CACHE_TYPE_LRU, CACHE_MAX_ENTRIES)) != 0) {
-        errorLog(ERROR_CRITICAL, "Failed to initialize cache");
-        memCleanup();
-        return -1;
-    }
-
-    if ((status = fsInit("/")) != FS_SUCCESS) {
-        errorLog(ERROR_CRITICAL, "Failed to initialize filesystem");
-        cacheCleanup();
-        memCleanup();
-        return -1;
-    }
-
-    if ((status = processInit()) != 0) {
-        errorLog(ERROR_CRITICAL, "Failed to initialize process management");
-        cacheCleanup();
-        memCleanup();
-        return -1;
-    }
-
-    if ((status = schedulerInit()) != SCHEDULER_SUCCESS) {
-        errorLog(ERROR_CRITICAL, "Failed to initialize scheduler");
-        processCleanup();
-        cacheCleanup();
-        memCleanup();
-        return -1;
-    }
-
-    if ((status = shellInit()) != 0) {
-        errorLog(ERROR_CRITICAL, "Failed to initialize shell");
-        schedulerCleanup();
-        processCleanup();
-        cacheCleanup();
-        memCleanup();
-        return -1;
-    }
-
-    if ((status = socketInit(SOCKET_INIT_DEFAULT)) != 0) {
-        errorLog(ERROR_CRITICAL, "Failed to initialize socket subsystem");
+    if (sigaction(SIGTERM, &sa, NULL) == -1 ||
+        sigaction(SIGINT, &sa, NULL) == -1) {
         return -1;
     }
 
     return 0;
 }
 
-static void
-cleanupSubsystems(void)
-{
-    shellShutdown();
-    schedulerStop();
-    schedulerCleanup();
-    processCleanup();
-    cacheCleanup();
-    memCleanup();
-    socketCleanup();
-    shutdownSystem();
-    errorShutdown();
-}
-
 int
-main(int argc, char *argv[])
+main(void)
 {
-    const char *log_path = DEFAULT_LOG_PATH;
-    int status;
+    struct sockaddr_in client_addr;
+    socklen_t client_len;
+    int client_socket;
+    int server_fd;
 
-    /* Use custom log path if provided */
-    if (argc > 1) {
-        log_path = argv[1];
-    }
-
-    /* Initialize all subsystems */
-    status = initializeSubsystems(log_path);
-    if (status != 0) {
-        fprintf(stderr, "System initialization failed\n");
+    if (setup_signals() < 0) {
+        perror("Failed to setup signals");
         return EXIT_FAILURE;
     }
 
-    /* Start scheduler */
-    status = schedulerStart();
-    if (status != SCHEDULER_SUCCESS) {
-        errorLog(ERROR_CRITICAL, "Failed to start scheduler");
-        cleanupSubsystems();
+    server_fd = setup_server(DEFAULT_PORT);
+    if (server_fd < 0) {
+        perror("Failed to setup server");
         return EXIT_FAILURE;
     }
 
-    /* Main event loop */
-    while (running) {
-        status = shellPrompt();
-        if (status != 0) {
-            errorLog(ERROR_WARNING, "Shell error occurred");
+    server_socket = server_fd;
+    printf("Server running on port %d...\n", DEFAULT_PORT);
+
+    while (server_running) {
+        client_len = sizeof(client_addr);
+        client_socket = accept(server_socket,
+                             (struct sockaddr *)&client_addr,
+                             &client_len);
+
+        if (client_socket < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+            perror("Failed to accept connection");
+            continue;
         }
+
+        if (handle_client(client_socket, WWW_ROOT) < 0) {
+            /* Error already handled in handle_client */
+            close(client_socket);
+            continue;
+        }
+        close(client_socket);
     }
 
-    /* Clean shutdown */
-    cleanupSubsystems();
+    cleanup();
     return EXIT_SUCCESS;
 }

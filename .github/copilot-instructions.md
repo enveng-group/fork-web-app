@@ -7,10 +7,26 @@ These instructions ensure Copilot's suggestions align with our project's technic
 ## **General Guidelines**
 - Adhere to **ISO/IEC 9899:1990 (C90 Standard)**, ** POSIX.1 (ISO/IEC 9945-1:1996 - IEEE Standard 1003.1)**, and **X/Open-500** compliance in all code suggestions.
 - Ensure code is **portable**, **cross-platform**, and **cross-architecture**:
-    - Prioritize compatibility with `musl libc`, and `gcc` (for Alpine) `musl-gcc` (for Trisquel).
+    - Prioritize compatibility with `musl libc`, and `gcc` (for Alpine)
     - Avoid features requiring `glibc` or non-portable platform-specific APIs.
 - Write code optimized for lightweight environments (e.g. `musl`).
 - Data oriented design is preferred over object oriented design.
+- I dont want improvements, please only review and check they integrate well (consolidate) and cover the basic use-case functionality with simplicity without conflicts and duplication (cleanup code).
+- Never overcomplicate the code generated.
+    - Keep generated code as simple and straightforward as possible.
+    - Avoid complex control structures and nested loops.
+- Provide code snippets that can be easily integrated into existing codebases.
+- Ensure generated code is **safe**, **efficient**, and **maintainable**.
+- Follow the project's **coding standards** and **style guidelines**.
+- Only provide the necessary code to fulfill the user's request that is to perform the most basic operations.
+- Avoid generating code that is overly verbose or redundant.
+- Provide clear and concise comments to explain the purpose of the code.
+- Use **consistent naming conventions** for variables, functions, and files.
+- Avoid generating code that is overly complex or difficult to understand.
+- Ensure that the generated code is **well-documented** and **self-explanatory**.
+- Keep generated code **minimal**, **modular** and **reusable**.
+- Avoid generating code that is overly specific to a particular use case.
+- Ensure that the generated code is **well-structured** and **easy to read**.
 - Format C Code following GNU Coding Standards.
 - Do not use C++ comments (`//`) in C code.
 - Do not use undeclared identifier.
@@ -24,7 +40,9 @@ These instructions ensure Copilot's suggestions align with our project's technic
 - Never redefine a variable in the same scope.
 - Avoid generating code that are conflicting types for the same variable.
 - Avoid previous declarations of variables.
-- Code must compile with gcc using: `-std=c90 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500 -Wall -ansi -Wextra -pedantic -Werror -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes -fanalyzer -fstack-protector-strong -fstack-check -fdata-sections -ffunction-sections -fno-common -fstrict-aliasing -Warray-bounds -Wstack-protector -Wformat=2 -Wformat-security -Wformat-overflow=2 -Wformat-truncation=2 -Walloca -Wvla -fno-omit-frame-pointer`
+- C90 standard requiring declarations at start of blocks
+- ISO C90 forbids mixed declarations and code
+- Code must compile with gcc using: `-static -std=c90 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500 -Wall -ansi -Wextra -pedantic -Werror -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes -fanalyzer -fstack-protector-strong -fstack-check -fdata-sections -ffunction-sections -fno-common -fstrict-aliasing -Warray-bounds -Wstack-protector -Wformat=2 -Wformat-security -Wformat-overflow=2 -Wformat-truncation=2 -Walloca -Wvla -fno-omit-frame-pointer`
 - Code Safety Requirements:
     - No VLAs (enforced by -Wvla)
     - No array bounds violations (enforced by -Warray-bounds)
@@ -32,6 +50,8 @@ These instructions ensure Copilot's suggestions align with our project's technic
     - No undefined behavior
     - No memory leaks
     - No floating-point issues
+- Do not use 'for' loop initial declarations
+- Do not create implicit declarations of functions
 - Memory Safety:
 
 ```c
@@ -451,8 +471,10 @@ LDFLAGS = -static -pthread -lssl -lcrypto
 struct module_data {
     int id;
     char name[MODULE_MAX_SIZE];
-};
-
+};src/mime.c: In function 'mimeAddType':
+src/mime.c:88:5: error: ISO C90 forbids mixed declarations and code [-Werror=declaration-after-statement]
+   88 |     size_t i;
+      |     ^~~~~~
 /* Function prototypes */
 int moduleFunction(const struct module_data *data);
 
