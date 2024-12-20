@@ -101,13 +101,13 @@
             ".conf": "ini",
             ".rec": "recfile"
         },
-        "git.alwaysSignOff": false,
+        "git.alwaysSignOff": true,
         "git.autofetch": true,
         "git.autofetchPeriod": 180,
         "git.autorefresh": true,
         "git.closeDiffOnOperation": true,
         "git.confirmSync": false,
-        "git.enableCommitSigning": false,
+        "git.enableCommitSigning": true,
         "git.enableSmartCommit": true,
         "git.enabled": true,
         "git.fetchOnPull": true,
@@ -246,7 +246,7 @@
             ]
         },
         "terminal.integrated.defaultProfile.osx": "zsh",
-        "github.gitProtocol": "https",
+        "github.gitProtocol": "ssh",
         "extensions.ignoreRecommendations": true,
         "github.copilot.chat.inlineChatCompletionTrigger.enabled": true,
         "github.copilot.chat.inlineChatHint.enabled": true,
@@ -324,80 +324,6 @@
         "github.copilot.chat.search.semanticTextResults": true,
         "markdown.preview.typographer": true,
         "merge-conflict.autoNavigateNextConflict.enabled": true,
-        "C_Cpp.clang_format_fallbackStyle": "Google",
-        "C_Cpp.clang_format_style": "Google",
-        "C_Cpp.clang_format_sortIncludes": true,
-        "makefile.extensionOutputFolder": "./build",
-        "makefile.configurations": [
-            {
-                "name": "Debug",
-                "makeArgs": ["DEBUG=1"]
-            },
-            {
-                "name": "Release",
-                "makeArgs": ["RELEASE=1"]
-            }
-        ],
-        "makefile.launchConfigurations": [
-            {
-                "name": "Debug",
-                "binaryPath": "./build/debug/app"
-            },
-            {
-                "name": "Release",
-                "binaryPath": "./build/release/app"
-            }
-        ],
-        "makefile.makePath": "make",
-        "makefile.makefilePath": "./Makefile",
-        "makefile.buildLog": "./logs/build.log",
-        "shellcheck.enable": true,
-        "shellcheck.run": "onSave",
-        "shellcheck.exclude": [],
-        "shellcheck.customArgs": [
-            "--severity=style", // Set severity level
-            "--enable=all" // Enable all checks
-        ],
-        "markdown.extension.toc.levels": "1..6",
-        "markdown.extension.toc.updateOnSave": true,
-        "markdown.extension.toc.orderedList": false,
-        "markdown.extension.toc.plaintext": false,
-        "markdown.extension.orderedList.marker": "one",
-        "markdown.extension.italic.indicator": "*",
-        "markdown.extension.list.indentationSize": "inherit",
-        "markdown.extension.print.onFileSave": false,
-        "markdownlint.config": {
-            "default": true,
-            "MD013": false, // Disable line length rule for Markdown
-            "MD033": false, // Allow inline HTML
-            "MD041": false, // Allow first line to be non-header
-            "MD007": { "indent": 4 }, // Set list indentation to 4 spaces
-            "MD029": { "style": "ordered" }, // Enforce ordered list style
-            "configFile": true
-        },
-        "clang-tidy.executable": "clang-tidy",
-        "clang-tidy.checks": [
-            "bugprone-*",
-            "clang-analyzer-*",
-            "cppcoreguidelines-*",
-            "google-*",
-            "modernize-*",
-            "performance-*",
-            "readability-*",
-            "portability-*",
-            "misc-*",
-            "cert-*",
-            "linuxkernel-*",
-            "mpi-*",
-            "hicpp-*",
-            "llvm-header-guard",
-            "-modernize-deprecated-headers"
-        ],
-        "prettier.configPath": ".prettierrc",
-
-        "linthtml.enable": true,
-        "linthtml.configFile": ".linthtmlrc",
-        "linthtml.packageManager": "npm",
         "githubPullRequests.assignCreated": "${user}",
         "githubPullRequests.defaultCreateOption": "createAutoMerge",
         "githubPullRequests.defaultMergeMethod": "squash",
@@ -413,7 +339,7 @@
         "githubPullRequests.showPullRequestNumberInTree": true,
         "githubPullRequests.terminalLinksHandler": "vscode",
         "remoteHub.commitDirectlyWarning": "off",
-        "remoteHub.gitProtocol": "https",
+        "remoteHub.gitProtocol": "ssh",
         "remoteHub.richNavigation.enabled": true,
         "chat.detectParticipant.enabled": false,
     },
