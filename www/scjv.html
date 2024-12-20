@@ -3,7 +3,7 @@
 
 <head>
   <title>SCJV - Pilbara Ports Environmental Obligations</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
   <style type="text/css">
     body {
       font-family: Arial, sans-serif;
@@ -385,9 +385,9 @@
     function checkSession() {
       var username = getCookie('username');
       if (!username) {
-          alert("Session expired - please login again");
-          window.location.href = 'index.html';
-          return false;
+        alert("Session expired - please login again");
+        window.location.href = 'index.html';
+        return false;
       }
       return true;
     }
@@ -436,30 +436,30 @@
 
       // Skip header and filter rows
       for (var i = 2; i < rows.length; i++) {
-          var dueDateCell = rows[i].getElementsByTagName('td')[5]; // Action_DueDate column
-          if (!dueDateCell || !dueDateCell.textContent) continue;
+        var dueDateCell = rows[i].getElementsByTagName('td')[5]; // Action_DueDate column
+        if (!dueDateCell || !dueDateCell.textContent) continue;
 
-          var dueDate = new Date(dueDateCell.textContent);
-          if (isNaN(dueDate.getTime())) continue;
+        var dueDate = new Date(dueDateCell.textContent);
+        if (isNaN(dueDate.getTime())) continue;
 
-          var timeDiff = dueDate - today;
-          var daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+        var timeDiff = dueDate - today;
+        var daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
 
-          var show = false;
-          switch(filter) {
-              case 'all':
-                  show = true;
-                  break;
-              case 'warning':
-                  show = (daysDiff > -1 && daysDiff <= 14);
-                  break;
-              case 'overdue':
-                  show = (daysDiff < 0);
-                  break;
-              default:
-                  show = true;
-          }
-          rows[i].style.display = show ? '' : 'none';
+        var show = false;
+        switch (filter) {
+          case 'all':
+            show = true;
+            break;
+          case 'warning':
+            show = (daysDiff > -1 && daysDiff <= 14);
+            break;
+          case 'overdue':
+            show = (daysDiff < 0);
+            break;
+          default:
+            show = true;
+        }
+        rows[i].style.display = show ? '' : 'none';
       }
     }
   </script>

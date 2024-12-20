@@ -3,29 +3,47 @@
 
 <head>
   <title>Audit Log Viewer</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
   <style type="text/css">
+    :root {
+      --primary-color: #2f4f2f;
+      --background-color: #f4f7f2;
+      --text-color: #000;
+      --error-color: #ff0000;
+      --warning-color: #fff3cd;
+      --border-color: #ddd;
+    }
+
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f4f7f2;
-      font-size: 14px;
+      background-color: var(--background-color);
+      font-size: 16px;
     }
 
     #header {
-      background: #2f4f2f;
+      background: var(--primary-color);
       color: #fff;
-      padding: 20px;
+      padding: 15px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+
+    #header h1 {
+      margin: 0;
+      font-size: 1.2em;
+      padding-right: 100px;
     }
 
     .container {
       width: 100%;
-      max-width: 100%;
-      overflow-x: auto;
-      margin: 10px auto;
-      padding: 0 10px;
       box-sizing: border-box;
+      padding: 10px;
+      margin-top: 60px;
     }
 
     table {
@@ -37,16 +55,16 @@
     th,
     td {
       padding: 8px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--border-color);
       text-align: left;
     }
 
     th {
-      background: #2f4f2f;
+      background: var(--primary-color);
       color: white;
-      cursor: pointer;
       position: sticky;
       top: 0;
+      z-index: 1;
     }
 
     .filter-row input {
@@ -58,7 +76,7 @@
     .back-button {
       margin: 20px;
       padding: 10px 20px;
-      background: #2f4f2f;
+      background: var(--primary-color);
       color: white;
       border: none;
       cursor: pointer;
@@ -72,7 +90,7 @@
     .pagination button {
       margin: 0 5px;
       padding: 5px 10px;
-      background: #2f4f2f;
+      background: var(--primary-color);
       color: white;
       border: none;
       cursor: pointer;
@@ -84,18 +102,66 @@
     }
 
     .user-nav {
-      position: absolute;
-      top: 20px;
-      right: 20px;
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 5px;
     }
 
     .nav-button {
-      margin-left: 10px;
-      padding: 5px 15px;
+      padding: 8px 12px;
       background: #fff;
-      color: #2f4f2f;
+      color: var(--primary-color);
       border: 1px solid #fff;
       cursor: pointer;
+      font-size: 0.9em;
+    }
+
+    button,
+    input[type="button"],
+    input[type="submit"] {
+      padding: 8px 15px;
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+
+    .form-group {
+      margin: 10px 0;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      box-sizing: border-box;
+    }
+
+    .error {
+      color: var(--error-color);
+      font-weight: bold;
+      padding: 10px;
+      display: none;
+    }
+
+    /* Tablet Breakpoint */
+    @media screen and (min-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+    }
+
+    /* Desktop Breakpoint */
+    @media screen and (min-width: 1024px) {
+      .container {
+        max-width: 1200px;
+        margin: 60px auto 0;
+      }
     }
   </style>
   <script type="text/javascript">
@@ -112,7 +178,7 @@
 
     function loadAuditLogs() {
       var xhr = new XMLHttpRequest();
-      xhr.open("GET", "/var/log/audit.log", true);
+      xhr.open("GET", "/audit_log", true);
       xhr.onload = function () {
         if (xhr.status === 200) {
           auditData = parseAuditLogs(xhr.responseText);
@@ -234,11 +300,11 @@
   </div>
 
   <div class="user-nav">
-    <button onclick="navigateToProject('profile.html')" class="nav-button">Profile</button>
-    <button onclick="goBack()" class="nav-button">Back</button>
+    <button aria-label="Navigate to Profile" onclick="navigateToProfile()" class="nav-button">Profile</button>
+    <button aria-label="Go Back" onclick="goBack()" class="nav-button">Back</button>
   </div>
 
-  <div class="container">
+  <div role="main" class="container">
     <button class="back-button" onclick="goBack()">Back to Dashboard</button>
 
     <table id="auditTable">

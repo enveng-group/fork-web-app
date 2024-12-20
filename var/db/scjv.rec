@@ -14,12 +14,12 @@ Action_DueDate: 1/01/2107
 Close_Out_Date:
 Status: In Progress
 Supporting_Information: This includes:
-+ �	Take 5 and JHA Induction
-+ �	Security Induction
-+ �	Environment and Cultural Heritage Induction
-+ �	Health and Safety Induction
-+ �	Site Specific Induction � Dampier
-+ �	Emergency Control Organisation (ECO) Induction (if applicable)
++ ?	Take 5 and JHA Induction
++ ?	Security Induction
++ ?	Environment and Cultural Heritage Induction
++ ?	Health and Safety Induction
++ ?	Site Specific Induction ? Dampier
++ ?	Emergency Control Organisation (ECO) Induction (if applicable)
 General_Comments:
 Compliance_Comments: Verify compliance through training records.
 NonConformance_Comments:
@@ -76,15 +76,15 @@ Action_DueDate: 1/08/2024
 Close_Out_Date:
 Status: Completed
 Supporting_Information: The CONTRACTOR Induction shall include, but not be limited to the following:
-+ �	Key legal obligations including PROJECT approvals (EP Act, EPBC Act, PA Act, AH Act)
-+ �	Land access restrictions
-+ �	Aboriginal heritage sites and cultural awareness (Murujuga Rock Art Strategy & MAC involvement in PROJECT)
-+ �	CEMP Summary
-+ �	Protection of fauna, identification of protected fauna species and reporting requirements (sightings and injuries)
-+ �	Hazardous materials storage and use
-+ �	Spill management including use of spill kits
-+ �	Waste management
-+ �	Incident and hazard reporting
++ ?	Key legal obligations including PROJECT approvals (EP Act, EPBC Act, PA Act, AH Act)
++ ?	Land access restrictions
++ ?	Aboriginal heritage sites and cultural awareness (Murujuga Rock Art Strategy & MAC involvement in PROJECT)
++ ?	CEMP Summary
++ ?	Protection of fauna, identification of protected fauna species and reporting requirements (sightings and injuries)
++ ?	Hazardous materials storage and use
++ ?	Spill management including use of spill kits
++ ?	Waste management
++ ?	Incident and hazard reporting
 General_Comments:
 Compliance_Comments: Verify compliance through training records.
 NonConformance_Comments:
@@ -198,10 +198,10 @@ Action_DueDate: 1/01/2107
 Close_Out_Date:
 Status: Not Started
 Supporting_Information: As a minimum the following will be recorded and maintained:
-+ �	Records of training attendance e.g.: induction training, toolbox meetings.
-+ �	Copies of training materials.
-+ �	Competency assessments (where relevant).
-+ �	Training matrix.
++ ?	Records of training attendance e.g.: induction training, toolbox meetings.
++ ?	Copies of training materials.
++ ?	Competency assessments (where relevant).
++ ?	Training matrix.
 General_Comments:
 Compliance_Comments: Verify compliance through training records and audits.
 NonConformance_Comments:
@@ -231,12 +231,12 @@ Action_DueDate: 1/01/2107
 Close_Out_Date:
 Status: Not Started
 Supporting_Information: This will incorporate the following:
-+ �	Supervisory leadership
-+ �	Effective communication and issue resolution
-+ �	HSSE responsibilities and accountability
-+ �	Legislative Requirements
-+ �	Environmental and Heritage requirements
-+ �	PROJECT HSSE expectations.
++ ?	Supervisory leadership
++ ?	Effective communication and issue resolution
++ ?	HSSE responsibilities and accountability
++ ?	Legislative Requirements
++ ?	Environmental and Heritage requirements
++ ?	PROJECT HSSE expectations.
 General_Comments:
 Compliance_Comments: Verify compliance through training records and audits.
 NonConformance_Comments:
@@ -677,7 +677,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Pest Management
 Environmental_Aspect: Biosecurity and Pest Management
 Obligation_Number: PCEMP-24
-Obligation: If large numbers of pest species are identified, a management program is to be implemented by a suitably qualified contractor or take part in PPA�s Collaborative Industry Pest Management Programs.
+Obligation: If large numbers of pest species are identified, a management program is to be implemented by a suitably qualified contractor or take part in PPA?s Collaborative Industry Pest Management Programs.
 Accountability: SCJV
 Responsibility: SCJV - Lead Environmental Advisor
 ProjectPhase: During Construction
@@ -992,8 +992,8 @@ ProjectPhase: During Construction
 Action_DueDate: 1/01/2027
 Close_Out_Date:
 Status: Not Started
-Supporting_Information: Management of these vessels is a responsibility of the vessel�s Master and as a minimum, the vessel must comply with the following requirements:
-+ - Managing ballast water according to Australia�s mandatory Ballast Water Management Requirements.
+Supporting_Information: Management of these vessels is a responsibility of the vessel?s Master and as a minimum, the vessel must comply with the following requirements:
++ - Managing ballast water according to Australia?s mandatory Ballast Water Management Requirements.
 + - Minimising the amount of biofouling through a high standard of cleaning and maintenance as described in the National Biofouling Management Guidance for Non-trading Vessels.
 General_Comments:
 Compliance_Comments: Verify compliance through inspections, audits and reporting.
@@ -1015,7 +1015,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Portside CEMP
 Environmental_Aspect: Biosecurity and Pest Management
 Obligation_Number: PCEMP-36
-Obligation: CONTRACTOR shall ensure that WA DPIRD�s Vessel Check risk assessment submitted to PPA for all PROJECT construction support vessels that mobilise to the Port of Dampier from interstate or international waters. Any vessels associated with the PROJECT must not be higher than �low risk� (unless excepted by DPIRD) for IMP to Port of Dampier Waters.
+Obligation: CONTRACTOR shall ensure that WA DPIRD?s Vessel Check risk assessment submitted to PPA for all PROJECT construction support vessels that mobilise to the Port of Dampier from interstate or international waters. Any vessels associated with the PROJECT must not be higher than ?low risk? (unless excepted by DPIRD) for IMP to Port of Dampier Waters.
 Accountability: SCJV
 Responsibility: SCJV - Lead Environmental Advisor
 ProjectPhase: During Construction
@@ -1099,7 +1099,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Threatened Species Management
 Environmental_Aspect: Biosecurity and Pest Management
 Obligation_Number: PCEMP-39
-Obligation: CONTRACTOR shall maintain a fauna interaction register � recording all feral animal sightings, capture and/or euthanasia records.
+Obligation: CONTRACTOR shall maintain a fauna interaction register ? recording all feral animal sightings, capture and/or euthanasia records.
 Accountability: SCJV - during construction
 + Perdaman - during operations
 Responsibility: SCJV - Lead Environmental Advisor
@@ -1186,7 +1186,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure:
 Environmental_Aspect: Cultural Heritage Management
 Obligation_Number: PCEMP-42
-Obligation: Locations of known and potential heritage items/areas within, or close to, the development footprint will be demarcated as �No-Go Zones�.
+Obligation: Locations of known and potential heritage items/areas within, or close to, the development footprint will be demarcated as ?No-Go Zones?.
 Accountability: SCJV
 Responsibility: SCJV - Environmental Lead
 ProjectPhase: Prior to Construction
@@ -1444,12 +1444,12 @@ Procedure: Cultural Heritage Management
 Environmental_Aspect: Cultural Heritage Management
 Obligation_Number: PCEMP-51
 Obligation: If OWNER employees, contractors or visitors damage, trespass or otherwise interfere with an Aboriginal Heritage Site identified for protection, then the following shall occur:
-+ �	Work is immediately stopped in the vicinity of the area of the suspected breach and the area is to be cordoned off with a 5m surrounding buffer.
-+ �	When an incident occurs, the PROJECT Lead Environmental Advisor, or their delegate, will be notified of the incident as soon as possible.
-+ �	The PROJECT Lead Environmental Advisor will inform OWNER of the incident within 24 hours.
-+ �	The incident and response will be recorded in the OWNER�s Incident Reporting System within 24 hours of occurrence, as per section 8.1.3.
-+ �	For all incidents, root cause(s) must be established using the Incident Cause Analysis Methodology (ICAM). The final incident investigation report must be submitted within 14 days, or as stipulated by the Project Director, depending on the level of investigation required.
-+ �	The site supervisor responsible for the area in which the incident occurred is to complete an incident report form and provide it to the PROJECT Lead Environmental Advisor, or delegate, as soon as practicable after the incident.
++ ?	Work is immediately stopped in the vicinity of the area of the suspected breach and the area is to be cordoned off with a 5m surrounding buffer.
++ ?	When an incident occurs, the PROJECT Lead Environmental Advisor, or their delegate, will be notified of the incident as soon as possible.
++ ?	The PROJECT Lead Environmental Advisor will inform OWNER of the incident within 24 hours.
++ ?	The incident and response will be recorded in the OWNER?s Incident Reporting System within 24 hours of occurrence, as per section 8.1.3.
++ ?	For all incidents, root cause(s) must be established using the Incident Cause Analysis Methodology (ICAM). The final incident investigation report must be submitted within 14 days, or as stipulated by the Project Director, depending on the level of investigation required.
++ ?	The site supervisor responsible for the area in which the incident occurred is to complete an incident report form and provide it to the PROJECT Lead Environmental Advisor, or delegate, as soon as practicable after the incident.
 Accountability:
 Responsibility:
 ProjectPhase:
@@ -1478,7 +1478,7 @@ Procedure: MS1180
 Environmental_Aspect: Reporting
 Obligation_Number: PCEMP-52
 Obligation: In the event that monitoring, tests, surveys or investigations indicate that one or more management actions, as specified in the Cultural Heritage Management Plan, have not been implemented, the OWNER must:
-+ �	Under MS1180 Condition 9-6:
++ ?	Under MS1180 Condition 9-6:
 + ?	Report the failure to implement the management action(s) in writing to the CEO, MAC, the DPLH and the Registrar of Aboriginal Sites within seven days of identification
 + ?	Investigate to determine the cause of the management action(s) not being implemented
 + ?	Investigate to determine potential environmental harm or alteration of the environment that occurred due to the failure to implement management action(s)
@@ -2501,7 +2501,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Surface Water Management
 Environmental_Aspect: Erosion and Sedimentation Management
 Obligation_Number: PCEMP-88
-Obligation: Repair or replace degraded erosion and sediment control structures and features as recommended in manufacturer�s specifications, engineer�s drawings.
+Obligation: Repair or replace degraded erosion and sediment control structures and features as recommended in manufacturer?s specifications, engineer?s drawings.
 Accountability: SCJV
 Responsibility: SCJV - Lead Environmental Advisor
 ProjectPhase: During Construction
@@ -2813,7 +2813,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Solid & Liquid Waste Management
 Environmental_Aspect: Hazardous Substances and Hydrocarbon Management
 Obligation_Number: PCEMP-99
-Obligation: Chemicals are to be stored on or within a bunded structure � capacity 110% of largest container, impermeable walls and floor (soil floors not sufficient) and roofed in accordance with Australian Standard AS1940:2004.
+Obligation: Chemicals are to be stored on or within a bunded structure ? capacity 110% of largest container, impermeable walls and floor (soil floors not sufficient) and roofed in accordance with Australian Standard AS1940:2004.
 Accountability: SCJV
 Responsibility: SCJV - Lead Environmental Advisor
 ProjectPhase: During Construction
@@ -3853,7 +3853,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Solid & Liquid Waste Management
 Environmental_Aspect: Hazardous Substances and Hydrocarbon Management
 Obligation_Number: PCEMP-136
-Obligation: Appropriate licences and management controls shall be in place for the transport, handling, storage and disposal of DGs in Minor Storage, Placarding and Manifest quantities prior to the delivery and activity being undertaken. All DGs shall be handled and transported in accordance with the Dangerous Goods Safety Act 2004, Australian Dangerous Goods Code and other supporting regulations. The driver and vehicle must be licenced to carry hazardous materials (HazMat�s) and DG (if applicable volumes are reached).
+Obligation: Appropriate licences and management controls shall be in place for the transport, handling, storage and disposal of DGs in Minor Storage, Placarding and Manifest quantities prior to the delivery and activity being undertaken. All DGs shall be handled and transported in accordance with the Dangerous Goods Safety Act 2004, Australian Dangerous Goods Code and other supporting regulations. The driver and vehicle must be licenced to carry hazardous materials (HazMat?s) and DG (if applicable volumes are reached).
 Accountability: SCJV
 Responsibility: SCJV - Commercial Manager
 ProjectPhase: During Construction
@@ -3881,7 +3881,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Solid & Liquid Waste Management
 Environmental_Aspect: Hazardous Substances and Hydrocarbon Management
 Obligation_Number: PCEMP-137
-Obligation: All HazMat�s will be correctly labelled in compliance with National Code of Practice for the Labelling of Workplace Substances NOHSC 2012:1994 to allow substances to be used in the safest manner that shall protect the environment. Signage shall be in accordance with Australian standard AS1319.
+Obligation: All HazMat?s will be correctly labelled in compliance with National Code of Practice for the Labelling of Workplace Substances NOHSC 2012:1994 to allow substances to be used in the safest manner that shall protect the environment. Signage shall be in accordance with Australian standard AS1319.
 Accountability: SCJV
 Responsibility: SCJV - HSSE Manager
 ProjectPhase: During Construction
@@ -3909,7 +3909,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Solid & Liquid Waste Management
 Environmental_Aspect: Hazardous Substances and Hydrocarbon Management
 Obligation_Number: PCEMP-138
-Obligation: HazMat�s and DG storage areas to be restricted access.
+Obligation: HazMat?s and DG storage areas to be restricted access.
 Accountability: SCJV
 Responsibility: SCJV - Construction Supervisor
 ProjectPhase: During Construction
@@ -3993,7 +3993,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Portside CEMP
 Environmental_Aspect: Hazardous Substances and Hydrocarbon Management
 Obligation_Number: PCEMP-141
-Obligation: Pollution incidents will be reported to the EPA�s Pollution Hotline within 24 hours of the incident occurring.
+Obligation: Pollution incidents will be reported to the EPA?s Pollution Hotline within 24 hours of the incident occurring.
 Accountability: SCJV
 Responsibility: OWNER Environment and Heritage Manager
 ProjectPhase: During Construction
@@ -4049,7 +4049,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Solid & Liquid Waste Management
 Environmental_Aspect: Hazardous Substances and Hydrocarbon Management
 Obligation_Number: PCEMP-143
-Obligation: Where spill is inadequately cleaned up, leaving unreported contaminated soils / water or improper disposal; provide additional training to personnel on clean-up and notification procedures, update incident report, rectify spill remediation and the handling of HazMat�s and DGs.
+Obligation: Where spill is inadequately cleaned up, leaving unreported contaminated soils / water or improper disposal; provide additional training to personnel on clean-up and notification procedures, update incident report, rectify spill remediation and the handling of HazMat?s and DGs.
 Accountability: SCJV
 Responsibility: SCJV - Lead Environmental Advisor
 ProjectPhase: During Construction
@@ -4189,7 +4189,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Portside CEMP
 Environmental_Aspect: Waste Management
 Obligation_Number: PCEMP-148
-Obligation: The PROJECT site will be kept clean and tidy at all times and litter and waste will be deposited into appropriate litter or recycling bins at the PROJECT�s nominated waste collection areas.
+Obligation: The PROJECT site will be kept clean and tidy at all times and litter and waste will be deposited into appropriate litter or recycling bins at the PROJECT?s nominated waste collection areas.
 Accountability: SCJV
 Responsibility: SCJV - Construction Supervisor
 ProjectPhase: During Construction
@@ -4329,7 +4329,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Threatened Species Management
 Environmental_Aspect: Waste Management
 Obligation_Number: PCEMP-153
-Obligation: Smoking only permitted in PPA�s designated smoking areas.
+Obligation: Smoking only permitted in PPA?s designated smoking areas.
 Accountability: SCJV
 Responsibility: SCJV - Construction Supervisor
 ProjectPhase: During Construction
@@ -5135,22 +5135,22 @@ Action_DueDate: 1/01/2107
 Close_Out_Date:
 Status: Not Started
 Supporting_Information: . Inspections will aim to identify and record, as a minimum:
-+ �	Environmental site conditions;
-+ �	Compliance to relevant conditions and licences;
-+ �	Review of relevant legislative requirements, approvals and conditions;
-+ �	Incident and non-conformances;
-+ �	PROJECT environmental objectives and targets;
-+ �	Management measures of environmental aspects detailed within the issue specific environmental management plans;
-+ �	Hazardous materials storage and handling;
-+ �	Refuelling activities;
-+ �	Spills, leaks and contaminated ground;
-+ �	Dust management;
-+ �	Trench management;
-+ �	Subcontractor inspection regime and non-conformance management;
-+ �	Noise management;
-+ �	Stormwater management including sediment basins and ponds;
-+ �	Waste management (liquid and solid); and
-+ �	Leading indicators (audits and inspections, and training undertaken and planned).
++ ?	Environmental site conditions;
++ ?	Compliance to relevant conditions and licences;
++ ?	Review of relevant legislative requirements, approvals and conditions;
++ ?	Incident and non-conformances;
++ ?	PROJECT environmental objectives and targets;
++ ?	Management measures of environmental aspects detailed within the issue specific environmental management plans;
++ ?	Hazardous materials storage and handling;
++ ?	Refuelling activities;
++ ?	Spills, leaks and contaminated ground;
++ ?	Dust management;
++ ?	Trench management;
++ ?	Subcontractor inspection regime and non-conformance management;
++ ?	Noise management;
++ ?	Stormwater management including sediment basins and ponds;
++ ?	Waste management (liquid and solid); and
++ ?	Leading indicators (audits and inspections, and training undertaken and planned).
 General_Comments:
 Compliance_Comments: Verify compliance through inspections, audits and reporting.
 NonConformance_Comments:
@@ -5179,10 +5179,10 @@ Action_DueDate: 1/01/2027
 Close_Out_Date:
 Status: Not Started
 Supporting_Information: To be undertaken daily:
-+ �	To record site conditions
-+ �	HSSE checks
-+ �	To record activities completed
-+ �	Photos taken to evidence activities and site conditions
++ ?	To record site conditions
++ ?	HSSE checks
++ ?	To record activities completed
++ ?	Photos taken to evidence activities and site conditions
 General_Comments: Daily report to be provided to OWNER. Data collection through Synchro Perform and Taregt Zero (Clough Systems)
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -5211,11 +5211,11 @@ Action_DueDate: 1/01/2027
 Close_Out_Date:
 Status: Not Started
 Supporting_Information: To be undertaken weekly:
-+ �	Loss Prevention Inspection
-+ �	Hazard inspections
-+ �	Environmental inspections
-+ �	To monitor higher risk activities
-+ �	To inspect areas that aren�t otherwise monitored routinely (i.e. laydown areas)
++ ?	Loss Prevention Inspection
++ ?	Hazard inspections
++ ?	Environmental inspections
++ ?	To monitor higher risk activities
++ ?	To inspect areas that aren?t otherwise monitored routinely (i.e. laydown areas)
 General_Comments: To be part of monthly environmental report. Data collection through Target Zero app.
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -5273,11 +5273,11 @@ ProjectPhase: During Construction
 Action_DueDate: 1/01/2027
 Close_Out_Date:
 Status: Not Started
-Supporting_Information: To be undertaken when extreme weather events are forecast for the PROJECT site: �	Ensure stormwater management systems are in operation
-+ �	Ensure erosion and sediment controls are in place
-+ �	Ensure hazardous substances and hydrocarbons storage bunds are in place.
-+ �	Secure waste / stockpiles
-+ �	Ensure field equipment has been demobilized safely
+Supporting_Information: To be undertaken when extreme weather events are forecast for the PROJECT site: ?	Ensure stormwater management systems are in operation
++ ?	Ensure erosion and sediment controls are in place
++ ?	Ensure hazardous substances and hydrocarbons storage bunds are in place.
++ ?	Secure waste / stockpiles
++ ?	Ensure field equipment has been demobilized safely
 General_Comments: Data collection through Target Zero app.
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -5305,8 +5305,8 @@ ProjectPhase: During Construction
 Action_DueDate: 1/01/2027
 Close_Out_Date:
 Status: Not Started
-Supporting_Information: To be undertaken when new equipment/plant arrive on site: �	Ensure equipment/plant is clean
-+ �	Visual inspection
+Supporting_Information: To be undertaken when new equipment/plant arrive on site: ?	Ensure equipment/plant is clean
++ ?	Visual inspection
 General_Comments: Data collection through CATT/MEX (Clough System)
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -5334,9 +5334,9 @@ ProjectPhase: During Construction
 Action_DueDate: 1/01/2027
 Close_Out_Date:
 Status: Not Started
-Supporting_Information: To be undertaken daily: �	Report faults
-+ �	Capture any risks for hydrocarbons and hazardous substances
-+ �	Capture calibrations
+Supporting_Information: To be undertaken daily: ?	Report faults
++ ?	Capture any risks for hydrocarbons and hazardous substances
++ ?	Capture calibrations
 General_Comments: Data collection through CATT/MEX (Clough System)
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -5481,14 +5481,14 @@ ProjectPhase: During Construction
 Action_DueDate: 1/01/2027
 Close_Out_Date:
 Status: Not Started
-Supporting_Information: �	These scope of these inspections shall be determined by the OWNER and will ensure compliance to PROJECT environmental approval conditions, confirmed management plans and OWNER management plans. They may include. Hazardous materials storage and handling;
-+ �	Dust and other emissions management;
-+ �	Refuelling activities;
-+ �	Noise management;
-+ �	Stormwater management including sediment basins and ponds;
-+ �	Spills, leaks and contaminated ground;
-+ �	Waste management (liquid and solid); and
-+ �	Environmental incidents and corrective action close out.
+Supporting_Information: ?	These scope of these inspections shall be determined by the OWNER and will ensure compliance to PROJECT environmental approval conditions, confirmed management plans and OWNER management plans. They may include. Hazardous materials storage and handling;
++ ?	Dust and other emissions management;
++ ?	Refuelling activities;
++ ?	Noise management;
++ ?	Stormwater management including sediment basins and ponds;
++ ?	Spills, leaks and contaminated ground;
++ ?	Waste management (liquid and solid); and
++ ?	Environmental incidents and corrective action close out.
 General_Comments: Compliance audits will also be undertaken as per Table 16 and will provide audit reports to the OWNER to demonstrate compliance.
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -5537,7 +5537,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Portside CEMP
 Environmental_Aspect:
 Obligation_Number: PCEMP-195
-Obligation: The Subcontractor is responsible for managing its non-conformances and corrective actions within this system. A �corrective actions� register must be maintained by the Subcontractor and shall record all corrective actions identified and implemented including review of corrective actions and close out details. This register must be maintained on site by the Subcontractor. The close out details shall include Corrective actions where the initial risk level is high or extreme must be prioritised and closed in a timely manner.
+Obligation: The Subcontractor is responsible for managing its non-conformances and corrective actions within this system. A ?corrective actions? register must be maintained by the Subcontractor and shall record all corrective actions identified and implemented including review of corrective actions and close out details. This register must be maintained on site by the Subcontractor. The close out details shall include Corrective actions where the initial risk level is high or extreme must be prioritised and closed in a timely manner.
 Accountability: SCJV
 Responsibility: SCJV - Environmental Lead
 ProjectPhase: Throughout the project
@@ -5650,7 +5650,7 @@ Procedure: MS1180
 Environmental_Aspect: Reporting
 Obligation_Number: PCEMP-199
 Obligation: Notifiable Incident: Condition 5-6 MS1180 - Where the following fauna Outcomes are not achieved or exceeded:
-+ �	clearing in the fauna habitat type identified as Rocky Outcrops shall not exceed 0.16 ha.
++ ?	clearing in the fauna habitat type identified as Rocky Outcrops shall not exceed 0.16 ha.
 Accountability: SCJV
 Responsibility: SCJV - Environmental Lead
 ProjectPhase: Throughout the project
@@ -5874,7 +5874,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Portside CEMP
 Environmental_Aspect: Reporting
 Obligation_Number: PCEMP-207
-Obligation: Responsibility and deadlines as agreed by the incident investigation team for approved close out actions will be clearly identified on the incident and injury investigation report form (0000-ZA-E-02989) managed through InControl (CONTRACTOR�s electronic incident management system). The HSSE Manager will ensure the action items are closed out in an efficient and timely manner.
+Obligation: Responsibility and deadlines as agreed by the incident investigation team for approved close out actions will be clearly identified on the incident and injury investigation report form (0000-ZA-E-02989) managed through InControl (CONTRACTOR?s electronic incident management system). The HSSE Manager will ensure the action items are closed out in an efficient and timely manner.
 Accountability: SCJV
 Responsibility: SCJV - HSSE Manager
 ProjectPhase: Throughout the project
@@ -5930,7 +5930,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Portside CEMP
 Environmental_Aspect: Reporting
 Obligation_Number: PCEMP-209
-Obligation: All personnel working on Portside works shall immediately report all environmental and heritage incidents, and near misses, to the relevant supervisor who shall notify the CONTRACTOR�s HSSE Manager (or their representative). If an incident occurs under a Sub-contractor�s oversight, they are required to complete the CONTRACTOR�s Incident Response Form for data consistency.
+Obligation: All personnel working on Portside works shall immediately report all environmental and heritage incidents, and near misses, to the relevant supervisor who shall notify the CONTRACTOR?s HSSE Manager (or their representative). If an incident occurs under a Sub-contractor?s oversight, they are required to complete the CONTRACTOR?s Incident Response Form for data consistency.
 Accountability: SCJV
 Responsibility: SCJV - Lead Environmental Advisor
 ProjectPhase: Throughout the project
@@ -5965,12 +5965,12 @@ ProjectPhase: Throughout the project
 Action_DueDate: 1/10/2027
 Close_Out_Date:
 Status: Not Started
-Supporting_Information: �	Description of the incident (date, time, location, description)
-+ �	Incident type (environmental impact, non-compliance, potential incident, community complaint)
-+ �	Incident classification
-+ �	Investigation findings
-+ �	Immediate actions taken
-+ �	Actions planned
+Supporting_Information: ?	Description of the incident (date, time, location, description)
++ ?	Incident type (environmental impact, non-compliance, potential incident, community complaint)
++ ?	Incident classification
++ ?	Investigation findings
++ ?	Immediate actions taken
++ ?	Actions planned
 General_Comments: Section 8.1.3 of PCEMP
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -5991,7 +5991,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: PPA requirement
 Environmental_Aspect: Reporting
 Obligation_Number: PCEMP-211
-Obligation: Any incident that has caused (or potentially caused) any environmental contamination or harm beyond the boundary of the lease with PPA is required to be reported to PPA as soon as practicable. The incident should be reported verbally soon as practicable (as per below) and an Incident Report Form should be submitted as soon as practicable via the Incident Management Portal on PPA�s website. PPA�s Incident Management Procedure can be used to support reporting requirements.
+Obligation: Any incident that has caused (or potentially caused) any environmental contamination or harm beyond the boundary of the lease with PPA is required to be reported to PPA as soon as practicable. The incident should be reported verbally soon as practicable (as per below) and an Incident Report Form should be submitted as soon as practicable via the Incident Management Portal on PPA?s website. PPA?s Incident Management Procedure can be used to support reporting requirements.
 Accountability: SCJV
 Responsibility: SCJV - Lead Environmental Advisor
 ProjectPhase: Throughout the project
@@ -5999,8 +5999,8 @@ Action_DueDate: 1/10/2027
 Close_Out_Date:
 Status: Not Started
 Supporting_Information: Verbal Incident Reporting to PPA:
-+ �	During business hours � to the PPA Representative, or to PPA�s Environment and Heritage team via 62174 7112 (PPA main switch)
-+ �	Outside of business hours � to the PPA Security Team (089159 6584)
++ ?	During business hours ? to the PPA Representative, or to PPA?s Environment and Heritage team via 62174 7112 (PPA main switch)
++ ?	Outside of business hours ? to the PPA Security Team (089159 6584)
 General_Comments: Section 8.1.4 of PCEMP
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -6056,16 +6056,16 @@ ProjectPhase: Exceedance/Non-Conformance
 Action_DueDate: 1/01/2027
 Close_Out_Date:
 Status: Not Started
-Supporting_Information: �	Stop/prevent any activity in the area;
-+ �	Place signage and barricade area � make area safe. Do not touch or disturb the item/material;
-+ �	Report the Unexpected Occurrence/Finding to Supervisor and PPA Representative
-+ �	Record the location, visual appearance, odour, and extent, type of accident or material and mode of discovering the material to Supervisor and PPA Representative.
-+ �	Obtain assistance from a suitably qualified practitioner in identifying the potential hazard to human health or the environment in accordance with regulatory requirements. For cultural heritage items refer to OWNER�s Cultural Heritage Management Plan (CHMP);
-+ �	Establish management actions in compliance with regulatory requirements;
-+ �	Obtain the approval from HSSE Manager and PPA Representative and of the relevant regulator for the proposed management actions;
-+ �	Implement the approval management action plan and seek on-going advice as necessary;
-+ �	Document the findings and compliance with the approved action plan and provide documentation to HSSE Manager and PPA Representative; and
-+ �	Update the Portside CEMP procedures and controls as required
+Supporting_Information: ?	Stop/prevent any activity in the area;
++ ?	Place signage and barricade area ? make area safe. Do not touch or disturb the item/material;
++ ?	Report the Unexpected Occurrence/Finding to Supervisor and PPA Representative
++ ?	Record the location, visual appearance, odour, and extent, type of accident or material and mode of discovering the material to Supervisor and PPA Representative.
++ ?	Obtain assistance from a suitably qualified practitioner in identifying the potential hazard to human health or the environment in accordance with regulatory requirements. For cultural heritage items refer to OWNER?s Cultural Heritage Management Plan (CHMP);
++ ?	Establish management actions in compliance with regulatory requirements;
++ ?	Obtain the approval from HSSE Manager and PPA Representative and of the relevant regulator for the proposed management actions;
++ ?	Implement the approval management action plan and seek on-going advice as necessary;
++ ?	Document the findings and compliance with the approved action plan and provide documentation to HSSE Manager and PPA Representative; and
++ ?	Update the Portside CEMP procedures and controls as required
 General_Comments: Section 8.2 of PCEMP
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -6093,15 +6093,15 @@ ProjectPhase: Exceedance/Non-Conformance
 Action_DueDate: 1/01/2027
 Close_Out_Date:
 Status: Not Started
-Supporting_Information: �	Work is immediately stopped in the area of the suspected object and the area is to be cordoned off to 5m around the suspected object. Signposts shall be used to inform personnel.
-+ �	Any suspected Aboriginal Site identified during the construction phase must be reported to the CONTRACTOR Construction Manager and the OWNER Environment and Heritage Manager immediately, and any such site identified must not be further disturbed until the OWNER and the CONTRACTOR obtains all necessary approvals from appropriate authorities and external stakeholders. A written copy of approvals must be kept onsite.
-+ �	The OWNER will consult with MAC and engage the services of an archaeologist to assess the archaeological material and provide a report for the OWNER.
-+ �	For previously unidentified items of potential Aboriginal heritage significance, an assessment of the significance of the item(s) and determination of appropriate mitigation measures, including when Works can re-commence, should be undertaken by a suitably qualified and experienced archaeologist in consultation with MAC.
-+ �	Assessment whether the Aboriginal Heritage impacts are consistent with approved impacts of the PROJECT.
-+ �	The OWNER will form a view of what course of action is to be followed. The OWNER Environment and Heritage Manager (or delegated representative) will advise all PROJECT personnel when the above process has been completed and if work can continue on the area.
-+ �	The CONTRACTOR will comply with Law in relation to the Aboriginal Site, including obtaining section 18 consent under the AH Act where required.
-+ �	Obtain OWNER approval prior to all consultations with Aboriginal representatives (MAC) in relation to the Aboriginal Site.
-+ �	Personnel working in the area shall be notified, to ensure the site is not damaged.
+Supporting_Information: ?	Work is immediately stopped in the area of the suspected object and the area is to be cordoned off to 5m around the suspected object. Signposts shall be used to inform personnel.
++ ?	Any suspected Aboriginal Site identified during the construction phase must be reported to the CONTRACTOR Construction Manager and the OWNER Environment and Heritage Manager immediately, and any such site identified must not be further disturbed until the OWNER and the CONTRACTOR obtains all necessary approvals from appropriate authorities and external stakeholders. A written copy of approvals must be kept onsite.
++ ?	The OWNER will consult with MAC and engage the services of an archaeologist to assess the archaeological material and provide a report for the OWNER.
++ ?	For previously unidentified items of potential Aboriginal heritage significance, an assessment of the significance of the item(s) and determination of appropriate mitigation measures, including when Works can re-commence, should be undertaken by a suitably qualified and experienced archaeologist in consultation with MAC.
++ ?	Assessment whether the Aboriginal Heritage impacts are consistent with approved impacts of the PROJECT.
++ ?	The OWNER will form a view of what course of action is to be followed. The OWNER Environment and Heritage Manager (or delegated representative) will advise all PROJECT personnel when the above process has been completed and if work can continue on the area.
++ ?	The CONTRACTOR will comply with Law in relation to the Aboriginal Site, including obtaining section 18 consent under the AH Act where required.
++ ?	Obtain OWNER approval prior to all consultations with Aboriginal representatives (MAC) in relation to the Aboriginal Site.
++ ?	Personnel working in the area shall be notified, to ensure the site is not damaged.
 General_Comments:
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -6129,18 +6129,18 @@ ProjectPhase: Exceedance/Non-Conformance
 Action_DueDate: 1/01/2027
 Close_Out_Date:
 Status: Not Started
-Supporting_Information: �	Where suspected human skeletal material is encountered during the construction activities, the CONTRACTOR and subcontractors must cease activities in the area, delineate off the area to a distance of 5 metres around the object, and the responsible work group will immediately notify the CONTRACTOR Environmental Lead who will notify the occurrence to the OWNER Environment and Heritage Manager, Western Australian Police Service and the Department of Planning, Land and Heritage.
-+ �	The CONTRACTOR shall ensure the remains remain in situ and undisturbed until the Registrar or WA Police decides on how to proceed in respect of the remains.
-+ �	The OWNER will, at its expense, manage the remains in accordance with the Registrar�s decision and notify the whereabouts of the remains to the Registrar.
-+ �	The OWNER Environment and Heritage Manager (or an approved CONTRACTOR delegate for the OWNER) will notify the relevant person(s) as set out below:
-+ �	Under Section 17 of the Coroners Act 1996 the local Police / Coroner�s office must be notified.
-+ �	Only if human remains are suspected by the Police/Coroner�s office to be Aboriginal, the Registrar (canceliered) as well as the Federal Minister for Aboriginal Affairs needs to be informed.
-+ �	Only if human remains are suspected by the Police/Coroner�s office to be Aboriginal, at the same time as other individuals and agencies are contacted, the OWNER will notify the MAC of the discovery. MAC is to be consulted as to the management of the material once Aboriginal origin has been determined. Appropriate arrangements are to be made for nominated Aboriginal people to attend the site, if not already present.
-+ �	A suitable keeping place or re-interment location shall be agreed between the OWNER, MAC and the DIA.
-+ �	All PROJECT personnel must be informed of this requirement and of the requirement to cease work in the area if such material is uncovered.
-+ �	Work can only recommence once full clearance from the relevant Authority is obtained.
-+ �	Collecting of items of cultural heritage is prohibited across the PROJECT site and outside of the PDE.
-+ �	Controls will be implemented to prevent sedimentation, run-off, and change of drainage into protected cultural sites.
+Supporting_Information: ?	Where suspected human skeletal material is encountered during the construction activities, the CONTRACTOR and subcontractors must cease activities in the area, delineate off the area to a distance of 5 metres around the object, and the responsible work group will immediately notify the CONTRACTOR Environmental Lead who will notify the occurrence to the OWNER Environment and Heritage Manager, Western Australian Police Service and the Department of Planning, Land and Heritage.
++ ?	The CONTRACTOR shall ensure the remains remain in situ and undisturbed until the Registrar or WA Police decides on how to proceed in respect of the remains.
++ ?	The OWNER will, at its expense, manage the remains in accordance with the Registrar?s decision and notify the whereabouts of the remains to the Registrar.
++ ?	The OWNER Environment and Heritage Manager (or an approved CONTRACTOR delegate for the OWNER) will notify the relevant person(s) as set out below:
++ ?	Under Section 17 of the Coroners Act 1996 the local Police / Coroner?s office must be notified.
++ ?	Only if human remains are suspected by the Police/Coroner?s office to be Aboriginal, the Registrar (canceliered) as well as the Federal Minister for Aboriginal Affairs needs to be informed.
++ ?	Only if human remains are suspected by the Police/Coroner?s office to be Aboriginal, at the same time as other individuals and agencies are contacted, the OWNER will notify the MAC of the discovery. MAC is to be consulted as to the management of the material once Aboriginal origin has been determined. Appropriate arrangements are to be made for nominated Aboriginal people to attend the site, if not already present.
++ ?	A suitable keeping place or re-interment location shall be agreed between the OWNER, MAC and the DIA.
++ ?	All PROJECT personnel must be informed of this requirement and of the requirement to cease work in the area if such material is uncovered.
++ ?	Work can only recommence once full clearance from the relevant Authority is obtained.
++ ?	Collecting of items of cultural heritage is prohibited across the PROJECT site and outside of the PDE.
++ ?	Controls will be implemented to prevent sedimentation, run-off, and change of drainage into protected cultural sites.
 General_Comments:
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -6168,11 +6168,11 @@ ProjectPhase: Throughout the project
 Action_DueDate: 1/10/2027
 Close_Out_Date:
 Status: Not Started
-Supporting_Information: �	Contact details of the party raising the concern
-+ �	Details of the issue/incident
-+ �	Action taken or required
-+ �	Response of the party raising the concern to the action taken
-+ �	Actions taken to prevent reoccurrence.
+Supporting_Information: ?	Contact details of the party raising the concern
++ ?	Details of the issue/incident
++ ?	Action taken or required
++ ?	Response of the party raising the concern to the action taken
++ ?	Actions taken to prevent reoccurrence.
 + Environmental complaints will be notified to the OWNER representative within 24 hours of being received.
 General_Comments:
 Compliance_Comments: Verify compliance through audits and reporting.
@@ -6194,7 +6194,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Portside CEMP
 Environmental_Aspect: Administration
 Obligation_Number: PCEMP-218
-Obligation: Should the OWNER raise an issue or complaint regarding CONTRACTOR�s or Sub-Contractors, this will be issued to the CONTRACTOR. The CONTRACTOR Project Manager is responsible for maintaining a complaints register.
+Obligation: Should the OWNER raise an issue or complaint regarding CONTRACTOR?s or Sub-Contractors, this will be issued to the CONTRACTOR. The CONTRACTOR Project Manager is responsible for maintaining a complaints register.
 Accountability: SCJV
 Responsibility: SCJV - Project Manager
 ProjectPhase: Throughout the project
@@ -6222,7 +6222,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure:
 Environmental_Aspect: Administration
 Obligation_Number: PCEMP-219
-Obligation: All personnel�s behavioural non-conformances displayed on work sites (including breaches of regulations, procedures, and processes) will be managed in accordance with Discipline and Termination Procedure (CORP-HR-PR-G-0012). Behavioural non-compliances will be reviewed by the SLT utilising the Incident Review Presentation Template to identify organisational lessons and improvements.
+Obligation: All personnel?s behavioural non-conformances displayed on work sites (including breaches of regulations, procedures, and processes) will be managed in accordance with Discipline and Termination Procedure (CORP-HR-PR-G-0012). Behavioural non-compliances will be reviewed by the SLT utilising the Incident Review Presentation Template to identify organisational lessons and improvements.
 Accountability: SCJV
 Responsibility: SCJV - Project Manager
 ProjectPhase: Throughout the project
@@ -6250,7 +6250,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure:
 Environmental_Aspect: Administration
 Obligation_Number: PCEMP-220
-Obligation: The PROJECT�s Emergency Preparedness and Response Plan (0000-ZA-E-09711) shall be implemented by the CONTRACTOR within the PDE, in relation to emergency preparedness and response.
+Obligation: The PROJECT?s Emergency Preparedness and Response Plan (0000-ZA-E-09711) shall be implemented by the CONTRACTOR within the PDE, in relation to emergency preparedness and response.
 Accountability: SCJV
 Responsibility: SCJV - Project Manager
 ProjectPhase: Throughout the project
@@ -6285,13 +6285,13 @@ ProjectPhase: Throughout the project
 Action_DueDate: 1/10/2027
 Close_Out_Date:
 Status: Not Started
-Supporting_Information: �	Prevent spill from spreading by using booms/socks in spill kit or by making a makeshift bund and control access to spill area.
-+ �	Soak up the spill with absorbent material and ensure the surface is left clean. Collect used absorbent material in a heavy plastic bag or other suitable container and arrange for disposal at an appropriate facility.
-+ �	Soils contaminated by spills are to be removed to an appropriate stockpile location for remediation or disposal.
-+ �	Spills are to be contained immediately and remediated within 24 hours to minimise the potential for contaminants to enter groundwater, marine environments or land
-+ �	If a spill cannot be cleaned up immediately, ensure it is appropriately isolated (controlled) and contained.
-+ �	Arrange to have a suitable third party available to attend any major spill clean-up, not able to be adequately addressed with site spill kits.
-+ �	Report all spills as an environmental incident using InControl system.
+Supporting_Information: ?	Prevent spill from spreading by using booms/socks in spill kit or by making a makeshift bund and control access to spill area.
++ ?	Soak up the spill with absorbent material and ensure the surface is left clean. Collect used absorbent material in a heavy plastic bag or other suitable container and arrange for disposal at an appropriate facility.
++ ?	Soils contaminated by spills are to be removed to an appropriate stockpile location for remediation or disposal.
++ ?	Spills are to be contained immediately and remediated within 24 hours to minimise the potential for contaminants to enter groundwater, marine environments or land
++ ?	If a spill cannot be cleaned up immediately, ensure it is appropriately isolated (controlled) and contained.
++ ?	Arrange to have a suitable third party available to attend any major spill clean-up, not able to be adequately addressed with site spill kits.
++ ?	Report all spills as an environmental incident using InControl system.
 General_Comments:
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -6368,7 +6368,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Portside CEMP
 Environmental_Aspect: Reporting
 Obligation_Number: PCEMP-224
-Obligation: The CONTRACTOR Lead Environmental Advisor will compile the below data into a report template for a PROJECT Environmental Monthly Report. It is the CONTRACTOR�s responsibility to ensure the template reflects latest approval conditions. The report fulfils the Contractor Management System and will be provided to the owner to support OWNER reporting requirements. The Environmental Monthly Report shall be provided to the OWNER on the first week of the new calendar month.
+Obligation: The CONTRACTOR Lead Environmental Advisor will compile the below data into a report template for a PROJECT Environmental Monthly Report. It is the CONTRACTOR?s responsibility to ensure the template reflects latest approval conditions. The report fulfils the Contractor Management System and will be provided to the owner to support OWNER reporting requirements. The Environmental Monthly Report shall be provided to the OWNER on the first week of the new calendar month.
 Accountability: SCJV
 Responsibility: SCJV - Lead Environmental Advisor
 ProjectPhase: Throughout the project
@@ -6376,25 +6376,25 @@ Action_DueDate: 31/08/2024
 Close_Out_Date:
 Status: Not Started
 Supporting_Information: The Monthly Environmental Report should include:
-+ �	Description of construction activities undertaken for the month including a summary of current key environmental issues and risks
-+ �	An updated Environmental Impacts and Aspects Register
-+ �	Environmental Approvals Register, including status and copies of any obtained environmental approvals and associated conditions.
-+ �	A summary of spoil type and classification, spoil quantity and disposal locations for the month, any unexpected finds and associated management actions (where applicable).
-+ �	If dewatering is deemed necessary, a dewatering plan will be developed to outline reporting requirements.
-+ �	Records of:
-+ �	Water usage (potable vs non-potable)
-+ �	Fuel usage (L)
-+ �	Waste tonnage (T) and wastewater volumes (m3) including waste segregation � landfill, recyclables, hazardous wastes, hydrocarbons
-+ �	Chemical usage (L)
-+ �	Summary of environmental and heritage incidents and corrective actions
-+ �	Summary of audit / inspection findings and corrective actions undertaken
-+ �	Summary of community and Stakeholder complaints
-+ �	Summary of key environmental risks for the next period and proposed mitigation measures
-+ �	Summary of environmental monitoring undertaken for the month and a copy of any environmental Reports or data
-+ �	Summary of environmental inductions, training or awareness sessions
-+ �	Relevant spatial data
-+ �	Additional Condition requirements of MS 1180 or other environmental approvals for the PROJECT.
-+ �	NGERS data that could be required (i.e. Fuel usage, Energy use etc.)
++ ?	Description of construction activities undertaken for the month including a summary of current key environmental issues and risks
++ ?	An updated Environmental Impacts and Aspects Register
++ ?	Environmental Approvals Register, including status and copies of any obtained environmental approvals and associated conditions.
++ ?	A summary of spoil type and classification, spoil quantity and disposal locations for the month, any unexpected finds and associated management actions (where applicable).
++ ?	If dewatering is deemed necessary, a dewatering plan will be developed to outline reporting requirements.
++ ?	Records of:
++ ?	Water usage (potable vs non-potable)
++ ?	Fuel usage (L)
++ ?	Waste tonnage (T) and wastewater volumes (m3) including waste segregation ? landfill, recyclables, hazardous wastes, hydrocarbons
++ ?	Chemical usage (L)
++ ?	Summary of environmental and heritage incidents and corrective actions
++ ?	Summary of audit / inspection findings and corrective actions undertaken
++ ?	Summary of community and Stakeholder complaints
++ ?	Summary of key environmental risks for the next period and proposed mitigation measures
++ ?	Summary of environmental monitoring undertaken for the month and a copy of any environmental Reports or data
++ ?	Summary of environmental inductions, training or awareness sessions
++ ?	Relevant spatial data
++ ?	Additional Condition requirements of MS 1180 or other environmental approvals for the PROJECT.
++ ?	NGERS data that could be required (i.e. Fuel usage, Energy use etc.)
 General_Comments:
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -6451,16 +6451,16 @@ Action_DueDate: 31/10/2024
 Close_Out_Date:
 Status: Not Started
 Supporting_Information: The report must include data relating to the following:
-+ �	Scope 1 emissions - (direct release of GHG�s into the atmosphere as a direct result of an activity) (i.e. Fuel consumption, metal products, wastes).
-+ �	Source of emission.
-+ �	The methods in the NGER Measurement Determination used to estimate the emissions.
-+ �	The total amount of GHG emitted from the source.
-+ �	Scope 2 emissions - (the release of a greenhouse gas into the atmosphere as a direct result of one or more activities that generate electricity, heating, cooling or steam that is consumed by the facility but that do not form part of the facility).
-+ �	Reportable when the electricity is consumed at the main electricity grid of WA.
-+ �	Consumed from a network other than the main grid.
-+ �	Consumed from a direct connection from the producer.
-+ �	Energy production (extraction or capture of energy from natural sources and manufacture of energy by the conversion of energy from one form into another and;
-+ �	Energy consumption.
++ ?	Scope 1 emissions - (direct release of GHG?s into the atmosphere as a direct result of an activity) (i.e. Fuel consumption, metal products, wastes).
++ ?	Source of emission.
++ ?	The methods in the NGER Measurement Determination used to estimate the emissions.
++ ?	The total amount of GHG emitted from the source.
++ ?	Scope 2 emissions - (the release of a greenhouse gas into the atmosphere as a direct result of one or more activities that generate electricity, heating, cooling or steam that is consumed by the facility but that do not form part of the facility).
++ ?	Reportable when the electricity is consumed at the main electricity grid of WA.
++ ?	Consumed from a network other than the main grid.
++ ?	Consumed from a direct connection from the producer.
++ ?	Energy production (extraction or capture of energy from natural sources and manufacture of energy by the conversion of energy from one form into another and;
++ ?	Energy consumption.
 + NGERS reporting shall be in accordance with the WEBUILD NGERS reporting tool.
 General_Comments:
 Compliance_Comments: Verify compliance through audits and reporting.
@@ -6482,7 +6482,7 @@ Primary_Environmental_Mechanism: Portside CEMP
 Procedure: Portside CEMP
 Environmental_Aspect: Audits and Inspections
 Obligation_Number: PCEMP-227
-Obligation: The CONTRACTOR will conduct Audit�s as per Table 16. Non-conformances will be recorded as per the EMS and this Portside CEMP. A copy of the audit reports will be provided to the OWNER with supporting information once actions have been closed.
+Obligation: The CONTRACTOR will conduct Audit?s as per Table 16. Non-conformances will be recorded as per the EMS and this Portside CEMP. A copy of the audit reports will be provided to the OWNER with supporting information once actions have been closed.
 Accountability: SCJV
 Responsibility: SCJV - Lead Environmental Advisor
 ProjectPhase: Throughout the project
@@ -6657,9 +6657,9 @@ ProjectPhase: Throughout the project
 Action_DueDate: 1/10/2027
 Close_Out_Date:
 Status: Not Started
-Supporting_Information: �	Immediately notify the OWNER Environmental & Heritage Manager.
-+ �	Provide all information required by the OWNER Environmental & Heritage Manager in a timely manner to allow the OWNER to report the change / incident to DWER.
-+ �	Provide all information required by the OWNER in a timely manner to allow the OWNER to prepare and provide a report to the CEO of DWER in accordance with the conditions 4-8 (4), 5-6 (4), 8-5 (4) (9-5 (3), 9-6 (4), 10-2 (4) MS 1180.
+Supporting_Information: ?	Immediately notify the OWNER Environmental & Heritage Manager.
++ ?	Provide all information required by the OWNER Environmental & Heritage Manager in a timely manner to allow the OWNER to report the change / incident to DWER.
++ ?	Provide all information required by the OWNER in a timely manner to allow the OWNER to prepare and provide a report to the CEO of DWER in accordance with the conditions 4-8 (4), 5-6 (4), 8-5 (4) (9-5 (3), 9-6 (4), 10-2 (4) MS 1180.
 General_Comments:
 Compliance_Comments: Verify compliance through audits and reporting.
 NonConformance_Comments:
@@ -7513,7 +7513,7 @@ Environmental_Aspect: Design and Construction requirements
 Obligation_Number: Condition 8.1(a)
 Obligation: Infrastructure and equipment requirements:
 + (a) The mobile crushing and screening plant must only operate at:
-+ (i) locations �Option 1� or �Option 2� specified in Figure 1; and
++ (i) locations ?Option 1? or ?Option 2? specified in Figure 1; and
 + (ii) locations that are greater than 60 m from heritage sites (as depicted in Figure 1);
 Accountability: SCJV
 Responsibility:

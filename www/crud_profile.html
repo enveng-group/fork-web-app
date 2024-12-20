@@ -3,8 +3,17 @@
 
 <head>
   <title>User Profile Management</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
   <style type="text/css">
+    :root {
+      --primary-color: #2f4f2f;
+      --background-color: #f4f7f2;
+      --text-color: #000;
+      --error-color: #ff0000;
+      --warning-color: #fff3cd;
+      --border-color: #ddd;
+    }
+
     /* ...existing styles... */
 
     .user-table {
@@ -39,6 +48,26 @@
       border: 1px solid #ffd700;
       margin: 10px 0;
       display: none;
+    }
+
+    .error {
+      color: #ff0000;
+      font-weight: bold;
+      padding: 10px;
+      display: none;
+    }
+
+    .form-group {
+      margin: 10px 0;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      box-sizing: border-box;
     }
   </style>
   <script type="text/javascript">
@@ -91,28 +120,41 @@
     }
 
     function loadUsers() {
+      "use strict";
       var xhr = new XMLHttpRequest();
       xhr.open("GET", "/users", true);
       xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          var users = JSON.parse(xhr.responseText);
-          var table = document.getElementById("userTable");
-          var html = "<tr><th>Username</th><th>Full Name</th><th>Project</th><th>Actions</th></tr>";
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            try {
+              var lines = xhr.responseText.split("\n");
+              var table = document.getElementById("userTable");
+              var html = "<tr><th>Username</th><th>Full Name</th>" +
+                "<th>Home Directory</th><th>Shell</th>" +
+                "<th>Admin</th><th>Actions</th></tr>";
 
-          users.forEach(function (user) {
-            html += "<tr><td>" + user.username + "</td><td>" +
-              user.fullname + "</td><td>" + user.project +
-              "</td><td>" +
-              "<button class='button-small' onclick='editUser(\"" +
-              user.username + "\", \"" + user.fullname + "\", \"" +
-              user.email + "\", \"" + user.project + "\")'>Edit</button> " +
-              "<button class='button-small' onclick='resetPassword(\"" +
-              user.username + "\")'>Reset Password</button> " +
-              "<button class='button-small' onclick='deleteUser(\"" +
-              user.username + "\")'>Delete</button></td></tr>";
-          });
-
-          table.innerHTML = html;
+              lines.forEach(function (line) {
+                if (line.trim() && !line.startsWith('#')) {
+                  var parts = line.split(':');
+                  if (parts.length >= 7) {  // Changed from 8 to 7
+                    var isAdmin = parts.length > 7 ? parts[7].trim() === "1" : "0";
+                    html += "<tr><td>" + parts[0] + "</td><td>" +
+                      parts[4] + "</td><td>" + parts[5] + "</td><td>" +
+                      parts[6] + "</td><td>" + (isAdmin ? "Yes" : "No") +
+                      "</td><td>" +
+                      "<button class='button-small' onclick='editUser(\"" +
+                      parts[0] + "\", \"" + parts[4] + "\", \"\", \"\")'>Edit</button> " +
+                      "<button class='button-small' onclick='resetPassword(\"" +
+                      parts[0] + "\")'>Reset Password</button></td></tr>";
+                  }
+                }
+              });
+              table.innerHTML = html;
+            } catch (e) {
+              console.error("Error:", e, "Response:", xhr.responseText);
+              alert("Error loading users");
+            }
+          }
         }
       };
       xhr.send(null);
@@ -149,96 +191,100 @@
     }
 
     function editUser(username, fullname, email, project) {
-        document.getElementById("newUsername").value = username;
-        document.getElementById("newUsername").readOnly = true;
-        document.getElementById("newFullname").value = fullname;
-        document.getElementById("newEmail").value = email;
-        document.getElementById("newProject").value = project;
-        document.getElementById("submitBtn").value = "Update User";
-        document.getElementById("createUserForm").onsubmit = function(e) {
-            e.preventDefault();
-            return updateExistingUser();
-        };
+      document.getElementById("newUsername").value = username;
+      document.getElementById("newUsername").readOnly = true;
+      document.getElementById("newFullname").value = fullname;
+      document.getElementById("newEmail").value = email;
+      document.getElementById("newProject").value = project;
+      document.getElementById("submitBtn").value = "Update User";
+      document.getElementById("createUserForm").onsubmit = function (e) {
+        e.preventDefault();
+        return updateExistingUser();
+      };
     }
 
     function updateExistingUser() {
-        var username = document.getElementById("newUsername").value;
-        var fullname = document.getElementById("newFullname").value;
-        var email = document.getElementById("newEmail").value;
-        var project = document.getElementById("newProject").value;
+      var username = document.getElementById("newUsername").value;
+      var fullname = document.getElementById("newFullname").value;
+      var email = document.getElementById("newEmail").value;
+      var project = document.getElementById("newProject").value;
 
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", "/update?" +
-            "username=" + encodeURIComponent(username) +
-            "&fullname=" + encodeURIComponent(fullname) +
-            "&email=" + encodeURIComponent(email) +
-            "&project=" + encodeURIComponent(project), true);
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/update?" +
+        "username=" + encodeURIComponent(username) +
+        "&fullname=" + encodeURIComponent(fullname) +
+        "&email=" + encodeURIComponent(email) +
+        "&project=" + encodeURIComponent(project), true);
 
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    alert("User updated successfully!");
-                    document.getElementById("newUsername").readOnly = false;
-                    document.getElementById("createUserForm").reset();
-                    document.getElementById("submitBtn").value = "Create User";
-                    document.getElementById("createUserForm").onsubmit = createUser;
-                    loadUsers();
-                } else {
-                    alert("Error updating user");
-                }
-            }
-        };
-        xhr.send(null);
-        return false;
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            alert("User updated successfully!");
+            document.getElementById("newUsername").readOnly = false;
+            document.getElementById("createUserForm").reset();
+            document.getElementById("submitBtn").value = "Create User";
+            document.getElementById("createUserForm").onsubmit = createUser;
+            loadUsers();
+          } else {
+            alert("Error updating user");
+          }
+        }
+      };
+      xhr.send(null);
+      return false;
     }
 
     /* Add to all HTML files that need session management */
     function getCookie(name) {
-        var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-        if (match) return match[2];
-        return '';
+      var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      if (match) return match[2];
+      return '';
     }
 
     function checkSession() {
-        var username = getCookie('username');
-        if (!username) {
-            alert("Session expired - please login again");
-            window.location.href = 'index.html';
-            return false;
-        }
-        return true;
+      var username = getCookie('username');
+      if (!username) {
+        alert("Session expired - please login again");
+        window.location.href = 'index.html';
+        return false;
+      }
+      return true;
     }
 
     function goBackToProfile() {
-        var username = getCookie('username');
-        if (!username) {
-            window.location.href = 'dashboard.html';
-        } else {
-            window.location.href = 'profile.html?username=' + encodeURIComponent(username);
-        }
+      var username = getCookie('username');
+      if (!username) {
+        window.location.href = 'dashboard.html';
+      } else {
+        window.location.href = 'profile.html?username=' + encodeURIComponent(username);
+      }
     }
 
     /* Add session check to window.onload */
-    window.onload = function() {
-        if (!checkSession()) return;
-        loadUsers();
+    window.onload = function () {
+      if (!checkSession()) return;
+      loadUsers();
     };
 
     /* Add to all pages with navigation */
     function navigateToProfile() {
-        if (!checkSession()) return;
-        var username = getCookie('username');
-        window.location.href = 'profile.html?username=' + encodeURIComponent(username);
+      if (!checkSession()) return;
+      var username = getCookie('username');
+      window.location.href = 'profile.html?username=' + encodeURIComponent(username);
     }
 
     function navigateToProject(url) {
-        if (!checkSession()) return;
-        window.location.href = url;
+      if (!checkSession()) return;
+      window.location.href = url;
     }
   </script>
 </head>
 
 <body>
+  <div role="main" class="container">
+    <!-- main content -->
+  </div>
+
   <div class="main">
     <h1>User Profile Management</h1>
 
@@ -270,9 +316,7 @@
 
       <div class="button-group">
         <input type="submit" id="submitBtn" value="Create User">
-        <button type="button"
-                onclick="goBackToProfile();"
-                class="nav-button">Back to Profile</button>
+        <button type="button" onclick="goBackToProfile();" class="nav-button">Back to Profile</button>
       </div>
     </form>
 
@@ -281,11 +325,17 @@
       <tr>
         <th>Username</th>
         <th>Full Name</th>
-        <th>Project</th>
+        <th>Home Directory</th>
+        <th>Shell</th>
+        <th>Admin</th>
         <th>Actions</th>
       </tr>
     </table>
   </div>
+
+  <!-- Add ARIA labels -->
+  <button aria-label="Navigate to Profile" onclick="navigateToProfile()">Profile</button>
+  <button aria-label="Go Back" onclick="goBack()">Back</button>
 </body>
 
 </html>

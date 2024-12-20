@@ -3,13 +3,23 @@
 
 <head>
   <title>Login - Secure Access</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
   <style type="text/css">
+    :root {
+      --primary-color: #2f4f2f;
+      --background-color: #f4f7f2;
+      --text-color: #000;
+      --error-color: #ff0000;
+      --warning-color: #fff3cd;
+      --border-color: #ddd;
+    }
+
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 0;
       background-color: #f4f7f2;
+      font-size: 16px;
     }
 
     .main {
@@ -24,17 +34,20 @@
       margin: 10px 0;
     }
 
+    input[type="text"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      box-sizing: border-box;
+    }
+
     .error {
       color: #ff0000;
       font-weight: bold;
+      padding: 10px;
       display: none;
-    }
-
-    input[type="text"],
-    input[type="password"] {
-      width: 100%;
-      padding: 5px;
-      margin: 5px 0;
     }
 
     input[type="submit"],
@@ -51,6 +64,94 @@
       text-align: center;
       color: #666;
     }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background: #2f4f2f;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    button,
+    input[type="button"],
+    input[type="submit"] {
+      padding: 8px 15px;
+      background: #2f4f2f;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+
+    .container {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      margin-top: 60px;
+    }
+
+    /* Tablet Breakpoint */
+    @media screen and (min-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+    }
+
+    /* Desktop Breakpoint */
+    @media screen and (min-width: 1024px) {
+      .container {
+        max-width: 1200px;
+        margin: 60px auto 0;
+      }
+    }
+
+    .user-nav {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 5px;
+    }
+
+    .nav-button {
+      padding: 8px 12px;
+      background: #fff;
+      color: #2f4f2f;
+      border: 1px solid #fff;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+
+    #header {
+      background: #2f4f2f;
+      color: #fff;
+      padding: 15px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+
+    #header h1 {
+      margin: 0;
+      font-size: 1.2em;
+      padding-right: 100px;
+    }
   </style>
   <script type="text/javascript">
     "use strict";
@@ -61,16 +162,17 @@
 
       var xhr = new XMLHttpRequest();
       xhr.open("GET", "/auth?username=" + encodeURIComponent(username) +
-                     "&password=" + encodeURIComponent(password), false);
+        "&password=" + encodeURIComponent(password), false);
       xhr.send(null);
 
       if (xhr.status === 200) {
-        // Store username in cookie on successful login
-        document.cookie = "username=" + encodeURIComponent(username) +
-                         ";path=/;max-age=3600";
         errorDiv.style.display = "none";
+        // Set cookie for the session
+        document.cookie = "username=" + encodeURIComponent(username) +
+          ";path=/;max-age=3600";  // Expires in 1 hour
+        // Redirect after successful auth
         window.location.href = 'dashboard.html';
-        return false; // Prevent form submission
+        return false;
       } else {
         errorDiv.style.display = "block";
         return false;
@@ -89,7 +191,7 @@
 
       var xhr = new XMLHttpRequest();
       xhr.open("GET", "/register?username=" + encodeURIComponent(username) +
-                      "&password=" + encodeURIComponent(password), false);
+        "&password=" + encodeURIComponent(password), false);
       xhr.send(null);
 
       if (xhr.status === 200) {
@@ -102,71 +204,44 @@
         return false;
       }
     }
-
-    function getCookie(name) {
-      var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-      if (match) return match[2];
-      return '';
-    }
-
-    function checkSession() {
-      var username = getCookie('username');
-      if (!username) {
-          alert("Session expired - please login again");
-          window.location.href = 'index.html';
-          return false;
-      }
-      return true;
-    }
-
-    /* Add to all pages with navigation */
-    function navigateToProfile() {
-        if (!checkSession()) return;
-        var username = getCookie('username');
-        window.location.href = 'profile.html?username=' + encodeURIComponent(username);
-    }
-
-    function navigateToProject(url) {
-        if (!checkSession()) return;
-        window.location.href = url;
-    }
-
-    window.onload = function() {
-      if (!checkSession()) return;
-      // ... existing onload code ...
-    };
   </script>
 </head>
 
 <body>
-  <div class="main">
-    <h1>Secure Login</h1>
+  <div id="header">
+    <h1>Secure Access</h1>
+  </div>
+  <div role="main" class="container">
+    <div class="main">
+      <h1>Secure Login</h1>
 
-    <form id="loginForm" method="get" action="dashboard.html" onsubmit="return validateForm();">
-      <div id="login-error" class="error">
-        Invalid username or password
+      <form id="loginForm" onsubmit="return validateForm();">
+        <div id="login-error" class="error">
+          Invalid username or password
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input type="text" id="username" name="username">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password">
+        </div>
+
+        <div class="form-group">
+          <input type="submit" value="Login">
+          <input type="reset" value="Clear" onclick="clearError();">
+        </div>
+      </form>
+
+      <div class="footer">
+        <p>Protected by security monitoring</p>
+        <p>Need help? Contact: <a href="mailto:support@example.com">support@example.com</a></p>
       </div>
-
-      <div class="form-group">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username">
-      </div>
-
-      <div class="form-group">
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password">
-      </div>
-
-      <div class="form-group">
-        <input type="submit" value="Login">
-        <input type="reset" value="Clear" onclick="clearError();">
-      </div>
-    </form>
-
-    <div class="footer">
-      <p>Protected by security monitoring</p>
-      <p>Need help? Contact: <a href="mailto:support@example.com">support@example.com</a></p>
     </div>
+    <!-- main content -->
   </div>
 </body>
 

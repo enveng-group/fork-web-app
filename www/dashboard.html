@@ -3,88 +3,234 @@
 
 <head>
   <title>Environmental Dashboard</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
   <style type="text/css">
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
       background-color: #f4f7f2;
+      font-size: 16px;
     }
 
     #header {
       background: #2f4f2f;
       color: #fff;
-      padding: 20px;
+      padding: 15px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+
+    #header h1 {
+      margin: 0;
+      font-size: 1.2em;
+      padding-right: 100px;
+      /* Space for nav buttons */
     }
 
     .container {
-      width: 90%;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      margin-top: 60px;
+      /* Space for fixed header */
+    }
+
+    .action-panel {
+      background: #fff;
+      border: 1px solid #ddd;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    .action-header {
+      color: #2f4f2f;
+      margin: 0 0 10px 0;
+      padding: 0;
+      font-size: 1.1em;
+    }
+
+    .action-list {
+      max-height: none;
+      /* Remove scroll on mobile */
+    }
+
+    .action-item {
+      border-left: 4px solid #ff4444;
+      margin: 10px 0;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .action-button {
+      flex: 1;
+      min-width: 100px;
+      background: #2f4f2f;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      margin: 0;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    .project-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 15px 0;
     }
 
     .project-button {
-      display: inline-block;
-      width: 200px;
-      margin: 10px;
+      width: 100%;
       padding: 15px;
       background: #2f4f2f;
       color: #fff;
-      border: 1px solid #1a2f1a;
+      border: none;
       cursor: pointer;
+      font-size: 1em;
     }
 
-    .logout {
-      text-align: right;
-      margin: 20px;
+    .charts-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin: 15px 0;
     }
 
-    .logout a {
+    .chart {
+      width: 100%;
+      background: #fff;
+      padding: 15px;
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .dataset-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin: 15px 0;
+    }
+
+    .dataset-button {
+      width: 100%;
+      padding: 10px;
+      background: #fff;
       color: #2f4f2f;
-      text-decoration: none;
-      padding: 5px 10px;
       border: 1px solid #2f4f2f;
+      cursor: pointer;
+      font-size: 1em;
     }
 
-    @media screen and (max-width: 768px) {
-      .project-button {
-        width: 90%;
-        margin: 5px 0;
-      }
-    }
-
-    .user-controls {
-      margin-top: 20px;
-      padding: 10px;
-      border-top: 1px solid #ccc;
-    }
-
-    .control-button {
-      display: inline-block;
-      width: 150px;
-      margin: 10px;
-      padding: 10px;
+    .dataset-button.active {
       background: #2f4f2f;
       color: #fff;
-      border: 1px solid #1a2f1a;
-      cursor: pointer;
     }
 
     .user-nav {
-      position: absolute;
-      top: 20px;
-      right: 20px;
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 5px;
     }
 
     .nav-button {
-      margin-left: 10px;
-      padding: 5px 15px;
+      padding: 8px 12px;
       background: #fff;
       color: #2f4f2f;
       border: 1px solid #fff;
       cursor: pointer;
+      font-size: 0.9em;
+    }
+
+    .logout {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+    }
+
+    .logout a {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #2f4f2f;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+
+    /* Tablet Breakpoint */
+    @media screen and (min-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+
+      .project-selector {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .project-button {
+        width: calc(50% - 10px);
+      }
+
+      .dataset-selector {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .dataset-button {
+        width: auto;
+        min-width: 150px;
+      }
+
+      .action-list {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .charts-container {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .chart {
+        width: calc(50% - 15px);
+      }
+    }
+
+    /* Desktop Breakpoint */
+    @media screen and (min-width: 1024px) {
+      .container {
+        max-width: 1200px;
+        margin: 60px auto 0;
+      }
+
+      .project-button {
+        width: calc(33.33% - 10px);
+      }
+
+      .chart {
+        width: calc(33.33% - 15px);
+      }
+
+      #header h1 {
+        font-size: 1.5em;
+      }
     }
   </style>
   <script type="text/javascript">
@@ -112,15 +258,361 @@
     function checkSession() {
       var username = getCookie('username');
       if (!username) {
-          alert("Session expired - please login again");
-          window.location.href = 'index.html';
-          return false;
+        alert("Session expired - please login again");
+        window.location.href = 'index.html';
+        return false;
       }
       return true;
     }
-    window.onload = function() {
+    function analyzeRecords(records) {
+      var now = new Date();
+      var stats = {
+        dueDates: {
+          overdue: 0,
+          due14days: 0,
+          upcoming: 0
+        },
+        status: {},
+        phases: {},
+        aspects: {},
+        types: {}
+      };
+
+      records.forEach(function (record) {
+        // Analyze due dates
+        var dueDate = new Date(record.Action_DueDate);
+        var daysDiff = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+
+        if (daysDiff < 0) {
+          stats.dueDates.overdue++;
+        } else if (daysDiff <= 14) {
+          stats.dueDates.due14days++;
+        } else {
+          stats.dueDates.upcoming++;
+        }
+
+        // Count statuses
+        stats.status[record.Status] = (stats.status[record.Status] || 0) + 1;
+
+        // Count phases
+        stats.phases[record.ProjectPhase] = (stats.phases[record.ProjectPhase] || 0) + 1;
+
+        // Count aspects
+        stats.aspects[record.Environmental_Aspect] = (stats.aspects[record.Environmental_Aspect] || 0) + 1;
+
+        // Count obligation types
+        stats.types[record.Obligation_Type] = (stats.types[record.Obligation_Type] || 0) + 1;
+      });
+
+      return stats;
+    }
+
+    function createPieChart(data, title, colors) {
+      var total = Object.values(data).reduce(function (a, b) { return a + b; }, 0);
+      var paths = [];
+      var legend = [];
+      var currentAngle = 0;
+
+      Object.keys(data).forEach(function (key, index) {
+        var value = data[key];
+        var percentage = (value / total) * 100;
+        var angleSize = (percentage / 100) * 360;
+        var endAngle = currentAngle + angleSize;
+
+        // Calculate start and end points
+        var startX = Math.sin(currentAngle * Math.PI / 180) * 50;
+        var startY = -Math.cos(currentAngle * Math.PI / 180) * 50;
+        var endX = Math.sin(endAngle * Math.PI / 180) * 50;
+        var endY = -Math.cos(endAngle * Math.PI / 180) * 50;
+
+        var color = colors[index % colors.length];
+        var largeArcFlag = angleSize > 180 ? '1' : '0';
+
+        var path = '';
+        if (percentage === 100) {
+          path = 'M 0,-50 A 50,50 0 1,1 0,50 A 50,50 0 1,1 0,-50';
+        } else {
+          path = [
+            'M', 0, 0,
+            'L', startX, startY,
+            'A', 50, 50, 0, largeArcFlag, 1, endX, endY,
+            'Z'
+          ].join(' ');
+        }
+
+        paths.push('<path d="' + path + '" transform="translate(60,60)" ' +
+          'fill="' + color + '" stroke="#fff" stroke-width="1"/>');
+
+        legend.push('<div class="legend-item">' +
+          '<span class="legend-color" style="background:' + color + '"></span>' +
+          key + ' (' + percentage.toFixed(1) + '%)</div>');
+        currentAngle += angleSize;
+      });
+
+      return '<div class="chart">' +
+        '<div class="chart-title">' + title + '</div>' +
+        '<svg viewBox="0 0 120 120">' + paths.join('') + '</svg>' +
+        '<div class="legend">' + legend.join('') + '</div>' +
+        '</div>';
+    }
+
+    function checkOverdueItems(records) {
+      var now = new Date();
+      var overdue = 0;
+      var messages = [];
+
+      records.forEach(function (record) {
+        var dueDate = new Date(record.Action_DueDate);
+        if (dueDate < now && record.Status !== "Completed") {
+          overdue++;
+          messages.push("Overdue: " + record.Obligation + " (Due: " + record.Action_DueDate + ")");
+        }
+      });
+
+      if (overdue > 0) {
+        // Set page title to alert status
+        var originalTitle = document.title;
+        var alertTitle = "(" + overdue + ") OVERDUE - " + originalTitle;
+
+        // Title blink effect
+        var titleInterval = setInterval(function () {
+          document.title = document.title === originalTitle ? alertTitle : originalTitle;
+        }, 1000);
+
+        // Show native alert with details
+        alert("WARNING: " + overdue + " overdue obligations!\n\n" + messages.join("\n"));
+
+        // Add visual indicator to header
+        var header = document.getElementById("header");
+        if (header) {
+          header.style.backgroundColor = "#ff4444";
+        }
+
+        // Schedule next check in 1 hour
+        setTimeout(function () {
+          checkOverdueItems(records);
+        }, 3600000);
+      }
+    }
+
+    function updateCharts(dataset) {
+      currentDataset = dataset;
+      var records = [];
+
+      if (dataset === 'all') {
+        Object.keys(cachedRecords).forEach(function (key) {
+          records = records.concat(cachedRecords[key]);
+        });
+        // Check overdue items when viewing all projects
+        checkOverdueItems(records);
+      } else {
+        records = cachedRecords[dataset] || [];
+        // Check overdue items for individual project
+        checkOverdueItems(records);
+      }
+
+      var stats = analyzeRecords(records);
+
+      // Ensure consistent ordering for due dates
+      var orderedDueDates = {
+        overdue: stats.dueDates.overdue || 0,
+        due14days: stats.due14days || 0,
+        upcoming: stats.upcoming || 0
+      };
+
+      var colors = ['#2f4f2f', '#4f7f4f', '#7faf7f', '#afdcaf', '#d5ecd5'];
+      var dueColors = ['#ff4444', '#ffaa44', '#44aa44'];
+
+      var chartsHtml =
+        createPieChart(orderedDueDates, 'Due Date Status - ' + dataset.toUpperCase(), dueColors) +
+        createPieChart(stats.status, 'Obligation Status - ' + dataset.toUpperCase(), colors) +
+        createPieChart(stats.aspects, 'Environmental Aspects - ' + dataset.toUpperCase(), colors);
+
+      var container = document.querySelector('.charts-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.className = 'charts-container';
+        document.querySelector('.container').insertBefore(
+          container,
+          document.querySelector('.user-controls')
+        );
+      }
+      container.innerHTML = chartsHtml;
+
+      // Update button states
+      var buttons = document.querySelectorAll('.dataset-button');
+      buttons.forEach(function (button) {
+        button.className = 'dataset-button' +
+          (button.getAttribute('data-dataset') === dataset ? ' active' : '');
+      });
+    }
+
+    var currentDataset = 'all';
+    var cachedRecords = {};
+
+    function loadAllRecords() {
+      var projects = ['scjv', 'ms1180', 'w6946'];
+
+      Promise.all(projects.map(function (project) {
+        return fetch('/' + project + '.rec')
+          .then(function (response) { return response.text(); })
+          .then(function (data) {
+            var records = parseRecData(data);
+            cachedRecords[project] = records;
+            return records;
+          });
+      })).then(function (results) {
+        updateCharts('all');
+        initializeDatasetButtons();
+        createActionList(cachedRecords); // Add this line
+      });
+    }
+
+    function initializeDatasetButtons() {
+      var selectorHtml =
+        '<div class="dataset-selector">' +
+        '<button class="dataset-button active" data-dataset="all">All Projects</button>' +
+        '<button class="dataset-button" data-dataset="scjv">SCJV</button>' +
+        '<button class="dataset-button" data-dataset="ms1180">MS1180</button>' +
+        '<button class="dataset-button" data-dataset="w6946">W6946</button>' +
+        '</div>';
+
+      var container = document.querySelector('.charts-container');
+      if (container) {
+        container.insertAdjacentHTML('beforebegin', selectorHtml);
+      }
+
+      // Add click handlers
+      document.querySelectorAll('.dataset-button').forEach(function (button) {
+        button.onclick = function () {
+          updateCharts(this.getAttribute('data-dataset'));
+        };
+      });
+    }
+
+    function parseRecData(recData) {
+      var records = [];
+      var currentRecord = {};
+
+      // Split data into lines and handle line endings
+      var lines = recData.split(/\r?\n/);
+
+      lines.forEach(function (line) {
+        // Skip empty lines and comments
+        if (!line || line.startsWith('#') || line.startsWith('%')) {
+          return;
+        }
+
+        // New record starts
+        if (line.startsWith('Project_Name:')) {
+          if (Object.keys(currentRecord).length > 0) {
+            records.push(currentRecord);
+          }
+          currentRecord = {};
+        }
+
+        // Parse key-value pairs
+        var parts = line.split(':');
+        if (parts.length >= 2) {
+          var key = parts[0].trim();
+          var value = parts.slice(1).join(':').trim();
+          currentRecord[key] = value;
+        }
+      });
+
+      // Add final record
+      if (Object.keys(currentRecord).length > 0) {
+        records.push(currentRecord);
+      }
+
+      return records;
+    }
+
+    function createActionList(records) {
+      var now = new Date();
+      var overdueItems = [];
+      var list = document.getElementById('overdueList');
+      if (!list) return;
+
+      // Collect overdue items from all projects
+      Object.keys(records).forEach(function (project) {
+        records[project].forEach(function (record) {
+          var dueDate = new Date(record.Action_DueDate);
+          var daysDiff = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+
+          if (daysDiff < 0) {
+            overdueItems.push({
+              project: project.toUpperCase(),
+              obligation: record.Obligation,
+              dueDate: record.Action_DueDate,
+              id: record.Obligation_Number,
+              daysPast: Math.abs(daysDiff)
+            });
+          }
+        });
+      });
+
+      // Sort by most overdue first
+      overdueItems.sort(function (a, b) {
+        return b.daysPast - a.daysPast;
+      });
+
+      // Create action items
+      var html = '';
+      overdueItems.forEach(function (item) {
+        html += '<div class="action-item" id="action-' + item.id + '">' +
+          '<div class="action-title">' + item.obligation + '</div>' +
+          '<div class="action-project">Project: ' + item.project + '</div>' +
+          '<div class="action-due">Overdue by ' + item.daysPast + ' days</div>' +
+          '<div class="action-buttons">' +
+          '<button class="action-button" onclick="takeAction(\'' + item.id + '\', \'delegate\')">Delegate</button>' +
+          '<button class="action-button" onclick="takeAction(\'' + item.id + '\', \'review\')">Review</button>' +
+          '<button class="action-button" onclick="takeAction(\'' + item.id + '\', \'approve\')">Approve Extension</button>' +
+          '</div>' +
+          '<div id="status-' + item.id + '" class="action-status"></div>' +
+          '</div>';
+      });
+
+      list.innerHTML = html || '<p>No overdue items requiring attention</p>';
+    }
+
+    function takeAction(id, action) {
+      var statusDiv = document.getElementById('status-' + id);
+      var actionItem = document.getElementById('action-' + id);
+      var username = getCookie('username');
+
+      if (!statusDiv || !actionItem || !username) return;
+
+      var actions = {
+        delegate: 'Delegated for immediate action',
+        review: 'Marked for review',
+        approve: 'Extension approved'
+      };
+
+      statusDiv.style.display = 'block';
+      statusDiv.innerHTML = 'Processing...';
+
+      // Simulate action processing
+      setTimeout(function () {
+        statusDiv.innerHTML = actions[action] + ' by ' + username;
+        actionItem.style.opacity = '0.5';
+
+        // Record action in audit log
+        fetch('/audit_log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'username=' + encodeURIComponent(username) +
+            '&action=' + encodeURIComponent('ACTION_' + action.toUpperCase()) +
+            '&item=' + encodeURIComponent(id)
+        }).catch(function (error) {
+          console.error('Error logging action:', error);
+        });
+      }, 500);
+    }
+
+    window.onload = function () {
       if (!checkSession()) return;
-      // ... existing onload code ...
+      loadAllRecords();
     };
   </script>
 </head>
@@ -131,6 +623,10 @@
   </div>
 
   <div class="container">
+    <div class="action-panel">
+      <h2 class="action-header">Priority Actions Required</h2>
+      <div id="overdueList" class="action-list"></div>
+    </div>
     <div class="project-selector">
       <input type="button" class="project-button" value="SCJV - Pilbara Ports"
         onclick="navigateToProject('scjv.html');">
@@ -139,10 +635,8 @@
     </div>
 
     <div class="user-controls">
-      <input type="button" class="control-button" value="Manage Profile"
-             onclick="navigateToProfile();">
-      <input type="button" class="control-button" value="View Audit Log"
-             onclick="window.location.href='audit.html';">
+      <input type="button" class="control-button" value="Manage Profile" onclick="navigateToProfile();">
+      <input type="button" class="control-button" value="View Audit Log" onclick="window.location.href='audit.html';">
     </div>
   </div>
 

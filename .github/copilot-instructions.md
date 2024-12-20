@@ -13,6 +13,21 @@ These instructions ensure Copilot's suggestions align with our project's technic
 - Data oriented design is preferred over object oriented design.
 - I dont want improvements, please only review and check they integrate well (consolidate) and cover the basic use-case functionality with simplicity without conflicts and duplication (cleanup code).
 - Never overcomplicate the code generated.
+- Ensure all files use **ISO-8859-1** encoding:
+    - Set encoding to ISO-8859-1 (Latin-1) for all source files.
+    - Avoid UTF-8 or other Unicode encodings.
+    - Use only ASCII-compatible characters where possible.
+    - For web files:
+        - HTML: Use `content="text/html; charset=ISO-8859-1"` in meta tags.
+        - CSS: Ensure all files are saved in ISO-8859-1 encoding.
+        - JavaScript: Use only ISO-8859-1 compatible characters.
+    - For C source files:
+        - Use only ISO-8859-1 compatible characters in strings and comments.
+        - Avoid Unicode escape sequences.
+    - For build and configuration files:
+        - Makefiles: Use ISO-8859-1 encoding.
+        - Shell scripts: Use ISO-8859-1 encoding with `LANG=C` locale.
+        - Configuration files: Save in ISO-8859-1 format.
     - Keep generated code as simple and straightforward as possible.
     - Avoid complex control structures and nested loops.
 - For web development, following a mobile-first approach is preferred.
@@ -54,7 +69,7 @@ These instructions ensure Copilot's suggestions align with our project's technic
 - Avoid previous declarations of variables.
 - C90 standard requiring declarations at start of blocks
 - ISO C90 forbids mixed declarations and code
-- Code must compile with gcc using: `-static -std=c90 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500 -Wall -ansi -Wextra -pedantic -Werror -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes -fanalyzer -fstack-protector-strong -fstack-check -fdata-sections -ffunction-sections -fno-common -fstrict-aliasing -Warray-bounds -Wstack-protector -Wformat=2 -Wformat-security -Wformat-overflow=2 -Wformat-truncation=2 -Walloca -Wvla -fno-omit-frame-pointer`
+- Code must compile with gcc using: `-static -std=c90 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500 -Wall -ansi -Wextra -pedantic -Werror -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes -fanalyzer -fstack-protector-strong -fstack-check -fdata-sections -ffunction-sections -fno-common -fstrict-aliasing -Warray-bounds -Wstack-protector -Wformat=2 -Wformat-security -Wformat-overflow=2 -Wformat-truncation=2 -Walloca -Wvla -fno-omit-frame-pointer -finput-charset=iso-8859-1 -fexec-charset=iso-8859-1 -fwide-exec-charset=iso-8859-1`
 - Code Safety Requirements:
     - No VLAs (enforced by -Wvla)
     - No array bounds violations (enforced by -Warray-bounds)
