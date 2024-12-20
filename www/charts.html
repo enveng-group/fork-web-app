@@ -1,0 +1,295 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+
+<head>
+  <title>Obligation Due Dates Chart</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style type="text/css">
+    /* Existing styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f7f2;
+    }
+
+    .chart-container {
+      background: white;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 800px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Add tooltip styles */
+    .tooltip {
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+      display: none;
+      max-width: 300px;
+    }
+
+    .tooltip-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .tooltip-content {
+      margin: 5px 0;
+    }
+
+    .user-nav {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    .nav-button {
+      margin-left: 10px;
+      padding: 5px 15px;
+      background: #fff;
+      color: #2f4f2f;
+      border: 1px solid #fff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="user-nav">
+    <button onclick="navigateToProject('profile.html')" class="nav-button">Profile</button>
+    <button onclick="goBack()" class="nav-button">Back</button>
+  </div>
+  <div class="chart-container">
+    <svg id="barChart" width="600" height="400"></svg>
+  </div>
+  <div id="tooltip" class="tooltip"></div>
+
+  <script type="text/javascript">
+    "use strict";
+
+    let overdueObligations = []; // Store overdue obligations
+
+    function parseRecData(recData) {
+      const records = [];
+      let currentRecord = {};
+      const lines = recData.split(/\r?\n/);
+
+      for (let line of lines) {
+        if (!line.trim() || line.startsWith('%')) {
+          continue;
+        }
+
+        const colonIndex = line.indexOf(':');
+        if (colonIndex > -1) {
+          const field = line.substring(0, colonIndex).trim();
+          let value = line.substring(colonIndex + 1).trim();
+
+          if (field === 'Project_Name') {
+            if (Object.keys(currentRecord).length > 0) {
+              records.push(currentRecord);
+            }
+            currentRecord = {};
+          }
+
+          currentRecord[field] = value;
+        }
+      }
+
+      if (Object.keys(currentRecord).length > 0) {
+        records.push(currentRecord);
+      }
+
+      return records.filter(record => record.Project_Name === 'SCJV - Pilbara Ports');
+    }
+
+    function calculateDueDates(records) {
+      const today = new Date();
+      let overdue = 0;
+      let dueSoon = 0;
+      overdueObligations = []; // Reset overdue obligations
+
+      records.forEach(record => {
+        if (record.Action_DueDate) {
+          const dueDate = new Date(record.Action_DueDate);
+          const timeDiff = dueDate - today;
+          const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+          if (daysDiff < 0) {
+            overdue++;
+            overdueObligations.push({
+              number: record.Obligation_Number,
+              obligation: record.Obligation,
+              dueDate: record.Action_DueDate,
+              responsibility: record.Responsibility
+            });
+          } else if (daysDiff <= 14) {
+            dueSoon++;
+          }
+        }
+      });
+
+      return { overdue, dueSoon };
+    }
+
+    function createBarChart(data) {
+      const svg = document.getElementById('barChart');
+      if (!svg) {
+        console.error('Bar chart SVG element not found');
+        return;
+      }
+
+      const width = 600;  // Match SVG width attribute
+      const height = 400; // Match SVG height attribute
+      const padding = 40;
+
+      svg.innerHTML = '';
+
+      const maxValue = Math.max(data.overdue, data.dueSoon);
+      const barWidth = 100;
+      const barSpacing = 60;
+      const yScale = (height - padding * 2) / maxValue;
+
+      function createBar(value, index, color) {
+        const barHeight = value * yScale;
+        const x = padding + (barWidth + barSpacing) * index;
+        const y = height - padding - barHeight;
+
+        const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bar.setAttribute('x', x);
+        bar.setAttribute('y', y);
+        bar.setAttribute('width', barWidth);
+        bar.setAttribute('height', barHeight);
+        bar.setAttribute('fill', color);
+        bar.setAttribute('class', 'bar');
+
+        // Add hover events for overdue bar
+        if (index === 0) {
+          bar.addEventListener('mouseover', showTooltip);
+          bar.addEventListener('mouseout', hideTooltip);
+          bar.addEventListener('mousemove', moveTooltip);
+        }
+
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', x + barWidth / 2);
+        label.setAttribute('y', y - 10);
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('class', 'bar-label');
+        label.textContent = value;
+
+        const categoryLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        categoryLabel.setAttribute('x', x + barWidth / 2);
+        categoryLabel.setAttribute('y', height - padding / 2);
+        categoryLabel.setAttribute('text-anchor', 'middle');
+        categoryLabel.setAttribute('class', 'bar-label');
+        categoryLabel.textContent = index === 0 ? 'Overdue' : 'Due Soon';
+
+        return [bar, label, categoryLabel];
+      }
+
+      const overdueElements = createBar(data.overdue, 0, '#ffcccc');
+      const dueSoonElements = createBar(data.dueSoon, 1, '#fff3cd');
+
+      overdueElements.concat(dueSoonElements).forEach(element => {
+        svg.appendChild(element);
+      });
+    }
+
+    function showTooltip(event) {
+      const tooltip = document.getElementById('tooltip');
+      tooltip.style.display = 'block';
+      updateTooltipContent(tooltip);
+      moveTooltip(event);
+    }
+
+    function hideTooltip() {
+      const tooltip = document.getElementById('tooltip');
+      tooltip.style.display = 'none';
+    }
+
+    function moveTooltip(event) {
+      const tooltip = document.getElementById('tooltip');
+      tooltip.style.left = (event.pageX + 10) + 'px';
+      tooltip.style.top = (event.pageY + 10) + 'px';
+    }
+
+    function updateTooltipContent(tooltip) {
+      let content = '<div class="tooltip-title">Overdue Obligations</div>';
+      overdueObligations.forEach(ob => {
+        content += `
+          <div class="tooltip-content">
+            <strong>${ob.number}</strong><br>
+            ${ob.obligation}<br>
+            Due: ${ob.dueDate}<br>
+            Responsible: ${ob.responsibility}
+          </div>
+        `;
+      });
+      tooltip.innerHTML = content;
+    }
+
+    /* Add to all pages with navigation */
+    function navigateToProfile() {
+        if (!checkSession()) return;
+        var username = getCookie('username');
+        window.location.href = 'profile.html?username=' + encodeURIComponent(username);
+    }
+
+    function navigateToProject(url) {
+        if (!checkSession()) return;
+        window.location.href = url;
+    }
+
+    function goBack() {
+      window.location.href = 'dashboard.html';
+    }
+
+    /* Add to all HTML files that need session management */
+    function getCookie(name) {
+        var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        if (match) return match[2];
+        return '';
+    }
+
+    function checkSession() {
+        var username = getCookie('username');
+        if (!username) {
+            alert("Session expired - please login again");
+            window.location.href = 'index.html';
+            return false;
+        }
+        return true;
+    }
+
+    window.onload = function () {
+      if (!checkSession()) return;
+      fetch('/scjv.rec')
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.text();
+        })
+        .then(data => {
+          const records = parseRecData(data);
+          if (records && records.length > 0) {
+            const stats = calculateDueDates(records);
+            createBarChart(stats);
+          } else {
+            throw new Error('No valid records found');
+          }
+        })
+        .catch(error => {
+          console.error('Error loading records:', error);
+          const svg = document.getElementById('barChart');
+          if (svg) {
+            svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle">Error loading chart data</text>';
+          }
+        });
+    };
+  </script>
+</body>
+
+</html>

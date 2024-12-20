@@ -1,0 +1,22 @@
+# Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# Format: Username:Password:UID:GID:FullName:HomeDir:Shell:IsAdmin
+john:smith:1000:1000:John Smith:/home/john:/bin/sh:0
+admin:secret:1001:1001:Administrator:/home/admin:/bin/sh:1
+test:password:1002:1002:Test User:/home/test:/bin/sh
+mary:smith:1003:1003:User:/home/mary:/bin/sh
+hssemgr:mountain:1004:1004:SCJV - HSSE Manager:/home/hssemgr:/bin/sh
+envmgr:butterfly:1005:1005:Perdaman - Env & Heritage Manager:/home/envmgr:/bin/sh
+envlead:rainbow:1006:1006:SCJV - Environmental Lead:/home/envlead:/bin/sh
+envadv:dolphin:1007:1007:SCJV - Lead Environmental Advisor:/home/envadv:/bin/sh
+ownenv:elephant:1008:1008:OWNER Environment and Heritage Manager:/home/ownenv:/bin/sh
+hermgr:octopus:1009:1009:SCJV - Heritage & Indigenous Relations Manager:/home/hermgr:/bin/sh
+envrep:penguin:1010:1010:SCJV - Project Environmental Representative:/home/envrep:/bin/sh
+senvadv:giraffe:1011:1011:SCJV - Senior Environmental Advisor:/home/senvadv:/bin/sh
+consup:kangaroo:1012:1012:SCJV - Construction Supervisor:/home/consup:/bin/sh
+engmgr:zebra:1013:1013:SCJV - Engineering Manager:/home/engmgr:/bin/sh
+conmgr:lion:1014:1014:SCJV - Construction Manager:/home/conmgr:/bin/sh
+commgr:tiger:1015:1015:SCJV - Commercial Manager:/home/commgr:/bin/sh
+projmgr:eagle:1016:1016:SCJV - Project Manager:/home/projmgr:/bin/sh
+perdmgr:whale:1017:1017:Perdaman - Management:/home/perdmgr:/bin/sh

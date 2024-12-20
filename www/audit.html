@@ -1,0 +1,270 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+
+<head>
+  <title>Audit Log Viewer</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style type="text/css">
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7f2;
+      font-size: 14px;
+    }
+
+    #header {
+      background: #2f4f2f;
+      color: #fff;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      margin: 10px auto;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background: #2f4f2f;
+      color: white;
+      cursor: pointer;
+      position: sticky;
+      top: 0;
+    }
+
+    .filter-row input {
+      width: 90%;
+      padding: 4px;
+      margin: 2px;
+    }
+
+    .back-button {
+      margin: 20px;
+      padding: 10px 20px;
+      background: #2f4f2f;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .pagination {
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .pagination button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      background: #2f4f2f;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .pagination button:disabled {
+      background: #ccc;
+      cursor: default;
+    }
+
+    .user-nav {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    .nav-button {
+      margin-left: 10px;
+      padding: 5px 15px;
+      background: #fff;
+      color: #2f4f2f;
+      border: 1px solid #fff;
+      cursor: pointer;
+    }
+  </style>
+  <script type="text/javascript">
+    "use strict";
+
+    var pageSize = 50;
+    var currentPage = 1;
+    var totalPages = 1;
+    var auditData = [];
+
+    function goBack() {
+      window.location.href = 'dashboard.html';
+    }
+
+    function loadAuditLogs() {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/var/log/audit.log", true);
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          auditData = parseAuditLogs(xhr.responseText);
+          totalPages = Math.ceil(auditData.length / pageSize);
+          displayPage(1);
+        }
+      };
+      xhr.send(null);
+    }
+
+    function parseAuditLogs(data) {
+      return data.split('\n')
+        .filter(line => line.trim())
+        .map(line => {
+          var parts = line.split('|');
+          return {
+            timestamp: parts[0] || '',
+            username: parts[1] || '',
+            action: parts[2] || ''
+          };
+        });
+    }
+
+    function displayPage(page) {
+      var tbody = document.getElementById('auditTable').getElementsByTagName('tbody')[0];
+      tbody.innerHTML = '';
+
+      var start = (page - 1) * pageSize;
+      var end = start + pageSize;
+      var pageData = auditData.slice(start, end);
+
+      pageData.forEach(entry => {
+        var row = tbody.insertRow();
+        row.insertCell().textContent = entry.timestamp;
+        row.insertCell().textContent = entry.username;
+        row.insertCell().textContent = entry.action;
+      });
+
+      currentPage = page;
+      updatePaginationControls();
+    }
+
+    function updatePaginationControls() {
+      document.getElementById('currentPage').textContent =
+        'Page ' + currentPage + ' of ' + totalPages;
+
+      document.getElementById('prevButton').disabled = (currentPage === 1);
+      document.getElementById('nextButton').disabled = (currentPage === totalPages);
+    }
+
+    function filterTable() {
+      var filters = {
+        timestamp: document.getElementById('timestampFilter').value.toLowerCase(),
+        username: document.getElementById('usernameFilter').value.toLowerCase(),
+        action: document.getElementById('actionFilter').value.toLowerCase()
+      };
+
+      var filtered = auditData.filter(entry => {
+        return entry.timestamp.toLowerCase().includes(filters.timestamp) &&
+          entry.username.toLowerCase().includes(filters.username) &&
+          entry.action.toLowerCase().includes(filters.action);
+      });
+
+      auditData = filtered;
+      totalPages = Math.ceil(auditData.length / pageSize);
+      displayPage(1);
+    }
+
+    function sortTable(column) {
+      auditData.sort((a, b) => {
+        var valA = a[column] || '';
+        var valB = b[column] || '';
+        return valA.localeCompare(valB);
+      });
+      displayPage(currentPage);
+    }
+
+    function getCookie(name) {
+      var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      if (match) return match[2];
+      return '';
+    }
+
+    function checkSession() {
+      var username = getCookie('username');
+      if (!username) {
+        alert("Session expired - please login again");
+        window.location.href = 'index.html';
+        return false;
+      }
+      return true;
+    }
+
+    function navigateToProfile() {
+      if (!checkSession()) return;
+      var username = getCookie('username');
+      window.location.href = 'profile.html?username=' + encodeURIComponent(username);
+    }
+
+    function navigateToProject(url) {
+      if (!checkSession()) return;
+      window.location.href = url;
+    }
+
+    window.onload = function() {
+      if (!checkSession()) return;
+      loadAuditLogs();
+    };
+
+    function goBack() {
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+</head>
+
+<body>
+  <div id="header">
+    <h1>Audit Log Viewer</h1>
+  </div>
+
+  <div class="user-nav">
+    <button onclick="navigateToProject('profile.html')" class="nav-button">Profile</button>
+    <button onclick="goBack()" class="nav-button">Back</button>
+  </div>
+
+  <div class="container">
+    <button class="back-button" onclick="goBack()">Back to Dashboard</button>
+
+    <table id="auditTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable('timestamp')">Timestamp</th>
+          <th onclick="sortTable('username')">Username</th>
+          <th onclick="sortTable('action')">Action</th>
+        </tr>
+        <tr class="filter-row">
+          <td><input type="text" id="timestampFilter" onkeyup="filterTable()"></td>
+          <td><input type="text" id="usernameFilter" onkeyup="filterTable()"></td>
+          <td><input type="text" id="actionFilter" onkeyup="filterTable()"></td>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Populated by JavaScript -->
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <button id="prevButton" onclick="displayPage(currentPage - 1)">&lt; Previous</button>
+      <span id="currentPage">Page 1 of 1</span>
+      <button id="nextButton" onclick="displayPage(currentPage + 1)">Next &gt;</button>
+    </div>
+  </div>
+</body>
+
+</html>

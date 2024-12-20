@@ -1,0 +1,512 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+
+<head>
+  <title>W6946 Environmental Obligations</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style type="text/css">
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7f2;
+      font-size: 14px;
+    }
+
+    #header {
+      background: #2f4f2f;
+      color: #fff;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      margin: 10px auto;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+
+    table {
+      width: 100%;
+      min-width: 800px;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+    }
+
+    th {
+      background-color: #2f4f2f;
+      color: white;
+      cursor: pointer;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .overdue {
+      background-color: #ffcccc;
+    }
+
+    .warning {
+      background-color: #fff3cd;
+    }
+
+    .filter-row input {
+      width: 90%;
+      padding: 4px;
+      margin: 2px;
+      box-sizing: border-box;
+      font-size: 12px;
+    }
+
+    .back-button {
+      margin: 20px;
+      padding: 10px 20px;
+      background: #2f4f2f;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Add sort direction indicators */
+    th.sort-asc::after {
+      content: " \2191";
+      /* Up arrow */
+    }
+
+    th.sort-desc::after {
+      content: " \2193";
+      /* Down arrow */
+    }
+
+    @media screen and (max-width: 768px) {
+      body {
+        font-size: 12px;
+      }
+
+      th,
+      td {
+        padding: 4px;
+        max-width: 150px;
+      }
+
+      .filter-row input {
+        padding: 2px;
+      }
+    }
+
+    /* Add to existing styles */
+    .filter-buttons {
+      margin: 10px 0;
+      padding: 10px;
+    }
+
+    .filter-buttons button {
+      margin: 5px;
+      padding: 8px 15px;
+      background: #2f4f2f;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    @media screen and (max-width: 768px) {
+      .filter-buttons button {
+        display: block;
+        width: 100%;
+        margin: 5px 0;
+      }
+    }
+
+    .user-nav {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    .nav-button {
+      margin-left: 10px;
+      padding: 5px 15px;
+      background: #fff;
+      color: #2f4f2f;
+      border: 1px solid #fff;
+      cursor: pointer;
+    }
+  </style>
+  <script type="text/javascript">
+    "use strict";
+
+    var currentSortColumn = -1;
+    var currentSortDir = "asc";
+
+    function goBack() {
+      window.location.href = 'dashboard.html';
+    }
+
+    function sortTable(n) {
+      "use strict";
+      var table = document.getElementById("obligationsTable");
+      if (!table) return;
+
+      var rows = Array.prototype.slice.call(table.rows);
+      if (rows.length < 3) return;
+
+      // Clear previous sort indicators
+      var headers = table.getElementsByTagName("th");
+      for (var i = 0; i < headers.length; i++) {
+        headers[i].className = "";
+      }
+
+      // Set new sort indicator
+      headers[n].className = currentSortColumn === n && currentSortDir === "asc" ?
+        "sort-desc" : "sort-asc";
+
+      // Update sort direction
+      if (currentSortColumn === n) {
+        currentSortDir = currentSortDir === "asc" ? "desc" : "asc";
+      } else {
+        currentSortColumn = n;
+        currentSortDir = "asc";
+      }
+
+      // Get data rows only (skip header and filter rows)
+      var dataRows = rows.slice(2);
+
+      // Sort data rows
+      dataRows.sort(function (a, b) {
+        var aCell = a.cells[n];
+        var bCell = b.cells[n];
+
+        // Handle null/undefined cells
+        if (!aCell || !bCell) return 0;
+
+        var aValue = aCell.textContent || aCell.innerText || "";
+        var bValue = bCell.textContent || bCell.innerText || "";
+
+        // Compare values based on sort direction
+        if (currentSortDir === "asc") {
+          return aValue.localeCompare(bValue);
+        } else {
+          return bValue.localeCompare(aValue);
+        }
+      });
+
+      // Move sorted rows back to table
+      var fragment = document.createDocumentFragment();
+      for (var j = 0; j < dataRows.length; j++) {
+        fragment.appendChild(dataRows[j]);
+      }
+
+      // Preserve header and filter rows
+      while (table.rows.length > 2) {
+        table.deleteRow(-1);
+      }
+      table.appendChild(fragment);
+
+      // Recheck due dates after sorting
+      checkDueDates();
+    }
+
+    var filterTimeout = null;
+
+    function filterTable() {
+      // Clear existing timeout
+      if (filterTimeout) {
+        clearTimeout(filterTimeout);
+      }
+
+      // Set new timeout to avoid rapid updates
+      filterTimeout = setTimeout(function () {
+        var table = document.getElementById("obligationsTable");
+        if (!table) return;
+
+        var filters = document.getElementsByClassName("column-filter");
+        var rows = table.getElementsByTagName("tr");
+        if (!rows || rows.length < 3) return;
+
+        // Cache filter values
+        var filterValues = Array.prototype.map.call(filters, function (input) {
+          return input.value.toLowerCase();
+        });
+
+        // Filter rows
+        for (var i = 2; i < rows.length; i++) {
+          var row = rows[i];
+          var cells = row.getElementsByTagName("td");
+          var show = true;
+
+          for (var j = 0; j < filterValues.length; j++) {
+            if (!filterValues[j]) continue;
+
+            var cell = cells[j];
+            if (!cell || !cell.textContent) {
+              show = false;
+              break;
+            }
+
+            if (cell.textContent.toLowerCase().indexOf(filterValues[j]) === -1) {
+              show = false;
+              break;
+            }
+          }
+
+          row.style.display = show ? "" : "none";
+        }
+      }, 200); // Delay execution by 200ms
+    }
+
+    function checkDueDates() {
+      const table = document.getElementById('obligationsTable');
+      if (!table) return;
+
+      const rows = table.getElementsByTagName("tr");
+      if (!rows || rows.length < 3) return; // Skip if no data rows
+
+      const today = new Date();
+
+      for (let i = 2; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName("td");
+        if (!cells || cells.length < 8) continue;
+
+        const dueDateCell = cells[7];
+        if (!dueDateCell || !dueDateCell.textContent) continue;
+
+        const dueDate = new Date(dueDateCell.textContent);
+        if (isNaN(dueDate.getTime())) continue;
+
+        const timeDiff = dueDate - today;
+        const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+        if (daysDiff < 0) {
+          rows[i].classList.add("overdue");
+        } else if (daysDiff <= 14) {
+          rows[i].classList.add("warning");
+        }
+      }
+    }
+
+    function parseRecData(recData) {
+      const records = [];
+      let currentRecord = {};
+
+      // Split data into lines and handle Windows/Unix line endings
+      const lines = recData.split(/\r?\n/);
+
+      for (let line of lines) {
+        // Skip empty lines, comments and record type declarations
+        if (!line.trim() || line.startsWith('%')) {
+          continue;
+        }
+
+        // Check if line contains a field-value pair
+        const colonIndex = line.indexOf(':');
+        if (colonIndex > -1) {
+          const field = line.substring(0, colonIndex).trim();
+          let value = line.substring(colonIndex + 1).trim();
+
+          // If line starts with "Project_Name", it's a new record
+          if (field === 'Project_Name') {
+            if (Object.keys(currentRecord).length > 0) {
+              records.push(currentRecord);
+            }
+            currentRecord = {};
+          }
+
+          // Handle multi-line values that start with +
+          if (value.startsWith('+ ')) {
+            value = value.substring(2); // Remove the '+ ' prefix
+
+            // If there's already a value for this field, append the new value
+            if (currentRecord[field]) {
+              currentRecord[field] += '\n' + value;
+            } else {
+              currentRecord[field] = value;
+            }
+          } else {
+            currentRecord[field] = value;
+          }
+        }
+      }
+
+      // Add the last record
+      if (Object.keys(currentRecord).length > 0) {
+        records.push(currentRecord);
+      }
+
+      // Filter to only include W6946 records
+      return records.filter(record => record.Project_Name === 'W6946');
+    }
+
+    // Update populateTable function to match reduced columns
+    function populateTable(records) {
+      var table = document.getElementById('obligationsTable');
+
+      records.forEach(function (record) {
+        var row = document.createElement('tr');
+        row.innerHTML = [
+          record.Procedure || '',
+          record.Environmental_Aspect || '',
+          record.Obligation_Number || '',
+          record.Responsibility || '',
+          record.ProjectPhase || '',
+          record.Action_DueDate || '',
+          record.Status || '',
+          record.Recurring_Obligation || '',
+          record.Recurring_Frequency || ''
+        ].map(function (cell) {
+          return '<td>' + cell + '</td>';
+        }).join('');
+        table.appendChild(row);
+      });
+    }
+
+    function getCookie(name) {
+      var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      if (match) return match[2];
+      return '';
+    }
+
+    function checkSession() {
+      var username = getCookie('username');
+      if (!username) {
+        alert("Session expired - please login again");
+        window.location.href = 'index.html';
+        return false;
+      }
+      return true;
+    }
+
+    window.onload = function () {
+      if (!checkSession()) return;
+      fetch('/w6946.rec')  // Changed from '../var/db/w6946.rec'
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.text();
+        })
+        .then(data => {
+          const records = parseRecData(data);
+          populateTable(records);
+          // Only check dates after table is populated
+          setTimeout(checkDueDates, 100);
+        })
+        .catch(error => {
+          console.error('Error loading records:', error);
+          document.getElementById('obligationsTable')
+            .innerHTML += '<tr><td colspan="18">Error loading data</td></tr>';
+        });
+    };
+
+    function filterByDueDate(filter) {
+      var table = document.getElementById('obligationsTable');
+      if (!table) return;
+
+      var rows = table.getElementsByTagName('tr');
+      if (!rows || rows.length < 3) return;
+
+      var today = new Date();
+
+      // Skip header and filter rows
+      for (var i = 2; i < rows.length; i++) {
+        var dueDateCell = rows[i].getElementsByTagName('td')[5]; // Action_DueDate column
+        if (!dueDateCell || !dueDateCell.textContent) continue;
+
+        var dueDate = new Date(dueDateCell.textContent);
+        if (isNaN(dueDate.getTime())) continue;
+
+        var timeDiff = dueDate - today;
+        var daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+        var show = false;
+        switch (filter) {
+          case 'all':
+            show = true;
+            break;
+          case 'warning':
+            show = (daysDiff > -1 && daysDiff <= 14);
+            break;
+          case 'overdue':
+            show = (daysDiff < 0);
+            break;
+          default:
+            show = true;
+        }
+        rows[i].style.display = show ? '' : 'none';
+      }
+    }
+
+    function navigateToProfile() {
+      if (!checkSession()) return;
+      var username = getCookie('username');
+      window.location.href = 'profile.html?username=' + encodeURIComponent(username);
+    }
+
+    function navigateToProject(url) {
+      if (!checkSession()) return;
+      window.location.href = url;
+    }
+  </script>
+</head>
+
+<body>
+  <div id="header">
+    <h1>W6946 Environmental Obligations</h1>
+  </div>
+
+  <div class="user-nav">
+    <button onclick="navigateToProfile()" class="nav-button">Profile</button>
+    <button onclick="goBack()" class="nav-button">Back</button>
+  </div>
+
+  <div class="filter-buttons">
+    <button onclick="filterByDueDate('all')">All Records</button>
+    <button onclick="filterByDueDate('warning')">Due Soon (14 Days)</button>
+    <button onclick="filterByDueDate('overdue')">Overdue</button>
+  </div>
+
+  <div class="container">
+    <table id="obligationsTable">
+      <tr>
+        <th onclick="sortTable(0)">Procedure</th>
+        <th onclick="sortTable(1)">Env Aspect</th>
+        <th onclick="sortTable(2)">Obligation #</th>
+        <th onclick="sortTable(3)">Responsibility</th>
+        <th onclick="sortTable(4)">Phase</th>
+        <th onclick="sortTable(5)">Due Date</th>
+        <th onclick="sortTable(6)">Status</th>
+        <th onclick="sortTable(7)">Recurring</th>
+        <th onclick="sortTable(8)">Frequency</th>
+      </tr>
+      <tr class="filter-row">
+        <td><input type="text" class="column-filter" onkeyup="filterTable()"></td>
+        <td><input type="text" class="column-filter" onkeyup="filterTable()"></td>
+        <td><input type="text" class="column-filter" onkeyup="filterTable()"></td>
+        <td><input type="text" class="column-filter" onkeyup="filterTable()"></td>
+        <td><input type="text" class="column-filter" onkeyup="filterTable()"></td>
+        <td><input type="text" class="column-filter" onkeyup="filterTable()"></td>
+        <td><input type="text" class="column-filter" onkeyup="filterTable()"></td>
+        <td><input type="text" class="column-filter" onkeyup="filterTable()"></td>
+        <td><input type="text" class="column-filter" onkeyup="filterTable()"></td>
+      </tr>
+    </table>
+  </div>
+</body>
+
+</html>

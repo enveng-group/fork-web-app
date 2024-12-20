@@ -1,0 +1,292 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+
+<head>
+  <title>Profile Management</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style type="text/css">
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f7f2;
+    }
+
+    .main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+    }
+
+    .form-group {
+      margin: 10px 0;
+    }
+
+    .error {
+      color: #ff0000;
+      font-weight: bold;
+      display: none;
+    }
+
+    label {
+      display: inline-block;
+      width: 150px;
+      margin-right: 10px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    select {
+      width: 300px;
+      padding: 5px;
+      margin: 5px 0;
+    }
+
+    input[type="submit"],
+    input[type="reset"],
+    button {
+      padding: 5px 15px;
+      margin: 5px;
+      background: #2f4f2f;
+      color: #fff;
+      border: 1px solid #1a2f1a;
+      cursor: pointer;
+    }
+
+    .button-group {
+      margin-top: 20px;
+    }
+
+    .nav-button {
+      margin-left: 10px;
+      padding: 5px 15px;
+      background: #fff;
+      color: #2f4f2f;
+      border: 1px solid #2f4f2f;
+      cursor: pointer;
+    }
+  </style>
+  <script type="text/javascript">
+    "use strict";
+
+    function validateForm() {
+        var username = document.getElementById("username").value;
+        var fullname = document.getElementById("fullname").value;
+        var email = document.getElementById("email").value;
+        var project = document.getElementById("project").value;
+        var errorDiv = document.getElementById("profile-error");
+        var errors = [];
+
+        errorDiv.style.display = "none";
+        errorDiv.innerHTML = "";
+
+        if (!fullname || fullname.trim().length < 2) {
+            errors.push("Full name must be at least 2 characters");
+        }
+
+        if (!email || !email.match(/^[^@]+@[^@]+\.[^@]+$/)) {
+            errors.push("Invalid email format");
+        }
+
+        if (!project) {
+            errors.push("Please select a project");
+        }
+
+        if (errors.length > 0) {
+            errorDiv.innerHTML = errors.join("<br>");
+            errorDiv.style.display = "block";
+            return false;
+        }
+
+        return true;
+    }
+
+    function updateProfile() {
+        if (!validateForm()) {
+            return false;
+        }
+
+        var username = document.getElementById("username").value;
+        var fullname = document.getElementById("fullname").value;
+        var email = document.getElementById("email").value;
+        var project = document.getElementById("project").value;
+        var errorDiv = document.getElementById("profile-error");
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "/profile?" +
+            "username=" + encodeURIComponent(username) +
+            "&fullname=" + encodeURIComponent(fullname) +
+            "&email=" + encodeURIComponent(email) +
+            "&project=" + encodeURIComponent(project), true);
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    errorDiv.style.display = "none";
+                    alert("Profile updated successfully!");
+                } else {
+                    errorDiv.innerHTML = "Error updating profile. Please try again.";
+                    errorDiv.style.display = "block";
+                }
+            }
+        };
+
+        xhr.send(null);
+        return false;
+    }
+
+    function clearError() {
+        document.getElementById("profile-error").style.display = "none";
+    }
+
+    function goBack() {
+        window.location.href = 'dashboard.html';
+    }
+
+    function loadCurrentProfile() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var username = urlParams.get('username');
+
+        // If no username in URL, try cookie
+        if (!username) {
+            username = getCookie('username');
+        }
+
+        // If still no username, redirect to dashboard
+        if (!username) {
+            alert("No username found - redirecting to dashboard");
+            window.location.href = 'dashboard.html';
+            return;
+        }
+
+        // Set username in readonly field
+        document.getElementById("username").value = username;
+
+        // Fetch user profile data
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "/users", true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var users = JSON.parse(xhr.responseText);
+                var currentUser = users.find(user => user.username === username);
+
+                if (currentUser) {
+                    // Populate form fields
+                    document.getElementById("fullname").value = currentUser.fullname || '';
+                    document.getElementById("email").value = currentUser.email || '';
+                    document.getElementById("project").value = currentUser.project || '';
+                }
+            }
+        };
+        xhr.send(null);
+    }
+
+    function loadProfileData() {
+        var projects = ["SCJV - Pilbara Ports", "W6946", "MS1180"];
+        var select = document.getElementById("project");
+
+        while (select.firstChild) {
+            select.removeChild(select.firstChild);
+        }
+
+        var defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.text = "Select Project";
+        select.appendChild(defaultOption);
+
+        projects.forEach(function(project) {
+            var option = document.createElement("option");
+            option.value = project;
+            option.text = project;
+            select.appendChild(option);
+        });
+
+        // Load current user's profile data
+        loadCurrentProfile();
+    }
+
+    /* Add to all HTML files that need session management */
+    function getCookie(name) {
+        var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        if (match) return match[2];
+        return '';
+    }
+
+    function checkSession() {
+        var username = getCookie('username');
+        if (!username) {
+            alert("Session expired - please login again");
+            window.location.href = 'index.html';
+            return false;
+        }
+        return true;
+    }
+
+    /* Add to all pages with navigation */
+    function navigateToProfile() {
+        if (!checkSession()) return;
+        var username = getCookie('username');
+        window.location.href = 'profile.html?username=' + encodeURIComponent(username);
+    }
+
+    function navigateToProject(url) {
+        if (!checkSession()) return;
+        window.location.href = url;
+    }
+
+    /* Add session check to window.onload */
+    window.onload = function() {
+        if (!checkSession()) return;
+        loadProfileData();
+    };
+  </script>
+</head>
+
+<body>
+  <div class="main">
+    <h1>Profile Management</h1>
+
+    <form id="profileForm" onsubmit="return updateProfile();">
+      <div id="profile-error" class="error">
+        Error updating profile
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="fullname">Full Name:</label>
+        <input type="text" id="fullname" name="fullname">
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email">
+      </div>
+
+      <div class="form-group">
+        <label for="project">Project:</label>
+        <select id="project" name="project">
+          <option value="">Select Project</option>
+        </select>
+      </div>
+
+      <div class="button-group">
+        <input type="submit" value="Update Profile">
+        <input type="reset" value="Clear" onclick="clearError();">
+        <button type="button" onclick="goBack();" class="nav-button">Back to Dashboard</button>
+      </div>
+    </form>
+
+    <div class="admin-section">
+      <h2>Administrative Tools</h2>
+      <button type="button" onclick="location.href='crud_profile.html'" class="nav-button">Manage User Profiles</button>
+    </div>
+  </div>
+</body>
+
+</html>

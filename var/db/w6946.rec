@@ -1,0 +1,281 @@
+%rec: Project
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Category 70 License
+Procedure: Dust Management
+Environmental_Aspect: Air Quality
+Obligation_Number: W6946-01
+Obligation: Install and maintain dust monitoring equipment at designated locations around crushing and screening operations
+Accountability: Site Manager
+Responsibility: Environmental Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2025/07/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Equipment must meet AS/NZS standards for dust monitoring
+General_Comments: Installation pending site setup
+Compliance_Comments: Regular calibration required
+NonConformance_Comments:
+Evidence: Installation records and calibration certificates
+PersonEmail: env.coord@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Monthly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: Yes
+Inspection_Frequency: Weekly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Monitoring
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Category 70 License
+Procedure: Noise Control
+Environmental_Aspect: Noise Management
+Obligation_Number: W6946-02
+Obligation: Conduct noise monitoring during crushing operations to ensure compliance with assigned noise levels
+Accountability: Site Manager
+Responsibility: Environmental Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/06/30
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Monitoring required at boundary points N1, N2 and N3
+General_Comments: Equipment calibration needed before startup
+Compliance_Comments: Document all exceedances
+NonConformance_Comments:
+Evidence: Noise monitoring records
+PersonEmail: env.coord@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Weekly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: Yes
+Inspection_Frequency: Weekly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Monitoring
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Category 70 License
+Procedure: Water Management
+Environmental_Aspect: Water Quality
+Obligation_Number: W6946-03
+Obligation: Maintain logbook of water usage for dust suppression activities
+Accountability: Site Manager
+Responsibility: Environmental Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/08/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Include source, volume and application areas
+General_Comments: Template to be developed
+Compliance_Comments: Weekly review required
+NonConformance_Comments:
+Evidence: Water usage logs
+PersonEmail: env.coord@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Weekly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: No
+Inspection_Frequency:
+Site_or_Desktop: Desktop
+New_Control_Action_Required:
+Obligation_Type: Record Keeping
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Category 70 License
+Procedure: Equipment Management
+Environmental_Aspect: Maintenance
+Obligation_Number: W6946-04
+Obligation: Implement preventive maintenance program for all dust control equipment
+Accountability: Maintenance Manager
+Responsibility: Maintenance Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/07/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Include water sprays, enclosures and dust collectors
+General_Comments: Maintenance schedules being developed
+Compliance_Comments: Document all maintenance activities
+NonConformance_Comments:
+Evidence: Maintenance records
+PersonEmail: maint.coord@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Monthly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: Yes
+Inspection_Frequency: Monthly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Maintenance
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Category 70 License
+Procedure: Reporting
+Environmental_Aspect: Compliance
+Obligation_Number: W6946-05
+Obligation: Submit quarterly compliance reports to regulatory authority
+Accountability: Site Manager
+Responsibility: Environmental Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/09/30
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Include monitoring data and incident reports
+General_Comments: Report template approved
+Compliance_Comments: Due by end of each quarter
+NonConformance_Comments:
+Evidence: Submitted reports
+PersonEmail: env.coord@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Quarterly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/09/30
+Inspection: No
+Inspection_Frequency:
+Site_or_Desktop: Desktop
+New_Control_Action_Required:
+Obligation_Type: Reporting
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Category 70 License
+Procedure: Dust Management
+Environmental_Aspect: Air Quality
+Obligation_Number: W6946-01
+Obligation: Install and maintain dust monitoring equipment at designated locations around crushing and screening operations
+Accountability: Site Manager
+Responsibility: Environmental Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/07/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Equipment must meet AS/NZS standards for dust monitoring
+General_Comments: Installation pending site setup
+Compliance_Comments: Regular calibration required
+NonConformance_Comments:
+Evidence: Installation records and calibration certificates
+PersonEmail: env.coord@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Monthly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: Yes
+Inspection_Frequency: Weekly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Monitoring
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Category 70 License
+Procedure: Noise Control
+Environmental_Aspect: Noise Management
+Obligation_Number: W6946-02
+Obligation: Conduct noise monitoring during crushing operations to ensure compliance with assigned noise levels
+Accountability: Site Manager
+Responsibility: Environmental Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/06/30
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Monitoring required at boundary points N1, N2 and N3
+General_Comments: Equipment calibration needed before startup
+Compliance_Comments: Document all exceedances
+NonConformance_Comments:
+Evidence: Noise monitoring records
+PersonEmail: env.coord@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Weekly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: Yes
+Inspection_Frequency: Weekly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Monitoring
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Category 70 License
+Procedure: Water Management
+Environmental_Aspect: Water Quality
+Obligation_Number: W6946-03
+Obligation: Maintain logbook of water usage for dust suppression activities
+Accountability: Site Manager
+Responsibility: Environmental Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/08/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Include source, volume and application areas
+General_Comments: Template to be developed
+Compliance_Comments: Weekly review required
+NonConformance_Comments:
+Evidence: Water usage logs
+PersonEmail: env.coord@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Weekly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: No
+Inspection_Frequency:
+Site_or_Desktop: Desktop
+New_Control_Action_Required:
+Obligation_Type: Record Keeping
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Category 70 License
+Procedure: Equipment Management
+Environmental_Aspect: Maintenance
+Obligation_Number: W6946-04
+Obligation: Implement preventive maintenance program for all dust control equipment
+Accountability: Maintenance Manager
+Responsibility: Maintenance Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/07/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Include water sprays, enclosures and dust collectors
+General_Comments: Maintenance schedules being developed
+Compliance_Comments: Document all maintenance activities
+NonConformance_Comments:
+Evidence: Maintenance records
+PersonEmail: maint.coord@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Monthly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: Yes
+Inspection_Frequency: Monthly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Maintenance
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Category 70 License
+Procedure: Reporting
+Environmental_Aspect: Compliance
+Obligation_Number: W6946-05
+Obligation: Submit quarterly compliance reports to regulatory authority
+Accountability: Site Manager
+Responsibility: Environmental Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/09/30
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Include monitoring data and incident reports
+General_Comments: Report template approved
+Compliance_Comments: Due by end of each quarter
+NonConformance_Comments:
+Evidence: Submitted reports
+PersonEmail: env.coord@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Quarterly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/09/30
+Inspection: No
+Inspection_Frequency:
+Site_or_Desktop: Desktop
+New_Control_Action_Required:
+Obligation_Type: Reporting

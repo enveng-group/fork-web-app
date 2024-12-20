@@ -1,24 +1,173 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Login</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  </head>
-  <body>
-    <h1>Login</h1>
-    <form id="loginForm" method="GET">
-      <label for="username">Username:</label>
-      <input type="text" id="username" name="username"
-             pattern="john" required
-             title="Wrong Username"><br><br>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
 
-      <label for="password">Password:</label>
-      <input type="password" id="password" name="password"
-             pattern="smith" required
-             title="Wrong Password"><br><br>
+<head>
+  <title>Login - Secure Access</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style type="text/css">
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f7f2;
+    }
 
-      <button type="submit" formaction="/dashboard.html">Login</button>
+    .main {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+    }
+
+    .form-group {
+      margin: 10px 0;
+    }
+
+    .error {
+      color: #ff0000;
+      font-weight: bold;
+      display: none;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 5px;
+      margin: 5px 0;
+    }
+
+    input[type="submit"],
+    input[type="reset"] {
+      padding: 5px 15px;
+      margin: 5px;
+      background: #2f4f2f;
+      color: #fff;
+      border: 1px solid #1a2f1a;
+    }
+
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      color: #666;
+    }
+  </style>
+  <script type="text/javascript">
+    "use strict";
+    function validateForm() {
+      var username = document.getElementById("username").value;
+      var password = document.getElementById("password").value;
+      var errorDiv = document.getElementById("login-error");
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/auth?username=" + encodeURIComponent(username) +
+                     "&password=" + encodeURIComponent(password), false);
+      xhr.send(null);
+
+      if (xhr.status === 200) {
+        // Store username in cookie on successful login
+        document.cookie = "username=" + encodeURIComponent(username) +
+                         ";path=/;max-age=3600";
+        errorDiv.style.display = "none";
+        window.location.href = 'dashboard.html';
+        return false; // Prevent form submission
+      } else {
+        errorDiv.style.display = "block";
+        return false;
+      }
+    }
+
+    function clearError() {
+      document.getElementById("login-error").style.display = "none";
+    }
+
+    function handleRegister(event) {
+      event.preventDefault();
+      var username = document.getElementById("reg-username").value;
+      var password = document.getElementById("reg-password").value;
+      var errorDiv = document.getElementById("register-error");
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/register?username=" + encodeURIComponent(username) +
+                      "&password=" + encodeURIComponent(password), false);
+      xhr.send(null);
+
+      if (xhr.status === 200) {
+        errorDiv.style.display = "none";
+        alert("Registration successful! Please login.");
+        document.getElementById("registerForm").reset();
+        return false;
+      } else {
+        errorDiv.style.display = "block";
+        return false;
+      }
+    }
+
+    function getCookie(name) {
+      var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      if (match) return match[2];
+      return '';
+    }
+
+    function checkSession() {
+      var username = getCookie('username');
+      if (!username) {
+          alert("Session expired - please login again");
+          window.location.href = 'index.html';
+          return false;
+      }
+      return true;
+    }
+
+    /* Add to all pages with navigation */
+    function navigateToProfile() {
+        if (!checkSession()) return;
+        var username = getCookie('username');
+        window.location.href = 'profile.html?username=' + encodeURIComponent(username);
+    }
+
+    function navigateToProject(url) {
+        if (!checkSession()) return;
+        window.location.href = url;
+    }
+
+    window.onload = function() {
+      if (!checkSession()) return;
+      // ... existing onload code ...
+    };
+  </script>
+</head>
+
+<body>
+  <div class="main">
+    <h1>Secure Login</h1>
+
+    <form id="loginForm" method="get" action="dashboard.html" onsubmit="return validateForm();">
+      <div id="login-error" class="error">
+        Invalid username or password
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password">
+      </div>
+
+      <div class="form-group">
+        <input type="submit" value="Login">
+        <input type="reset" value="Clear" onclick="clearError();">
+      </div>
     </form>
-  </body>
+
+    <div class="footer">
+      <p>Protected by security monitoring</p>
+      <p>Need help? Contact: <a href="mailto:support@example.com">support@example.com</a></p>
+    </div>
+  </div>
+</body>
+
 </html>

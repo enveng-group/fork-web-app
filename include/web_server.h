@@ -22,10 +22,27 @@
 #define DEFAULT_PORT 8080
 #define WWW_ROOT "www"
 #define SERVER_STRING "Server: EnvEngWebServer/1.0\r\n"
+#define AUDIT_LOG_PATH "var/log/audit.log"
+#define MAX_AUDIT_MSG 1024
+#define MAX_LOG_SIZE (1024 * 1024)  /* 1MB */
+#define MAX_LOG_FILES 5
+#define LOG_DIR "var/log"
+#define AUDIT_LOG_PATTERN "var/log/audit.log.%d"
+#define MIME_HTML "text/html"
+#define MIME_PLAIN "text/plain"
+#define MIME_CSS "text/css"
+#define MIME_JS "text/javascript"
+#define MIME_DEFAULT "application/octet-stream"
+#define MAX_COOKIE_LEN 1024
+#define SESSION_TIMEOUT 3600  /* 1 hour in seconds */
 
 /* Function prototypes */
 int setup_server(int port);
 int handle_client(int client_socket, const char *root_dir);
 ssize_t serve_file(int client_socket, const char *uri);
+int validate_email(const char *email);
+int validate_project(const char *project);
+int set_session_cookie(int client_socket, const char *username);
+int validate_session_cookie(const char *cookie_header);
 
 #endif /* WEB_SERVER_H */

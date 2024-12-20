@@ -1,12 +1,12 @@
-# EditorConfig for EnvEng WebApp
+# EditorConfig: https://editorconfig.org/
+
+# top-most EditorConfig file
 root = true
 
-# Default settings
+# Default settings for all files
 [*]
-charset = utf-8
+charset = ascii
 end_of_line = lf
-indent_style = space
-indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = true
 max_line_length = 80
@@ -33,10 +33,47 @@ tab_width = 4
 indent_style = tab
 tab_width = 4
 
-# Web files
-[*.{html,css,js}]
+# JavaScript files - ES3 strict mode
+[*.{js}]
+indent_style = space
 indent_size = 2
-max_line_length = 120
+quote_type = single
+curly_bracket_next_line = false
+spaces_around_operators = true
+spaces_around_brackets = inside
+indent_brace_style = stroustrup
+max_line_length = 80
+
+# HTML files - HTML 4.01 Strict
+[*.{html,htm}]
+indent_style = space
+indent_size = 2
+quote_type = double
+max_line_length = 80
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# CSS files - CSS 2.1
+[*.css]
+indent_style = space
+indent_size = 2
+quote_type = double
+max_line_length = 80
+block_comment_start = /*
+block_comment = *
+block_comment_end = */
+
+# Configuration files
+[*.{json,yml,yaml,xml}]
+indent_style = space
+indent_size = 2
+
+# Documentation files
+[*.{md,txt}]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = false
+max_line_length = 80
 
 # Configuration files
 [*.{conf,rec,desc}]

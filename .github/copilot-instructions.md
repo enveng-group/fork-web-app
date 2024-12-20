@@ -15,6 +15,18 @@ These instructions ensure Copilot's suggestions align with our project's technic
 - Never overcomplicate the code generated.
     - Keep generated code as simple and straightforward as possible.
     - Avoid complex control structures and nested loops.
+- For web development, following a mobile-first approach is preferred.
+    - But still ensure pages can be responsive on desktops.
+- For html web development, like `.html` pages, use `HTML4.01` and and only native `HTML4.01-API`.
+    - Use `HTML 4.01 Strict` or `XHTML 1.0` Strict to enforce structural rigor.
+- For CSS, use `CSS2.1` and only native `CSS2.1-API`.
+    - no libraries or frameworks.
+    - all inline and no external css files.
+- For JavaScript, use `ES3` and only native `WEB-API`.
+    - Strict Mode: Always use `"use strict";` at the beginning of files or functions to enforce stricter parsing and error handling.
+    - No external libraries or frameworks.
+    - No modern JavaScript features (e.g., ES6+).
+    - all inline and no external js files.
 - Provide code snippets that can be easily integrated into existing codebases.
 - Ensure generated code is **safe**, **efficient**, and **maintainable**.
 - Follow the project's **coding standards** and **style guidelines**.

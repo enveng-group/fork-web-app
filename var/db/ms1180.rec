@@ -1,0 +1,173 @@
+%rec: Project
+
+Project_Name: MS1180
+Primary_Environmental_Mechanism: Environmental Management Plan
+Procedure: Noise Management
+Environmental_Aspect: Noise Control
+Obligation_Number: MS1180-01
+Obligation: Implement noise monitoring program at designated sensitive receptor locations during construction activities
+Accountability: Environmental Manager
+Responsibility: Site Environmental Officer
+ProjectPhase: Construction
+Action_DueDate: 2024/06/30
+Close_Out_Date:
+Status: In Progress
+Supporting_Information: Monitoring to be conducted weekly at R1, R2 and R3 locations as per approved monitoring plan
+General_Comments: Initial baseline monitoring completed
+Compliance_Comments: Verify through weekly monitoring reports
+NonConformance_Comments:
+Evidence: Noise monitoring records
+PersonEmail: env.officer@ms1180.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Weekly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: Yes
+Inspection_Frequency: Weekly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Monitoring
+
+Project_Name: MS1180
+Primary_Environmental_Mechanism: Environmental Management Plan
+Procedure: Dust Management
+Environmental_Aspect: Air Quality
+Obligation_Number: MS1180-02
+Obligation: Maintain and calibrate dust monitoring equipment at specified intervals
+Accountability: Environmental Manager
+Responsibility: Environmental Technician
+ProjectPhase: Operations
+Action_DueDate: 2024/07/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Monthly calibration required for all dust monitoring stations
+General_Comments: Equipment procurement in progress
+Compliance_Comments: Include calibration certificates in monthly reports
+NonConformance_Comments:
+Evidence:
+PersonEmail: env.tech@ms1180.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Monthly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: Yes
+Inspection_Frequency: Monthly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Maintenance
+
+Project_Name: MS1180
+Primary_Environmental_Mechanism: Environmental Management Plan
+Procedure: Waste Management
+Environmental_Aspect: Waste Control
+Obligation_Number: MS1180-03
+Obligation: Submit quarterly waste management reports to regulatory authority
+Accountability: Environmental Manager
+Responsibility: Waste Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/09/30
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Reports must include waste volume data and disposal records
+General_Comments: Template approved by regulator
+Compliance_Comments: Submit by end of each quarter
+NonConformance_Comments:
+Evidence:
+PersonEmail: waste.coord@ms1180.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Quarterly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/09/30
+Inspection: No
+Inspection_Frequency:
+Site_or_Desktop: Desktop
+New_Control_Action_Required:
+Obligation_Type: Reporting
+
+Let me know if you would like me to add more obligations or modify the existing ones to better match your requirements!%rec: Project
+
+Project_Name: MS1180
+Primary_Environmental_Mechanism: Environmental Management Plan
+Procedure: Noise Management
+Environmental_Aspect: Noise Control
+Obligation_Number: MS1180-01
+Obligation: Implement noise monitoring program at designated sensitive receptor locations during construction activities
+Accountability: Environmental Manager
+Responsibility: Site Environmental Officer
+ProjectPhase: Construction
+Action_DueDate: 2024/06/30
+Close_Out_Date:
+Status: In Progress
+Supporting_Information: Monitoring to be conducted weekly at R1, R2 and R3 locations as per approved monitoring plan
+General_Comments: Initial baseline monitoring completed
+Compliance_Comments: Verify through weekly monitoring reports
+NonConformance_Comments:
+Evidence: Noise monitoring records
+PersonEmail: env.officer@ms1180.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Weekly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: Yes
+Inspection_Frequency: Weekly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Monitoring
+
+Project_Name: MS1180
+Primary_Environmental_Mechanism: Environmental Management Plan
+Procedure: Dust Management
+Environmental_Aspect: Air Quality
+Obligation_Number: MS1180-02
+Obligation: Maintain and calibrate dust monitoring equipment at specified intervals
+Accountability: Environmental Manager
+Responsibility: Environmental Technician
+ProjectPhase: Operations
+Action_DueDate: 2024/07/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Monthly calibration required for all dust monitoring stations
+General_Comments: Equipment procurement in progress
+Compliance_Comments: Include calibration certificates in monthly reports
+NonConformance_Comments:
+Evidence:
+PersonEmail: env.tech@ms1180.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Monthly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: Yes
+Inspection_Frequency: Monthly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Maintenance
+
+Project_Name: MS1180
+Primary_Environmental_Mechanism: Environmental Management Plan
+Procedure: Waste Management
+Environmental_Aspect: Waste Control
+Obligation_Number: MS1180-03
+Obligation: Submit quarterly waste management reports to regulatory authority
+Accountability: Environmental Manager
+Responsibility: Waste Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/09/30
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Reports must include waste volume data and disposal records
+General_Comments: Template approved by regulator
+Compliance_Comments: Submit by end of each quarter
+NonConformance_Comments:
+Evidence:
+PersonEmail: waste.coord@ms1180.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Quarterly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/09/30
+Inspection: No
+Inspection_Frequency:
+Site_or_Desktop: Desktop
+New_Control_Action_Required:
+Obligation_Type: Reporting
+
+Let me know if you would like me to add more obligations or modify the existing ones to better match your requirements!

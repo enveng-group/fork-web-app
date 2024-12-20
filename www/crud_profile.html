@@ -1,0 +1,291 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+
+<head>
+  <title>User Profile Management</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style type="text/css">
+    /* ...existing styles... */
+
+    .user-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    .user-table th,
+    .user-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .user-table th {
+      background: #f4f7f2;
+    }
+
+    .button-small {
+      padding: 2px 8px;
+      margin: 2px;
+      background: #2f4f2f;
+      color: #fff;
+      border: 1px solid #1a2f1a;
+      cursor: pointer;
+    }
+
+    .password-display {
+      background: #fffde7;
+      padding: 10px;
+      border: 1px solid #ffd700;
+      margin: 10px 0;
+      display: none;
+    }
+  </style>
+  <script type="text/javascript">
+    "use strict";
+
+    function generatePassword() {
+      var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      var password = "";
+      for (var i = 0; i < 12; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return password;
+    }
+
+    function deleteUser(username) {
+      if (!confirm("Delete user " + username + "?")) {
+        return;
+      }
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/delete?username=" + encodeURIComponent(username), true);
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            alert("User deleted successfully");
+            loadUsers();
+          } else {
+            alert("Error deleting user");
+          }
+        }
+      };
+      xhr.send(null);
+    }
+
+    function resetPassword(username) {
+      var newPassword = generatePassword();
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/resetpw?username=" + encodeURIComponent(username) +
+        "&password=" + encodeURIComponent(newPassword), true);
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            alert("New password for " + username + ": " + newPassword);
+          } else {
+            alert("Error resetting password");
+          }
+        }
+      };
+      xhr.send(null);
+    }
+
+    function loadUsers() {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/users", true);
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var users = JSON.parse(xhr.responseText);
+          var table = document.getElementById("userTable");
+          var html = "<tr><th>Username</th><th>Full Name</th><th>Project</th><th>Actions</th></tr>";
+
+          users.forEach(function (user) {
+            html += "<tr><td>" + user.username + "</td><td>" +
+              user.fullname + "</td><td>" + user.project +
+              "</td><td>" +
+              "<button class='button-small' onclick='editUser(\"" +
+              user.username + "\", \"" + user.fullname + "\", \"" +
+              user.email + "\", \"" + user.project + "\")'>Edit</button> " +
+              "<button class='button-small' onclick='resetPassword(\"" +
+              user.username + "\")'>Reset Password</button> " +
+              "<button class='button-small' onclick='deleteUser(\"" +
+              user.username + "\")'>Delete</button></td></tr>";
+          });
+
+          table.innerHTML = html;
+        }
+      };
+      xhr.send(null);
+    }
+
+    function createUser() {
+      var username = document.getElementById("newUsername").value;
+      var fullname = document.getElementById("newFullname").value;
+      var email = document.getElementById("newEmail").value;
+      var project = document.getElementById("newProject").value;
+      var password = generatePassword();
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/register?username=" + encodeURIComponent(username) +
+        "&password=" + encodeURIComponent(password) +
+        "&fullname=" + encodeURIComponent(fullname) +
+        "&email=" + encodeURIComponent(email) +
+        "&project=" + encodeURIComponent(project), true);
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            alert("User created successfully!\nUsername: " + username +
+              "\nPassword: " + password);
+            loadUsers();
+            document.getElementById("createUserForm").reset();
+          } else {
+            alert("Error creating user");
+          }
+        }
+      };
+      xhr.send(null);
+      return false;
+    }
+
+    function editUser(username, fullname, email, project) {
+        document.getElementById("newUsername").value = username;
+        document.getElementById("newUsername").readOnly = true;
+        document.getElementById("newFullname").value = fullname;
+        document.getElementById("newEmail").value = email;
+        document.getElementById("newProject").value = project;
+        document.getElementById("submitBtn").value = "Update User";
+        document.getElementById("createUserForm").onsubmit = function(e) {
+            e.preventDefault();
+            return updateExistingUser();
+        };
+    }
+
+    function updateExistingUser() {
+        var username = document.getElementById("newUsername").value;
+        var fullname = document.getElementById("newFullname").value;
+        var email = document.getElementById("newEmail").value;
+        var project = document.getElementById("newProject").value;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "/update?" +
+            "username=" + encodeURIComponent(username) +
+            "&fullname=" + encodeURIComponent(fullname) +
+            "&email=" + encodeURIComponent(email) +
+            "&project=" + encodeURIComponent(project), true);
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    alert("User updated successfully!");
+                    document.getElementById("newUsername").readOnly = false;
+                    document.getElementById("createUserForm").reset();
+                    document.getElementById("submitBtn").value = "Create User";
+                    document.getElementById("createUserForm").onsubmit = createUser;
+                    loadUsers();
+                } else {
+                    alert("Error updating user");
+                }
+            }
+        };
+        xhr.send(null);
+        return false;
+    }
+
+    /* Add to all HTML files that need session management */
+    function getCookie(name) {
+        var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        if (match) return match[2];
+        return '';
+    }
+
+    function checkSession() {
+        var username = getCookie('username');
+        if (!username) {
+            alert("Session expired - please login again");
+            window.location.href = 'index.html';
+            return false;
+        }
+        return true;
+    }
+
+    function goBackToProfile() {
+        var username = getCookie('username');
+        if (!username) {
+            window.location.href = 'dashboard.html';
+        } else {
+            window.location.href = 'profile.html?username=' + encodeURIComponent(username);
+        }
+    }
+
+    /* Add session check to window.onload */
+    window.onload = function() {
+        if (!checkSession()) return;
+        loadUsers();
+    };
+
+    /* Add to all pages with navigation */
+    function navigateToProfile() {
+        if (!checkSession()) return;
+        var username = getCookie('username');
+        window.location.href = 'profile.html?username=' + encodeURIComponent(username);
+    }
+
+    function navigateToProject(url) {
+        if (!checkSession()) return;
+        window.location.href = url;
+    }
+  </script>
+</head>
+
+<body>
+  <div class="main">
+    <h1>User Profile Management</h1>
+
+    <form id="createUserForm" onsubmit="return createUser();">
+      <div class="form-group">
+        <label for="newUsername">Username:</label>
+        <input type="text" id="newUsername" name="newUsername" required>
+      </div>
+
+      <div class="form-group">
+        <label for="newFullname">Full Name:</label>
+        <input type="text" id="newFullname" name="newFullname" required>
+      </div>
+
+      <div class="form-group">
+        <label for="newEmail">Email:</label>
+        <input type="text" id="newEmail" name="newEmail" required>
+      </div>
+
+      <div class="form-group">
+        <label for="newProject">Project:</label>
+        <select id="newProject" name="newProject" required>
+          <option value="">Select Project</option>
+          <option value="SCJV - Pilbara Ports">SCJV - Pilbara Ports</option>
+          <option value="W6946">W6946</option>
+          <option value="MS1180">MS1180</option>
+        </select>
+      </div>
+
+      <div class="button-group">
+        <input type="submit" id="submitBtn" value="Create User">
+        <button type="button"
+                onclick="goBackToProfile();"
+                class="nav-button">Back to Profile</button>
+      </div>
+    </form>
+
+    <h2>Existing Users</h2>
+    <table id="userTable" class="user-table">
+      <tr>
+        <th>Username</th>
+        <th>Full Name</th>
+        <th>Project</th>
+        <th>Actions</th>
+      </tr>
+    </table>
+  </div>
+</body>
+
+</html>

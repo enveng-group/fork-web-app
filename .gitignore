@@ -170,7 +170,7 @@ dkms.conf
 *.diff
 
 # recfiles
-*.rec
+# *.rec
 *.rec~
 *.rec.bak
 
