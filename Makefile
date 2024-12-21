@@ -102,26 +102,35 @@ $(OBJDIR)/test/%.o: $(TESTDIR)/%.c | $(OBJDIR)/test
 RELEASE_VERSION = 0.0.1
 RELEASE_NAME = web-app-$(RELEASE_VERSION)
 DISTDIR = dist
-TMPDIR = $(DISTDIR)/$(RELEASE_NAME)
+TMPDIR = /tmp/$(RELEASE_NAME)
 PROD_TARGET = $(BINDIR)/web_server
 
-# Release files
+# Release files and directories
 RELEASE_DIRS = bin etc var/db var/log www
 
-# Simple release target
+# Clean release target
 dist: $(PROD_TARGET)
+	# Create fresh temp directory
+	rm -rf $(TMPDIR)
 	mkdir -p $(TMPDIR)/bin
 	mkdir -p $(TMPDIR)/etc
 	mkdir -p $(TMPDIR)/var/db
 	mkdir -p $(TMPDIR)/var/log
 	mkdir -p $(TMPDIR)/www
+
+	# Copy only runtime files
 	cp $(PROD_TARGET) $(TMPDIR)/bin/
 	cp etc/auth.passwd $(TMPDIR)/etc/
 	cp var/db/*.rec $(TMPDIR)/var/db/
 	cp var/db/schema.desc $(TMPDIR)/var/db/
 	cp var/log/audit.log $(TMPDIR)/var/log/
 	cp www/*.html $(TMPDIR)/www/
-	cd $(DISTDIR) && tar czf $(RELEASE_NAME).tar.gz $(RELEASE_NAME)
+
+	# Create release archive
+	mkdir -p $(DISTDIR)
+	cd $(TMPDIR)/.. && tar czf $(CURDIR)/$(DISTDIR)/$(RELEASE_NAME).tar.gz $(RELEASE_NAME)
+
+	# Cleanup
 	rm -rf $(TMPDIR)
 
 clean-dist:
