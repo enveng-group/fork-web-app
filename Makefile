@@ -57,7 +57,7 @@ RELEASE_TAR = $(BINDIR)/$(RELEASE_NAME).tar.gz
 # Data files to include from project root and subdirectories
 DATA_FILES = etc/auth.passwd var/db/ms1180.rec var/db/schema.desc var/db/scjv.rec var/db/w6946.rec var/log/audit.log
 
-.PHONY: all clean test prod release release-prep clean-release
+.PHONY: all clean test prod release release-prep clean-release dist clean-dist
 
 all: prod
 
@@ -66,55 +66,66 @@ prod: $(PROD_TARGET)
 test: $(TEST_TARGET)
 	./$(TEST_TARGET)
 
-# Production build rules
-$(PROD_TARGET): $(PROD_OBJ)
-	$(CC) $^ -o $@ $(PROD_LDFLAGS)
+# Build directories
+OBJDIRS = $(OBJDIR)/prod $(OBJDIR)/test
+BINDIRS = $(BINDIR)
+ALLDIRS = $(OBJDIRS) $(BINDIRS)
 
-$(OBJDIR)/prod/%.o: $(SRCDIR)/%.c
+# Create required directories
+$(OBJDIR)/prod:
+	mkdir -p $@
+
+$(OBJDIR)/test:
+	mkdir -p $@
+
+$(BINDIR):
+	mkdir -p $@
+
+# Updated build rules
+$(PROD_TARGET): $(ALLDIRS) $(PROD_OBJ)
+	$(CC) $(PROD_OBJ) -o $@ $(PROD_LDFLAGS)
+
+$(TEST_TARGET): $(ALLDIRS) $(TEST_OBJ)
+	$(CC) $(TEST_OBJ) -o $@ $(TEST_LDFLAGS) $(TEST_LIBS)
+
+# Updated object file rules
+$(OBJDIR)/prod/%.o: $(SRCDIR)/%.c | $(OBJDIR)/prod
 	$(CC) $(PROD_CFLAGS) -I$(INCLUDEDIR) -c $< -o $@
 
-# Test build rules
-$(TEST_TARGET): $(TEST_OBJ)
-	$(CC) $^ -o $@ $(TEST_LDFLAGS) $(TEST_LIBS)
-
-$(OBJDIR)/test/%.o: $(SRCDIR)/%.c
+$(OBJDIR)/test/%.o: $(SRCDIR)/%.c | $(OBJDIR)/test
 	$(CC) $(TEST_CFLAGS) -I$(INCLUDEDIR) -c $< -o $@
 
-$(OBJDIR)/test/%.o: $(TESTDIR)/%.c
+$(OBJDIR)/test/%.o: $(TESTDIR)/%.c | $(OBJDIR)/test
 	$(CC) $(TEST_CFLAGS) -I$(INCLUDEDIR) -c $< -o $@
 
-release-prep: prod
-	@echo "Preparing release $(RELEASE_NAME)..."
-	@mkdir -p $(RELEASE_DIR)
-	@# Copy binary
-	@cp $(PROD_TARGET) $(RELEASE_DIR)/
-	@# Copy data files
-	@for file in $(DATA_FILES); do \
-		dir=$$(dirname "$(RELEASE_DIR)/$$file"); \
-		mkdir -p $$dir; \
-		if [ -f $$file ]; then \
-			cp $$file "$(RELEASE_DIR)/$$file"; \
-		else \
-			echo "Warning: $$file not found"; \
-		fi \
-	done
-	@# Copy HTML files
-	@if [ -d www ]; then \
-		mkdir -p $(RELEASE_DIR)/www && \
-		cp -r www/* $(RELEASE_DIR)/www/; \
-	fi
+# Release configuration
+RELEASE_VERSION = 0.0.1
+RELEASE_NAME = web-app-$(RELEASE_VERSION)
+DISTDIR = dist
+TMPDIR = $(DISTDIR)/$(RELEASE_NAME)
+PROD_TARGET = $(BINDIR)/web_server
 
-release: release-prep
-	@echo "Creating release archive..."
-	@cd $(BINDIR)/release && tar -czf ../$(RELEASE_NAME).tar.gz $(RELEASE_NAME)
-	@echo "Release archive created at $(RELEASE_TAR)"
-	@# Optional: create checksum
-	@cd $(BINDIR) && sha256sum $(RELEASE_NAME).tar.gz > $(RELEASE_NAME).tar.gz.sha256
+# Release files
+RELEASE_DIRS = bin etc var/db var/log www
 
-clean-release:
-	@echo "Cleaning release files..."
-	@rm -rf $(BINDIR)/release
-	@rm -f $(BINDIR)/*.tar.gz*
+# Simple release target
+dist: $(PROD_TARGET)
+	mkdir -p $(TMPDIR)/bin
+	mkdir -p $(TMPDIR)/etc
+	mkdir -p $(TMPDIR)/var/db
+	mkdir -p $(TMPDIR)/var/log
+	mkdir -p $(TMPDIR)/www
+	cp $(PROD_TARGET) $(TMPDIR)/bin/
+	cp etc/auth.passwd $(TMPDIR)/etc/
+	cp var/db/*.rec $(TMPDIR)/var/db/
+	cp var/db/schema.desc $(TMPDIR)/var/db/
+	cp var/log/audit.log $(TMPDIR)/var/log/
+	cp www/*.html $(TMPDIR)/www/
+	cd $(DISTDIR) && tar czf $(RELEASE_NAME).tar.gz $(RELEASE_NAME)
+	rm -rf $(TMPDIR)
 
-clean: clean-release
-	rm -rf $(OBJDIR) $(BINDIR)
+clean-dist:
+	rm -rf $(DISTDIR)
+
+release: clean-dist prod dist
+	@echo "Release package created: $(DISTDIR)/$(RELEASE_NAME).tar.gz"
