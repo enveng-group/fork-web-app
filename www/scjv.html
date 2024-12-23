@@ -462,6 +462,63 @@
         rows[i].style.display = show ? '' : 'none';
       }
     }
+
+    // Add to the project view pages
+    "use strict";
+
+    function makeEditable(cell) {
+      // Only allow editing if user has permissions
+      if (!checkEditPermissions()) return;
+
+      var displayEl = cell.querySelector('.display-value');
+      var editEl = cell.querySelector('.edit-value');
+
+      displayEl.style.display = 'none';
+      editEl.style.display = '';
+      editEl.value = displayEl.textContent;
+      editEl.focus();
+    }
+
+    function updateField(input) {
+      var cell = input.parentElement;
+      var recordId = cell.parentElement.getAttribute('data-id');
+      var field = cell.getAttribute('data-field');
+      var value = input.value;
+
+      // Simple update for status changes
+      fetch('/record/update', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          id: recordId,
+          field: field,
+          value: value,
+          username: getCookie('username')
+        })
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Update failed');
+
+        // Update display
+        var displayEl = cell.querySelector('.display-value');
+        displayEl.textContent = value;
+        displayEl.style.display = '';
+        input.style.display = 'none';
+
+        // Log the action
+        logAction('UPDATE_' + field.toUpperCase(), recordId);
+      })
+      .catch(error => {
+        alert('Error updating record: ' + error.message);
+      });
+    }
+
+    function checkEditPermissions() {
+      // Check if user has permission for quick edits
+      var username = getCookie('username');
+      // Add project-specific role checks
+      return username && isProjectMember(username);
+    }
   </script>
 </head>
 

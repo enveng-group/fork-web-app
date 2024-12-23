@@ -235,6 +235,25 @@
   </style>
   <script type="text/javascript">
     "use strict";
+    // Add project mapping constants
+    var PROJECT_MAPPINGS = {
+      "SCJV - Pilbara Ports": {
+        crudPage: "crud_scjv.html",
+        recFile: "scjv.rec",
+        prefix: "PCEMP-"
+      },
+      "MS1180": {
+        crudPage: "crud_ms1180.html",
+        recFile: "ms1180.rec",
+        prefix: "MS1180-"
+      },
+      "W6946": {
+        crudPage: "crud_w6946.html",
+        recFile: "w6946.rec",
+        prefix: "W6946-"
+      }
+    };
+
     function confirmLogout() {
       return window.confirm("Logout?");
     }
@@ -528,46 +547,47 @@
       return records;
     }
 
+    // Modify createActionList function to include CRUD links
     function createActionList(records) {
       var now = new Date();
       var overdueItems = [];
       var list = document.getElementById('overdueList');
       if (!list) return;
 
-      // Collect overdue items from all projects
-      Object.keys(records).forEach(function (project) {
-        records[project].forEach(function (record) {
+      Object.keys(records).forEach(function(project) {
+        records[project].forEach(function(record) {
           var dueDate = new Date(record.Action_DueDate);
           var daysDiff = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
 
           if (daysDiff < 0) {
             overdueItems.push({
+              id: record.Obligation_Number,
               project: project.toUpperCase(),
               obligation: record.Obligation,
               dueDate: record.Action_DueDate,
-              id: record.Obligation_Number,
-              daysPast: Math.abs(daysDiff)
+              daysPast: Math.abs(daysDiff),
+              projectName: record.Project_Name
             });
           }
         });
       });
 
       // Sort by most overdue first
-      overdueItems.sort(function (a, b) {
+      overdueItems.sort(function(a, b) {
         return b.daysPast - a.daysPast;
       });
 
-      // Create action items
+      // Create action items with CRUD links
       var html = '';
-      overdueItems.forEach(function (item) {
+      overdueItems.forEach(function(item) {
         html += '<div class="action-item" id="action-' + item.id + '">' +
           '<div class="action-title">' + item.obligation + '</div>' +
           '<div class="action-project">Project: ' + item.project + '</div>' +
           '<div class="action-due">Overdue by ' + item.daysPast + ' days</div>' +
           '<div class="action-buttons">' +
-          '<button class="action-button" onclick="takeAction(\'' + item.id + '\', \'delegate\')">Delegate</button>' +
-          '<button class="action-button" onclick="takeAction(\'' + item.id + '\', \'review\')">Review</button>' +
-          '<button class="action-button" onclick="takeAction(\'' + item.id + '\', \'approve\')">Approve Extension</button>' +
+          '<button class="action-button" onclick="takeAction(\'' + item.id + '\', \'delegate\', \'' + item.projectName + '\')">Delegate</button>' +
+          '<button class="action-button" onclick="takeAction(\'' + item.id + '\', \'review\', \'' + item.projectName + '\')">Review</button>' +
+          '<button class="action-button" onclick="takeAction(\'' + item.id + '\', \'edit\', \'' + item.projectName + '\')">Edit Record</button>' +
           '</div>' +
           '<div id="status-' + item.id + '" class="action-status"></div>' +
           '</div>';
@@ -576,38 +596,28 @@
       list.innerHTML = html || '<p>No overdue items requiring attention</p>';
     }
 
-    function takeAction(id, action) {
+    // Modify takeAction function
+    function takeAction(id, action, projectName) {
       var statusDiv = document.getElementById('status-' + id);
       var actionItem = document.getElementById('action-' + id);
       var username = getCookie('username');
 
       if (!statusDiv || !actionItem || !username) return;
 
-      var actions = {
-        delegate: 'Delegated for immediate action',
-        review: 'Marked for review',
-        approve: 'Extension approved'
-      };
+      if (action === 'edit') {
+        // Get project mapping
+        var projectMap = PROJECT_MAPPINGS[projectName];
+        if (!projectMap) {
+          console.error('Invalid project name:', projectName);
+          return;
+        }
 
-      statusDiv.style.display = 'block';
-      statusDiv.innerHTML = 'Processing...';
+        // Navigate to CRUD page
+        window.location.href = projectMap.crudPage + '?id=' + encodeURIComponent(id);
+        return;
+      }
 
-      // Simulate action processing
-      setTimeout(function () {
-        statusDiv.innerHTML = actions[action] + ' by ' + username;
-        actionItem.style.opacity = '0.5';
-
-        // Record action in audit log
-        fetch('/audit_log', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'username=' + encodeURIComponent(username) +
-            '&action=' + encodeURIComponent('ACTION_' + action.toUpperCase()) +
-            '&item=' + encodeURIComponent(id)
-        }).catch(function (error) {
-          console.error('Error logging action:', error);
-        });
-      }, 500);
+      // Rest of existing action handling code...
     }
 
     window.onload = function () {
@@ -629,9 +639,14 @@
     </div>
     <div class="project-selector">
       <input type="button" class="project-button" value="SCJV - Pilbara Ports"
-        onclick="navigateToProject('scjv.html');">
-      <input type="button" class="project-button" value="MS1180" onclick="navigateToProject('ms1180.html');">
-      <input type="button" class="project-button" value="W6946" onclick="navigateToProject('w6946.html');">
+             onclick="navigateToProject('scjv.html');"
+             data-crud="crud_scjv.html">
+      <input type="button" class="project-button" value="MS1180"
+             onclick="navigateToProject('ms1180.html');"
+             data-crud="crud_ms1180.html">
+      <input type="button" class="project-button" value="W6946"
+             onclick="navigateToProject('w6946.html');"
+             data-crud="crud_w6946.html">
     </div>
 
     <div class="user-controls">

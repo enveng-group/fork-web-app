@@ -112,14 +112,13 @@ RELEASE_DIRS = bin etc var/db var/log www
 dist: $(PROD_TARGET)
 	# Create fresh temp directory
 	rm -rf $(TMPDIR)
-	mkdir -p $(TMPDIR)/bin
 	mkdir -p $(TMPDIR)/etc
 	mkdir -p $(TMPDIR)/var/db
 	mkdir -p $(TMPDIR)/var/log
 	mkdir -p $(TMPDIR)/www
 
 	# Copy only runtime files
-	cp $(PROD_TARGET) $(TMPDIR)/bin/
+	cp $(PROD_TARGET) $(TMPDIR)/
 	cp etc/auth.passwd $(TMPDIR)/etc/
 	cp var/db/*.rec $(TMPDIR)/var/db/
 	cp var/db/schema.desc $(TMPDIR)/var/db/

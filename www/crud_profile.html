@@ -14,8 +14,6 @@
       --border-color: #ddd;
     }
 
-    /* ...existing styles... */
-
     .user-table {
       width: 100%;
       border-collapse: collapse;
@@ -317,6 +315,10 @@
       <div class="button-group">
         <input type="submit" id="submitBtn" value="Create User">
         <button type="button" onclick="goBackToProfile();" class="nav-button">Back to Profile</button>
+        <!-- Add project specific CRUD links -->
+        <button type="button" onclick="location.href='crud_scjv.html'" class="nav-button">Manage SCJV Records</button>
+        <button type="button" onclick="location.href='crud_ms1180.html'" class="nav-button">Manage MS1180 Records</button>
+        <button type="button" onclick="location.href='crud_w6946.html'" class="nav-button">Manage W6946 Records</button>
       </div>
     </form>
 

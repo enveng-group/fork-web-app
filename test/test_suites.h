@@ -10,5 +10,6 @@
 
 /* Test suite initialization prototypes */
 int init_web_server_suite(CU_pSuite suite);
+int init_web_server_security_suite(CU_pSuite suite);
 
 #endif /* TEST_SUITES_H */

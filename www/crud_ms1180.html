@@ -1,0 +1,361 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+
+<head>
+  <title>Manage MS1180 Environmental Records</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+  <style type="text/css">
+    :root {
+      --primary-color: #2f4f2f;
+      --background-color: #f4f7f2;
+      --text-color: #000;
+      --error-color: #ff0000;
+      --warning-color: #fff3cd;
+      --border-color: #ddd;
+    }
+
+    /* Inherit base styles from other CRUD pages */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background-color);
+    }
+
+    .main {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    /* Form styling */
+    .form-group {
+      margin: 10px 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      border: 1px solid var(--border-color);
+    }
+
+    .error {
+      color: var(--error-color);
+      font-weight: bold;
+      padding: 10px;
+      display: none;
+    }
+
+    .success {
+      color: green;
+      padding: 10px;
+      display: none;
+    }
+
+    /* Table styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    th {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    /* Button styling */
+    .button-group {
+      margin: 15px 0;
+    }
+
+    button,
+    input[type="submit"],
+    input[type="reset"] {
+      padding: 8px 15px;
+      margin: 0 5px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-button {
+      background: white;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+    }
+
+    /* Loading indicator */
+    #loadingIndicator {
+      text-align: center;
+      padding: 20px;
+      display: none;
+    }
+  </style>
+  <script type="text/javascript">
+    "use strict";
+
+    function getCookie(name) {
+      var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      if (match) return match[2];
+      return '';
+    }
+
+    function checkSession() {
+      var username = getCookie('username');
+      if (!username) {
+        alert("Session expired - please login again");
+        window.location.href = 'index.html';
+        return false;
+      }
+      return true;
+    }
+
+    function goBack() {
+      window.location.href = 'ms1180.html';
+    }
+
+    function validateRecord() {
+      var errors = [];
+      var obligation = document.getElementById('obligation_number').value;
+      var projectPhase = document.getElementById('project_phase').value;
+      var actionDueDate = document.getElementById('action_due_date').value;
+
+      if (!obligation.startsWith('MS1180-')) {
+        errors.push("Obligation Number must start with MS1180-");
+      }
+
+      if (!projectPhase) {
+        errors.push("Project Phase is required");
+      }
+
+      if (!actionDueDate) {
+        errors.push("Action Due Date is required");
+      }
+
+      if (errors.length > 0) {
+        var errorDiv = document.getElementById('record-error');
+        errorDiv.innerHTML = errors.join("<br>");
+        errorDiv.style.display = 'block';
+        return false;
+      }
+
+      return true;
+    }
+
+    function saveRecord() {
+      if (!validateRecord()) {
+        return false;
+      }
+
+      var formData = new FormData(document.getElementById('recordForm'));
+      showLoading(true);
+
+      fetch('/record/save', {
+        method: 'POST',
+        body: formData
+      })
+        .then(function(response) {
+          if (!response.ok) throw new Error('Save failed');
+          showSuccess("Record saved successfully");
+          document.getElementById('recordForm').reset();
+          loadRecords();
+        })
+        .catch(function(error) {
+          showError("Failed to save record: " + error.message);
+        })
+        .finally(function() {
+          showLoading(false);
+        });
+
+      return false;
+    }
+
+    function loadRecords() {
+      showLoading(true);
+      fetch('/ms1180.rec')
+        .then(function(response) {
+          if (!response.ok) throw new Error('Failed to load records');
+          return response.text();
+        })
+        .then(function(data) {
+          var records = parseRecData(data);
+          populateTable(records);
+        })
+        .catch(function(error) {
+          showError("Failed to load records: " + error.message);
+        })
+        .finally(function() {
+          showLoading(false);
+        });
+    }
+
+    function parseRecData(data) {
+      var records = [];
+      var currentRecord = {};
+      var lines = data.split('\n');
+
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+
+        if (!line || line.startsWith('%')) continue;
+
+        if (line.startsWith('Project_Name:')) {
+          if (Object.keys(currentRecord).length > 0) {
+            records.push(currentRecord);
+          }
+          currentRecord = {};
+        }
+
+        var colonIndex = line.indexOf(':');
+        if (colonIndex > -1) {
+          var field = line.substring(0, colonIndex).trim();
+          var value = line.substring(colonIndex + 1).trim();
+          currentRecord[field] = value;
+        }
+      }
+
+      if (Object.keys(currentRecord).length > 0) {
+        records.push(currentRecord);
+      }
+
+      return records.filter(record => record.Project_Name === 'MS1180');
+    }
+
+    function populateTable(records) {
+      var table = document.getElementById('recordsTable');
+      var html = '<tr><th>Obligation #</th><th>Procedure</th><th>Status</th><th>Due Date</th><th>Actions</th></tr>';
+
+      records.forEach(function(record) {
+        html += '<tr>';
+        html += '<td>' + (record.Obligation_Number || '') + '</td>';
+        html += '<td>' + (record.Procedure || '') + '</td>';
+        html += '<td>' + (record.Status || '') + '</td>';
+        html += '<td>' + (record.Action_DueDate || '') + '</td>';
+        html += '<td><button onclick="editRecord(\'' + record.Obligation_Number + '\')">Edit</button></td>';
+        html += '</tr>';
+      });
+
+      table.innerHTML = html;
+    }
+
+    function showLoading(show) {
+      document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+    }
+
+    function showError(message) {
+      var errorDiv = document.getElementById('record-error');
+      errorDiv.innerHTML = message;
+      errorDiv.style.display = 'block';
+      setTimeout(function() {
+        errorDiv.style.display = 'none';
+      }, 5000);
+    }
+
+    function showSuccess(message) {
+      var successDiv = document.getElementById('record-success');
+      successDiv.innerHTML = message;
+      successDiv.style.display = 'block';
+      setTimeout(function() {
+        successDiv.style.display = 'none';
+      }, 3000);
+    }
+
+    window.onload = function() {
+      if (!checkSession()) return;
+      loadRecords();
+    };
+  </script>
+</head>
+
+<body>
+  <div class="main">
+    <h1>Manage MS1180 Environmental Records</h1>
+
+    <form id="recordForm" onsubmit="return saveRecord();">
+      <div id="record-error" class="error"></div>
+      <div id="record-success" class="success"></div>
+
+      <div class="form-group">
+        <label for="obligation_number">Obligation Number:</label>
+        <input type="text" id="obligation_number" name="obligation_number" required>
+      </div>
+
+      <div class="form-group">
+        <label for="procedure">Procedure:</label>
+        <input type="text" id="procedure" name="procedure" required>
+      </div>
+
+      <div class="form-group">
+        <label for="environmental_aspect">Environmental Aspect:</label>
+        <input type="text" id="environmental_aspect" name="environmental_aspect" required>
+      </div>
+
+      <div class="form-group">
+        <label for="obligation">Obligation:</label>
+        <textarea id="obligation" name="obligation" required rows="4"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="responsibility">Responsibility:</label>
+        <input type="text" id="responsibility" name="responsibility" required>
+      </div>
+
+      <div class="form-group">
+        <label for="project_phase">Project Phase:</label>
+        <input type="text" id="project_phase" name="project_phase" required>
+      </div>
+
+      <div class="form-group">
+        <label for="action_due_date">Action Due Date:</label>
+        <input type="date" id="action_due_date" name="action_due_date" required>
+      </div>
+
+      <div class="form-group">
+        <label for="status">Status:</label>
+        <select id="status" name="status" required>
+          <option value="">Select Status</option>
+          <option value="Not Started">Not Started</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+
+      <div class="button-group">
+        <input type="submit" value="Save Record">
+        <input type="reset" value="Clear">
+        <button type="button" onclick="goBack();" class="nav-button">Back to MS1180 View</button>
+      </div>
+    </form>
+
+    <div id="loadingIndicator">Loading records...</div>
+
+    <table id="recordsTable">
+      <tr>
+        <th>Obligation #</th>
+        <th>Procedure</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th>Actions</th>
+      </tr>
+    </table>
+  </div>
+</body>
+
+</html>
