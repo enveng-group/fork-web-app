@@ -353,6 +353,45 @@
       return records.filter(record => record.Project_Name === 'SCJV - Pilbara Ports');
     }
 
+    // Add to all pages that load records
+    "use strict";
+
+    function parseRecordData(data, projectFilter) {
+      var records = [];
+      var currentRecord = {};
+      var lines = data.split('\n');
+
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+
+        if (!line || line.startsWith('%')) {
+          continue;
+        }
+
+        var colonIndex = line.indexOf(':');
+        if (colonIndex > -1) {
+          var field = line.substring(0, colonIndex).trim();
+          var value = line.substring(colonIndex + 1).trim();
+
+          if (field === 'Project_Name') {
+            if (Object.keys(currentRecord).length > 0) {
+              records.push(currentRecord);
+            }
+            currentRecord = {};
+          }
+          currentRecord[field] = value;
+        }
+      }
+
+      if (Object.keys(currentRecord).length > 0) {
+        records.push(currentRecord);
+      }
+
+      return records.filter(function (record) {
+        return record.Project_Name === projectFilter;
+      });
+    }
+
     // Update populateTable function to match reduced columns
     function populateTable(records) {
       var table = document.getElementById('obligationsTable');
@@ -456,6 +495,9 @@
           case 'overdue':
             show = (daysDiff < 0);
             break;
+          case 'upcoming':
+            show = (daysDiff > -1 && daysDiff <= 28);
+            break;
           default:
             show = true;
         }
@@ -488,7 +530,7 @@
       // Simple update for status changes
       fetch('/record/update', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: recordId,
           field: field,
@@ -496,21 +538,21 @@
           username: getCookie('username')
         })
       })
-      .then(response => {
-        if (!response.ok) throw new Error('Update failed');
+        .then(response => {
+          if (!response.ok) throw new Error('Update failed');
 
-        // Update display
-        var displayEl = cell.querySelector('.display-value');
-        displayEl.textContent = value;
-        displayEl.style.display = '';
-        input.style.display = 'none';
+          // Update display
+          var displayEl = cell.querySelector('.display-value');
+          displayEl.textContent = value;
+          displayEl.style.display = '';
+          input.style.display = 'none';
 
-        // Log the action
-        logAction('UPDATE_' + field.toUpperCase(), recordId);
-      })
-      .catch(error => {
-        alert('Error updating record: ' + error.message);
-      });
+          // Log the action
+          logAction('UPDATE_' + field.toUpperCase(), recordId);
+        })
+        .catch(error => {
+          alert('Error updating record: ' + error.message);
+        });
     }
 
     function checkEditPermissions() {
@@ -518,6 +560,33 @@
       var username = getCookie('username');
       // Add project-specific role checks
       return username && isProjectMember(username);
+    }
+
+    // Add to each HTML file that handles records
+    "use strict";
+
+    function handleServerError(error, context) {
+      var errorDiv = document.getElementById('record-error');
+      if (!errorDiv) return;
+
+      var message = 'Operation failed';
+      switch (error.status) {
+        case 403:
+          message = 'Permission denied';
+          break;
+        case 404:
+          message = 'Record not found';
+          break;
+        case 500:
+          message = 'Server error';
+          break;
+      }
+
+      errorDiv.innerHTML = context + ': ' + message;
+      errorDiv.style.display = 'block';
+      setTimeout(function () {
+        errorDiv.style.display = 'none';
+      }, 5000);
     }
   </script>
 </head>
@@ -535,6 +604,7 @@
   <div class="filter-buttons">
     <button onclick="filterByDueDate('all')">All Records</button>
     <button onclick="filterByDueDate('warning')">Due Soon (14 Days)</button>
+    <button onclick="filterByDueDate('upcoming')">Upcoming (28 Days)</button>
     <button onclick="filterByDueDate('overdue')">Overdue</button>
   </div>
 

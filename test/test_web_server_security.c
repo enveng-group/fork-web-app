@@ -75,9 +75,10 @@ test_auth_bypass(void)
     char request[BUFFER_SIZE];
     int len;
     const char *bypass_attempts[] = {
-        "' OR '1'='1",
-        "admin' --",
-        "' UNION SELECT '1",
+        "admin\n:any",     /* Line injection attempt */
+        "admin%00",        /* Null byte injection attempt */
+        "admin\r",         /* Carriage return injection */
+        "%2e%2e%2f",      /* Encoded path traversal attempt */
         NULL
     };
     int i;
@@ -85,15 +86,21 @@ test_auth_bypass(void)
     CU_ASSERT_EQUAL(socketpair(AF_UNIX, SOCK_STREAM, 0, test_client), 0);
 
     for (i = 0; bypass_attempts[i] != NULL; i++) {
+        /* Format complete HTTP request with auth bypass attempt */
         len = snprintf(request, sizeof(request),
-                      "GET /auth?username=%s&password=test HTTP/1.0\r\n\r\n",
+                      "GET /login HTTP/1.0\r\n"
+                      "Authorization: Basic %s\r\n"
+                      "\r\n",
                       bypass_attempts[i]);
+
         CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
 
+        /* Send request */
         CU_ASSERT(write(test_client[0], request, (size_t)len) == len);
 
+        /* Verify request is rejected */
         result = handle_client(test_client[1], TEST_WWW_ROOT);
-        CU_ASSERT_EQUAL(result, -1);  /* Should reject SQL injection attempts */
+        CU_ASSERT_EQUAL(result, -1);
     }
 
     close(test_client[0]);

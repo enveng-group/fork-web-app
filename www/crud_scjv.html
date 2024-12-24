@@ -2,359 +2,484 @@
 <html lang="en">
 
 <head>
-  <title>Manage SCJV Environmental Records</title>
+  <title>Create New SCJV Record</title>
   <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
   <style type="text/css">
     :root {
       --primary-color: #2f4f2f;
+      --secondary-color: #4f7f4f;
       --background-color: #f4f7f2;
-      --text-color: #000;
-      --error-color: #ff0000;
-      --warning-color: #fff3cd;
       --border-color: #ddd;
+      --error-color: #ff0000;
     }
 
-    /* Inherit base styles from other CRUD pages */
     body {
       font-family: Arial, sans-serif;
+      background: var(--background-color);
       margin: 0;
-      padding: 0;
-      background-color: var(--background-color);
-    }
-
-    .main {
-      max-width: 1200px;
-      margin: 20px auto;
       padding: 20px;
     }
 
-    /* Form styling */
+    .form-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .form-section {
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+      padding: 15px;
+    }
+
+    .form-section h3 {
+      margin-top: 0;
+      color: var(--primary-color);
+    }
+
+    .hidden {
+      display: none;
+    }
+
     .form-group {
-      margin: 10px 0;
+      margin-bottom: 10px;
     }
 
     label {
       display: block;
       margin-bottom: 5px;
+      font-weight: bold;
     }
 
     input[type="text"],
-    textarea,
-    select {
+    select,
+    textarea {
       width: 100%;
       padding: 8px;
-      margin: 5px 0;
       border: 1px solid var(--border-color);
+      box-sizing: border-box;
+    }
+
+    .expand-button {
+      width: 100%;
+      padding: 10px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      margin-top: 10px;
+      cursor: pointer;
     }
 
     .error {
       color: var(--error-color);
-      font-weight: bold;
-      padding: 10px;
+      font-size: 0.9em;
       display: none;
     }
 
-    .success {
-      color: green;
-      padding: 10px;
+    select.error-field {
+      border: 1px solid #ff0000;
+    }
+
+    .error-message {
+      color: #ff0000;
+      font-size: 0.9em;
       display: none;
-    }
-
-    /* Table styling */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      margin-top: 20px;
-    }
-
-    th, td {
-      padding: 8px;
-      border: 1px solid var(--border-color);
-      text-align: left;
-    }
-
-    th {
-      background: var(--primary-color);
-      color: white;
-    }
-
-    /* Button styling */
-    .button-group {
-      margin: 15px 0;
-    }
-
-    button,
-    input[type="submit"],
-    input[type="reset"] {
-      padding: 8px 15px;
-      margin: 0 5px;
-      background: var(--primary-color);
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    .nav-button {
-      background: white;
-      color: var(--primary-color);
-      border: 1px solid var(--primary-color);
-    }
-
-    /* Loading indicator */
-    #loadingIndicator {
-      text-align: center;
-      padding: 20px;
-      display: none;
+      margin-top: 5px;
     }
   </style>
+
   <script type="text/javascript">
     "use strict";
 
-    function getCookie(name) {
-      var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-      if (match) return match[2];
-      return '';
+    function getNextObligationNumber(callback) {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/scjv.rec", true);
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          var records = xhr.responseText.split("\n");
+          var maxNum = 0;
+
+          records.forEach(function (line) {
+            if (line.indexOf("Obligation_Number: PCEMP-") === 0) {
+              var num = parseInt(line.split("-")[1]);
+              maxNum = Math.max(maxNum, num);
+            }
+          });
+          callback("PCEMP-" + (maxNum + 1));
+        } else {
+          callback("PCEMP-1");
+        }
+      };
+      xhr.onerror = function () {
+        callback("PCEMP-1");
+      };
+      xhr.send();
     }
 
-    function checkSession() {
-      var username = getCookie('username');
-      if (!username) {
-        alert("Session expired - please login again");
-        window.location.href = 'index.html';
+    function expandSection(sectionId) {
+      var section = document.getElementById(sectionId);
+      if (section) {
+        section.style.display = "block";
+      }
+
+      var button = document.querySelector('button[onclick="expandSection(\'' + sectionId + '\')"]');
+      if (button) {
+        button.style.display = "none";
+      }
+    }
+
+    function validateDropdown(selectElement) {
+      var errorId = selectElement.id + "_error";
+      var errorElement = document.getElementById(errorId);
+
+      if (!selectElement.value) {
+        selectElement.className = "error-field";
+        if (errorElement) {
+          errorElement.style.display = "block";
+        }
         return false;
+      }
+
+      selectElement.className = "";
+      if (errorElement) {
+        errorElement.style.display = "none";
       }
       return true;
     }
 
-    function goBack() {
-      window.location.href = 'scjv.html';
+    function attachDropdownValidation() {
+      var dropdowns = document.getElementsByTagName("select");
+      var i;
+
+      for (i = 0; i < dropdowns.length; i++) {
+        if (dropdowns[i].getAttribute("required")) {
+          dropdowns[i].onchange = function () {
+            validateDropdown(this);
+          };
+        }
+      }
     }
 
-    function validateRecord() {
-      var errors = [];
-      var obligation = document.getElementById('obligation_number').value;
-      var projectPhase = document.getElementById('project_phase').value;
-      var actionDueDate = document.getElementById('action_due_date').value;
+    function validateForm(section) {
+      var isValid = true;
+      var dropdowns = document.querySelectorAll("#" + section + " select[required]");
+      var inputs = document.querySelectorAll("#" + section + " input[required], #" + section + " textarea[required]");
+      var i;
 
-      if (!obligation.startsWith('PCEMP-')) {
-        errors.push("Obligation Number must start with PCEMP-");
+      for (i = 0; i < dropdowns.length; i++) {
+        if (!validateDropdown(dropdowns[i])) {
+          isValid = false;
+        }
       }
 
-      if (!projectPhase) {
-        errors.push("Project Phase is required");
-      }
-
-      if (!actionDueDate) {
-        errors.push("Action Due Date is required");
-      }
-
-      if (errors.length > 0) {
-        var errorDiv = document.getElementById('record-error');
-        errorDiv.innerHTML = errors.join("<br>");
-        errorDiv.style.display = 'block';
-        return false;
-      }
-
-      return true;
-    }
-
-    function saveRecord() {
-      if (!validateRecord()) {
-        return false;
-      }
-
-      var formData = new FormData(document.getElementById('recordForm'));
-      showLoading(true);
-
-      fetch('/record/save', {
-        method: 'POST',
-        body: formData
-      })
-      .then(function(response) {
-        if (!response.ok) throw new Error('Save failed');
-        showSuccess("Record saved successfully");
-        document.getElementById('recordForm').reset();
-        loadRecords();
-      })
-      .catch(function(error) {
-        showError("Failed to save record: " + error.message);
-      })
-      .finally(function() {
-        showLoading(false);
-      });
-
-      return false;
-    }
-
-    function loadRecords() {
-      showLoading(true);
-      fetch('/scjv.rec')
-        .then(function(response) {
-          if (!response.ok) throw new Error('Failed to load records');
-          return response.text();
-        })
-        .then(function(data) {
-          var records = parseRecData(data);
-          populateTable(records);
-        })
-        .catch(function(error) {
-          showError("Failed to load records: " + error.message);
-        })
-        .finally(function() {
-          showLoading(false);
-        });
-    }
-
-    function parseRecData(data) {
-      var records = [];
-      var currentRecord = {};
-      var lines = data.split('\n');
-
-      for (var i = 0; i < lines.length; i++) {
-        var line = lines[i].trim();
-
-        if (!line || line.startsWith('%')) continue;
-
-        if (line.startsWith('Project_Name:')) {
-          if (Object.keys(currentRecord).length > 0) {
-            records.push(currentRecord);
+      for (i = 0; i < inputs.length; i++) {
+        if (!inputs[i].value) {
+          isValid = false;
+          var error = document.getElementById(inputs[i].id + "_error");
+          if (error) {
+            error.style.display = "block";
           }
-          currentRecord = {};
-        }
-
-        var colonIndex = line.indexOf(':');
-        if (colonIndex > -1) {
-          var field = line.substring(0, colonIndex).trim();
-          var value = line.substring(colonIndex + 1).trim();
-          currentRecord[field] = value;
         }
       }
 
-      if (Object.keys(currentRecord).length > 0) {
-        records.push(currentRecord);
-      }
-
-      return records;
+      return isValid;
     }
 
-    function populateTable(records) {
-      var table = document.getElementById('recordsTable');
-      var html = '<tr><th>Obligation #</th><th>Procedure</th><th>Status</th><th>Due Date</th><th>Actions</th></tr>';
+    function submitForm() {
+      if (!validateForm("stage1") || !validateForm("stage2") || !validateForm("stage3")) {
+        alert("Please fill all required fields");
+        return;
+      }
 
-      records.forEach(function(record) {
-        html += '<tr>';
-        html += '<td>' + (record.Obligation_Number || '') + '</td>';
-        html += '<td>' + (record.Procedure || '') + '</td>';
-        html += '<td>' + (record.Status || '') + '</td>';
-        html += '<td>' + (record.Action_DueDate || '') + '</td>';
-        html += '<td><button onclick="editRecord(\'' + record.Obligation_Number + '\')">Edit</button></td>';
-        html += '</tr>';
+      var formData = new FormData(document.getElementById("recordForm"));
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "/create_record", true);
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          alert("Record created successfully");
+          window.location.href = "scjv.html";
+        } else {
+          handleServerError(xhr, "Creating record");
+        }
+      };
+      xhr.onerror = function () {
+        handleServerError(xhr, "Creating record");
+      };
+      xhr.send(formData);
+    }
+
+    window.onload = function () {
+      getNextObligationNumber(function (number) {
+        document.getElementById("obligation_number").value = number;
       });
+      attachDropdownValidation();
+    };
 
-      table.innerHTML = html;
-    }
-
-    function showLoading(show) {
-      document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
-    }
-
-    function showError(message) {
+    function handleServerError(error, context) {
       var errorDiv = document.getElementById('record-error');
-      errorDiv.innerHTML = message;
+      if (!errorDiv) return;
+
+      var message = 'Operation failed';
+      switch(error.status) {
+          case 403:
+              message = 'Permission denied';
+              break;
+          case 404:
+              message = 'Record not found';
+              break;
+          case 500:
+              message = 'Server error';
+              break;
+      }
+
+      errorDiv.innerHTML = context + ': ' + message;
       errorDiv.style.display = 'block';
       setTimeout(function() {
-        errorDiv.style.display = 'none';
+          errorDiv.style.display = 'none';
       }, 5000);
     }
 
-    function showSuccess(message) {
-      var successDiv = document.getElementById('record-success');
-      successDiv.innerHTML = message;
-      successDiv.style.display = 'block';
-      setTimeout(function() {
-        successDiv.style.display = 'none';
-      }, 3000);
+    function validateRecordData(formData, projectPrefix) {
+      var errors = [];
+      var obligationNum = formData.get('obligation_number');
+      var projectPhase = formData.get('project_phase');
+      var actionDueDate = formData.get('action_due_date');
+
+      if (!obligationNum || !obligationNum.startsWith(projectPrefix)) {
+          errors.push('Obligation Number must start with ' + projectPrefix);
+      }
+
+      if (!projectPhase) {
+          errors.push('Project Phase is required');
+      }
+
+      if (!actionDueDate) {
+          errors.push('Action Due Date is required');
+      }
+
+      return errors;
     }
 
-    window.onload = function() {
-      if (!checkSession()) return;
-      loadRecords();
-    };
+    function validateAndSaveRecord(projectPrefix) {
+      var formData = new FormData(document.getElementById('recordForm'));
+      var errors = validateRecordData(formData, projectPrefix);
+
+      if (errors.length > 0) {
+          var errorDiv = document.getElementById('record-error');
+          errorDiv.innerHTML = errors.join('<br>');
+          errorDiv.style.display = 'block';
+          return false;
+      }
+
+      return true;
+    }
+
+    // Add to all pages that load records
+    "use strict";
+
+    function parseRecordData(data, projectFilter) {
+        var records = [];
+        var currentRecord = {};
+        var lines = data.split('\n');
+
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+
+            if (!line || line.startsWith('%')) {
+                continue;
+            }
+
+            var colonIndex = line.indexOf(':');
+            if (colonIndex > -1) {
+                var field = line.substring(0, colonIndex).trim();
+                var value = line.substring(colonIndex + 1).trim();
+
+                if (field === 'Project_Name') {
+                    if (Object.keys(currentRecord).length > 0) {
+                        records.push(currentRecord);
+                    }
+                    currentRecord = {};
+                }
+                currentRecord[field] = value;
+            }
+        }
+
+        if (Object.keys(currentRecord).length > 0) {
+            records.push(currentRecord);
+        }
+
+        return records.filter(function(record) {
+            return record.Project_Name === projectFilter;
+        });
+    }
   </script>
 </head>
 
 <body>
-  <div class="main">
-    <h1>Manage SCJV Environmental Records</h1>
+  <div class="form-container">
+    <h2>Create New SCJV Record</h2>
+    <div id="record-error" class="error-message"></div>
+    <form id="recordForm" onsubmit="return false;">
+      <!-- Stage 1: Basic Information -->
+      <div id="stage1" class="form-section">
+        <h3>Basic Information</h3>
 
-    <form id="recordForm" onsubmit="return saveRecord();">
-      <div id="record-error" class="error"></div>
-      <div id="record-success" class="success"></div>
+        <div class="form-group">
+          <label for="obligation_number">Obligation Number</label>
+          <input type="text" id="obligation_number" name="obligation_number" readonly>
+        </div>
 
-      <div class="form-group">
-        <label for="obligation_number">Obligation Number:</label>
-        <input type="text" id="obligation_number" name="obligation_number" required>
+        <div class="form-group">
+          <label for="project_name">Project Name</label>
+          <input type="text" id="project_name" name="project_name" value="SCJV - Pilbara Ports" readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="primary_env_mechanism">Primary Environmental Mechanism</label>
+          <select id="primary_env_mechanism" name="primary_env_mechanism" required>
+            <option value="">Select Mechanism</option>
+            <option value="Portside CEMP">Portside CEMP</option>
+            <option value="MS1180">MS1180</option>
+            <option value="EPBC 2018/8383">EPBC 2018/8383</option>
+          </select>
+          <span id="primary_env_mechanism_error" class="error-message">Please select a mechanism</span>
+        </div>
+
+        <div class="form-group">
+          <label for="procedure">Procedure</label>
+          <select id="procedure" name="procedure" required>
+            <option value="">Select Procedure</option>
+            <option value="PPA requirement">PPA requirement</option>
+            <option value="Cultural Heritage Management Plan">Cultural Heritage Management Plan</option>
+            <option value="Portside CEMP">Portside CEMP</option>
+          </select>
+          <span id="procedure_error" class="error-message">Please select a procedure</span>
+        </div>
+
+        <div class="form-group">
+          <label for="environmental_aspect">Environmental Aspect</label>
+          <select id="environmental_aspect" name="environmental_aspect" required>
+            <option value="">Select Aspect</option>
+            <option value="Administration">Administration</option>
+            <option value="Cultural Heritage Management">Cultural Heritage Management</option>
+            <option value="Terrestrial Fauna Management">Terrestrial Fauna Management</option>
+            <option value="Dust Management">Dust Management</option>
+          </select>
+          <span id="environmental_aspect_error" class="error-message">Please select an aspect</span>
+        </div>
+
+        <button type="button" class="expand-button" onclick="expandSection('stage2')">
+          Next: Action Details
+        </button>
       </div>
 
-      <div class="form-group">
-        <label for="procedure">Procedure:</label>
-        <input type="text" id="procedure" name="procedure" required>
+      <!-- Stage 2: Action Details -->
+      <div id="stage2" class="form-section hidden">
+        <h3>Action Details</h3>
+
+        <!-- Add action detail fields -->
+        <div class="form-group">
+          <label for="obligation">Obligation</label>
+          <textarea id="obligation" name="obligation" required></textarea>
+          <div id="obligation_error" class="error">Required field</div>
+        </div>
+
+        <div class="form-group">
+          <label for="accountability">Accountability</label>
+          <select id="accountability" name="accountability" required>
+            <option value="">Select Accountability</option>
+            <option value="SCJV">SCJV</option>
+            <option value="SCJV - during construction">SCJV - during construction</option>
+            <option value="SCJV - during construction + Perdaman - during operations">SCJV - during construction +
+              Perdaman - during operations</option>
+            <option value="Perdaman">Perdaman</option>
+          </select>
+          <div id="accountability_error" class="error">Required field</div>
+        </div>
+
+        <div class="form-group">
+          <label for="responsibility">Responsibility</label>
+          <select id="responsibility" name="responsibility" required>
+            <option value="">Select Responsibility</option>
+            <option value="SCJV - HSSE Manager">SCJV - HSSE Manager</option>
+            <option value="SCJV - Environmental Lead">SCJV - Environmental Lead</option>
+            <option value="SCJV - Lead Environmental Advisor">SCJV - Lead Environmental Advisor</option>
+            <option value="SCJV - Project Environmental Representative">SCJV - Project Environmental Representative
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="project_phase">Project Phase</label>
+          <select id="project_phase" name="project_phase" required>
+            <option value="">Select Phase</option>
+            <option value="Design and Construction">Design and Construction</option>
+            <option value="During Construction">During Construction</option>
+            <option value="Throughout the project">Throughout the project</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="action_due_date">Action Due Date</label>
+          <input type="date" id="action_due_date" name="action_due_date" required>
+        </div>
+
+        <button type="button" class="expand-button" onclick="expandSection('stage3')">
+          Next: Supporting Information
+        </button>
       </div>
 
-      <div class="form-group">
-        <label for="environmental_aspect">Environmental Aspect:</label>
-        <input type="text" id="environmental_aspect" name="environmental_aspect" required>
-      </div>
+      <!-- Stage 3: Supporting Information -->
+      <div id="stage3" class="form-section hidden">
+        <h3>Supporting Information</h3>
 
-      <div class="form-group">
-        <label for="obligation">Obligation:</label>
-        <textarea id="obligation" name="obligation" required rows="4"></textarea>
-      </div>
+        <!-- Add supporting info fields -->
+        <div class="form-group">
+          <label for="supporting_info">Supporting Information</label>
+          <textarea id="supporting_info" name="supporting_info"></textarea>
+        </div>
 
-      <div class="form-group">
-        <label for="responsibility">Responsibility:</label>
-        <input type="text" id="responsibility" name="responsibility" required>
-      </div>
+        <div class="form-group">
+          <label for="recurring">Recurring Obligation</label>
+          <select id="recurring" name="recurring_obligation">
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
 
-      <div class="form-group">
-        <label for="project_phase">Project Phase:</label>
-        <input type="text" id="project_phase" name="project_phase" required>
-      </div>
+        <div class="form-group">
+          <label for="inspection">Inspection Required</label>
+          <select id="inspection" name="inspection">
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
 
-      <div class="form-group">
-        <label for="action_due_date">Action Due Date:</label>
-        <input type="date" id="action_due_date" name="action_due_date" required>
-      </div>
+        <div class="form-group">
+          <label for="site_or_desktop">Site or Desktop</label>
+          <select id="site_or_desktop" name="site_or_desktop">
+            <option value="Site">Site</option>
+            <option value="Desktop">Desktop</option>
+          </select>
+        </div>
 
-      <div class="form-group">
-        <label for="status">Status:</label>
-        <select id="status" name="status" required>
-          <option value="">Select Status</option>
-          <option value="Not Started">Not Started</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Completed">Completed</option>
-        </select>
-      </div>
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" name="status" required>
+            <option value="Not Started">Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
 
-      <div class="button-group">
-        <input type="submit" value="Save Record">
-        <input type="reset" value="Clear">
-        <button type="button" onclick="goBack();" class="nav-button">Back to SCJV View</button>
+        <button type="button" class="expand-button" onclick="submitForm()">
+          Create Record
+        </button>
       </div>
     </form>
-
-    <div id="loadingIndicator">Loading records...</div>
-
-    <table id="recordsTable">
-      <tr>
-        <th>Obligation #</th>
-        <th>Procedure</th>
-        <th>Status</th>
-        <th>Due Date</th>
-        <th>Actions</th>
-      </tr>
-    </table>
   </div>
 </body>
 

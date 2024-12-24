@@ -55,7 +55,7 @@ RELEASE_DIR = $(BINDIR)/release/$(RELEASE_NAME)
 RELEASE_TAR = $(BINDIR)/$(RELEASE_NAME).tar.gz
 
 # Data files to include from project root and subdirectories
-DATA_FILES = etc/auth.passwd var/db/ms1180.rec var/db/schema.desc var/db/scjv.rec var/db/w6946.rec var/log/audit.log
+DATA_FILES = etc/auth.passwd var/records/ms1180.rec var/records/schema.desc var/records/scjv.rec var/records/w6946.rec var/log/audit.log var/log/updates.log
 
 .PHONY: all clean test prod release release-prep clean-release dist clean-dist
 
@@ -106,22 +106,22 @@ TMPDIR = /tmp/$(RELEASE_NAME)
 PROD_TARGET = $(BINDIR)/web_server
 
 # Release files and directories
-RELEASE_DIRS = bin etc var/db var/log www
+RELEASE_DIRS = bin etc var/records var/log www
 
 # Clean release target
 dist: $(PROD_TARGET)
 	# Create fresh temp directory
 	rm -rf $(TMPDIR)
 	mkdir -p $(TMPDIR)/etc
-	mkdir -p $(TMPDIR)/var/db
+	mkdir -p $(TMPDIR)/var/records
 	mkdir -p $(TMPDIR)/var/log
 	mkdir -p $(TMPDIR)/www
 
 	# Copy only runtime files
 	cp $(PROD_TARGET) $(TMPDIR)/
 	cp etc/auth.passwd $(TMPDIR)/etc/
-	cp var/db/*.rec $(TMPDIR)/var/db/
-	cp var/db/schema.desc $(TMPDIR)/var/db/
+	cp var/records/*.rec $(TMPDIR)/var/records/
+	cp var/records/schema.desc $(TMPDIR)/var/records/
 	cp var/log/audit.log $(TMPDIR)/var/log/
 	cp www/*.html $(TMPDIR)/www/
 

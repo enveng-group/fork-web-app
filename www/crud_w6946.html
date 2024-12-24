@@ -132,27 +132,34 @@
       window.location.href = 'w6946.html';
     }
 
-    function validateRecord() {
+    function validateRecordData(formData, projectPrefix) {
       var errors = [];
-      var obligation = document.getElementById('obligation_number').value;
-      var projectPhase = document.getElementById('project_phase').value;
-      var actionDueDate = document.getElementById('action_due_date').value;
+      var obligationNum = formData.get('obligation_number');
+      var projectPhase = formData.get('project_phase');
+      var actionDueDate = formData.get('action_due_date');
 
-      if (!obligation.startsWith('W6946-')) {
-        errors.push("Obligation Number must start with W6946-");
+      if (!obligationNum || !obligationNum.startsWith(projectPrefix)) {
+        errors.push('Obligation Number must start with ' + projectPrefix);
       }
 
       if (!projectPhase) {
-        errors.push("Project Phase is required");
+        errors.push('Project Phase is required');
       }
 
       if (!actionDueDate) {
-        errors.push("Action Due Date is required");
+        errors.push('Action Due Date is required');
       }
+
+      return errors;
+    }
+
+    function validateAndSaveRecord(projectPrefix) {
+      var formData = new FormData(document.getElementById('recordForm'));
+      var errors = validateRecordData(formData, projectPrefix);
 
       if (errors.length > 0) {
         var errorDiv = document.getElementById('record-error');
-        errorDiv.innerHTML = errors.join("<br>");
+        errorDiv.innerHTML = errors.join('<br>');
         errorDiv.style.display = 'block';
         return false;
       }
@@ -161,7 +168,7 @@
     }
 
     function saveRecord() {
-      if (!validateRecord()) {
+      if (!validateAndSaveRecord('W6946-')) {
         return false;
       }
 
@@ -196,7 +203,7 @@
           return response.text();
         })
         .then(function (data) {
-          var records = parseRecData(data);
+          var records = parseRecordData(data, 'W6946');
           populateTable(records);
         })
         .catch(function (error) {
@@ -207,7 +214,7 @@
         });
     }
 
-    function parseRecData(data) {
+    function parseRecordData(data, projectFilter) {
       var records = [];
       var currentRecord = {};
       var lines = data.split('\n');
@@ -215,19 +222,21 @@
       for (var i = 0; i < lines.length; i++) {
         var line = lines[i].trim();
 
-        if (!line || line.startsWith('%')) continue;
-
-        if (line.startsWith('Project_Name:')) {
-          if (Object.keys(currentRecord).length > 0) {
-            records.push(currentRecord);
-          }
-          currentRecord = {};
+        if (!line || line.startsWith('%')) {
+          continue;
         }
 
         var colonIndex = line.indexOf(':');
         if (colonIndex > -1) {
           var field = line.substring(0, colonIndex).trim();
           var value = line.substring(colonIndex + 1).trim();
+
+          if (field === 'Project_Name') {
+            if (Object.keys(currentRecord).length > 0) {
+              records.push(currentRecord);
+            }
+            currentRecord = {};
+          }
           currentRecord[field] = value;
         }
       }
@@ -236,7 +245,9 @@
         records.push(currentRecord);
       }
 
-      return records.filter(record => record.Project_Name === 'W6946');
+      return records.filter(function (record) {
+        return record.Project_Name === projectFilter;
+      });
     }
 
     function populateTable(records) {
@@ -276,6 +287,30 @@
       setTimeout(function () {
         successDiv.style.display = 'none';
       }, 3000);
+    }
+
+    function handleServerError(error, context) {
+      var errorDiv = document.getElementById('record-error');
+      if (!errorDiv) return;
+
+      var message = 'Operation failed';
+      switch(error.status) {
+          case 403:
+              message = 'Permission denied';
+              break;
+          case 404:
+              message = 'Record not found';
+              break;
+          case 500:
+              message = 'Server error';
+              break;
+      }
+
+      errorDiv.innerHTML = context + ': ' + message;
+      errorDiv.style.display = 'block';
+      setTimeout(function() {
+          errorDiv.style.display = 'none';
+      }, 5000);
     }
 
     window.onload = function () {
