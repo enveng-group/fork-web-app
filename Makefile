@@ -8,8 +8,7 @@ OBJDIR = obj
 BINDIR = bin
 INCLUDEDIR = include
 
-# Common flags
-COMMON_FLAGS = -std=c90 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500 \
+COMMON_FLAGS = -std=c90 -O3 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500 \
 	-Wall -ansi -Wextra -pedantic -Werror -Wshadow \
 	-Wconversion -Wstrict-prototypes -Wmissing-prototypes \
 	-fanalyzer -fstack-protector-strong -fstack-check \
@@ -17,47 +16,36 @@ COMMON_FLAGS = -std=c90 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500 \
 	-Warray-bounds -Wstack-protector -Wformat=2 -Wformat-security \
 	-Wformat-overflow=2 -Wformat-truncation=2 -Walloca -Wvla \
 	-fno-omit-frame-pointer -finput-charset=iso-8859-1 \
-	-fexec-charset=iso-8859-1 -fwide-exec-charset=iso-8859-1
+	-fexec-charset=iso-8859-1 -fwide-exec-charset=iso-8859-1 \
+	-Wbad-function-cast -Wstrict-aliasing=2 \
+	-Wnull-dereference -Wdouble-promotion -Wfloat-equal \
+	-Wpointer-arith -Wwrite-strings -Wunreachable-code \
+	-Wcast-align -Wswitch-default
 
-# Production flags (static linking)
 PROD_CFLAGS = $(COMMON_FLAGS) -static
 PROD_LDFLAGS = -Wl,--gc-sections -static -lcrypt
-
-# Test flags (dynamic linking)
 TEST_CFLAGS = $(COMMON_FLAGS)
 TEST_LDFLAGS = -Wl,--gc-sections
 TEST_LIBS = -lcunit -lcrypt
 
-# Source files
 SRC = $(wildcard $(SRCDIR)/*.c)
 TEST_SRC = $(wildcard $(TESTDIR)/*.c)
-
-# Production source and object files
 PROD_SRC = $(SRC)
 PROD_OBJ = $(PROD_SRC:$(SRCDIR)/%.c=$(OBJDIR)/prod/%.o)
 
-# Test source and object files (exclude main.c)
 TEST_SRC_NO_MAIN = $(filter-out $(SRCDIR)/main.c,$(SRC))
 TEST_OBJ = $(TEST_SRC_NO_MAIN:$(SRCDIR)/%.c=$(OBJDIR)/test/%.o) \
 		   $(TEST_SRC:$(TESTDIR)/%.c=$(OBJDIR)/test/%.o)
 
-# Targets
 PROD_TARGET = $(BINDIR)/web_server
 TEST_TARGET = $(BINDIR)/test_web_server
 
-# Create necessary directories
-$(shell mkdir -p $(OBJDIR)/prod $(OBJDIR)/test $(BINDIR))
+# Build directories (no duplicate mkdir calls)
+OBJDIRS = $(OBJDIR)/prod $(OBJDIR)/test
+BINDIRS = $(BINDIR)
+ALLDIRS = $(OBJDIRS) $(BINDIRS)
 
-# Release variables
-VERSION ?= 0.0.1
-RELEASE_NAME = web-app-$(VERSION)
-RELEASE_DIR = $(BINDIR)/release/$(RELEASE_NAME)
-RELEASE_TAR = $(BINDIR)/$(RELEASE_NAME).tar.gz
-
-# Data files to include from project root and subdirectories
-DATA_FILES = etc/auth.passwd var/records/ms1180.rec var/records/schema.desc var/records/scjv.rec var/records/w6946.rec var/log/audit.log var/log/updates.log
-
-.PHONY: all clean test prod release release-prep clean-release dist clean-dist
+DEPFILES := $(PROD_OBJ:.o=.d) $(TEST_OBJ:.o=.d)
 
 all: prod
 
@@ -66,12 +54,6 @@ prod: $(PROD_TARGET)
 test: $(TEST_TARGET)
 	./$(TEST_TARGET)
 
-# Build directories
-OBJDIRS = $(OBJDIR)/prod $(OBJDIR)/test
-BINDIRS = $(BINDIR)
-ALLDIRS = $(OBJDIRS) $(BINDIRS)
-
-# Create required directories
 $(OBJDIR)/prod:
 	mkdir -p $@
 
@@ -81,55 +63,52 @@ $(OBJDIR)/test:
 $(BINDIR):
 	mkdir -p $@
 
-# Updated build rules
 $(PROD_TARGET): $(ALLDIRS) $(PROD_OBJ)
 	$(CC) $(PROD_OBJ) -o $@ $(PROD_LDFLAGS)
 
 $(TEST_TARGET): $(ALLDIRS) $(TEST_OBJ)
 	$(CC) $(TEST_OBJ) -o $@ $(TEST_LDFLAGS) $(TEST_LIBS)
 
-# Updated object file rules
-$(OBJDIR)/prod/%.o: $(SRCDIR)/%.c | $(OBJDIR)/prod
-	$(CC) $(PROD_CFLAGS) -I$(INCLUDEDIR) -c $< -o $@
+-include $(DEPFILES)
 
-$(OBJDIR)/test/%.o: $(SRCDIR)/%.c | $(OBJDIR)/test
-	$(CC) $(TEST_CFLAGS) -I$(INCLUDEDIR) -c $< -o $@
+$(OBJDIR)/prod/%.o: $(SRCDIR)/%.c
+	$(CC) -MMD -MP $(PROD_CFLAGS) -c $< -o $@
 
-$(OBJDIR)/test/%.o: $(TESTDIR)/%.c | $(OBJDIR)/test
-	$(CC) $(TEST_CFLAGS) -I$(INCLUDEDIR) -c $< -o $@
+$(OBJDIR)/test/%.o: $(SRCDIR)/%.c
+	$(CC) -MMD -MP $(TEST_CFLAGS) -I$(INCLUDEDIR) -c $< -o $@
 
-# Release configuration
-RELEASE_VERSION = 0.0.1
-RELEASE_NAME = web-app-$(RELEASE_VERSION)
+$(OBJDIR)/test/%.o: $(TESTDIR)/%.c
+	$(CC) -MMD -MP $(TEST_CFLAGS) -I$(INCLUDEDIR) -c $< -o $@
+
+# Add pattern rule for test objects from source files
+$(TEST_OBJ): | $(OBJDIR)/test
+
+# Fix test source patterns
+TEST_SRC = $(wildcard $(TESTDIR)/*.c)
+TEST_SRC_NO_MAIN = $(filter-out $(SRCDIR)/main.c,$(SRC))
+TEST_OBJ = $(TEST_SRC_NO_MAIN:$(SRCDIR)/%.c=$(OBJDIR)/test/%.o) \
+		   $(TEST_SRC:$(TESTDIR)/%.c=$(OBJDIR)/test/%.o)
+
+# Consolidated release config
+VERSION ?= 0.0.1
+RELEASE_NAME = web-app-$(VERSION)
 DISTDIR = dist
 TMPDIR = /tmp/$(RELEASE_NAME)
-PROD_TARGET = $(BINDIR)/web_server
 
-# Release files and directories
-RELEASE_DIRS = bin etc var/records var/log www
-
-# Clean release target
 dist: $(PROD_TARGET)
-	# Create fresh temp directory
 	rm -rf $(TMPDIR)
 	mkdir -p $(TMPDIR)/etc
 	mkdir -p $(TMPDIR)/var/records
 	mkdir -p $(TMPDIR)/var/log
 	mkdir -p $(TMPDIR)/www
-
-	# Copy only runtime files
 	cp $(PROD_TARGET) $(TMPDIR)/
 	cp etc/auth.passwd $(TMPDIR)/etc/
 	cp var/records/*.rec $(TMPDIR)/var/records/
 	cp var/records/schema.desc $(TMPDIR)/var/records/
 	cp var/log/audit.log $(TMPDIR)/var/log/
 	cp www/*.html $(TMPDIR)/www/
-
-	# Create release archive
 	mkdir -p $(DISTDIR)
 	cd $(TMPDIR)/.. && tar czf $(CURDIR)/$(DISTDIR)/$(RELEASE_NAME).tar.gz $(RELEASE_NAME)
-
-	# Cleanup
 	rm -rf $(TMPDIR)
 
 clean-dist:
@@ -137,3 +116,8 @@ clean-dist:
 
 release: clean-dist prod dist
 	@echo "Release package created: $(DISTDIR)/$(RELEASE_NAME).tar.gz"
+
+clean:
+	rm -rf $(OBJDIR) $(BINDIR)/*.o $(BINDIR)/web_server $(BINDIR)/test_web_server
+
+.PHONY: all prod test dist clean-dist release clean

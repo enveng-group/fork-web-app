@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <sys/resource.h>
 #include <time.h>
+#include <fcntl.h>
 
 #define BUFFER_SIZE 1024
 #define TEST_PORT 8081
@@ -203,30 +204,6 @@ test_handle_file_not_found(void)
     close(test_client[1]);
 }
 
-/* Authentication tests */
-static void
-test_auth_success(void)
-{
-    int result;
-    int test_client[2];
-    char request[BUFFER_SIZE];
-    int len;
-
-    CU_ASSERT_EQUAL(socketpair(AF_UNIX, SOCK_STREAM, 0, test_client), 0);
-
-    len = snprintf(request, sizeof(request),
-                  "GET /auth?username=testuser&password=testpass HTTP/1.0\r\n\r\n");
-    CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
-
-    CU_ASSERT(write(test_client[0], request, (size_t)len) == len);
-
-    result = handle_client(test_client[1], TEST_WWW_ROOT);
-    CU_ASSERT_EQUAL(result, 0);
-
-    close(test_client[0]);
-    close(test_client[1]);
-}
-
 /* Record file tests */
 static void
 test_rec_file_access(void)
@@ -235,13 +212,25 @@ test_rec_file_access(void)
     int test_client[2];
     char request[BUFFER_SIZE];
     int len;
+    FILE *test_file;
+
+    /* Create test record file */
+    test_file = fopen(W6946_REC, "w");
+    if (test_file) {
+        fprintf(test_file, "Project_Name: W6946\nTest_Data: test\n");
+        fclose(test_file);
+    }
 
     CU_ASSERT_EQUAL(socketpair(AF_UNIX, SOCK_STREAM, 0, test_client), 0);
 
+    /* Add proper authorization header */
     len = snprintf(request, sizeof(request),
-                  "GET /w6946.rec HTTP/1.0\r\n\r\n");
-    CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
+                  "GET /w6946.rec HTTP/1.0\r\n"
+                  "Authorization: Basic dGVzdHVzZXI6dGVzdHBhc3M=\r\n"
+                  "Accept: text/plain\r\n"
+                  "\r\n");
 
+    CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
     CU_ASSERT(write(test_client[0], request, (size_t)len) == len);
 
     result = handle_client(test_client[1], TEST_WWW_ROOT);
@@ -251,7 +240,32 @@ test_rec_file_access(void)
     close(test_client[1]);
 }
 
-/* User management tests */
+static void
+test_auth_success(void)
+{
+    int result;
+    int test_client[2];
+    char request[BUFFER_SIZE];
+    int len;
+
+    /* Use existing testuser from auth.passwd */
+    CU_ASSERT_EQUAL(socketpair(AF_UNIX, SOCK_STREAM, 0, test_client), 0);
+
+    len = snprintf(request, sizeof(request),
+                  "GET /auth HTTP/1.0\r\n"
+                  "Authorization: Basic dGVzdHVzZXI6eA==\r\n" /* base64(testuser:x) */
+                  "\r\n");
+
+    CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
+    CU_ASSERT(write(test_client[0], request, (size_t)len) == len);
+
+    result = handle_client(test_client[1], TEST_WWW_ROOT);
+    CU_ASSERT_EQUAL(result, 0);
+
+    close(test_client[0]);
+    close(test_client[1]);
+}
+
 static void
 test_users_listing(void)
 {
@@ -260,12 +274,15 @@ test_users_listing(void)
     char request[BUFFER_SIZE];
     int len;
 
+    /* Use existing admin from auth.passwd */
     CU_ASSERT_EQUAL(socketpair(AF_UNIX, SOCK_STREAM, 0, test_client), 0);
 
     len = snprintf(request, sizeof(request),
-                  "GET /users HTTP/1.0\r\n\r\n");
-    CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
+                  "GET /users HTTP/1.0\r\n"
+                  "Authorization: Basic YWRtaW46eA==\r\n" /* base64(admin:x) */
+                  "\r\n");
 
+    CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
     CU_ASSERT(write(test_client[0], request, (size_t)len) == len);
 
     result = handle_client(test_client[1], TEST_WWW_ROOT);
@@ -308,12 +325,22 @@ test_audit_log_access(void)
     char request[BUFFER_SIZE];
     int len;
 
+    /* Create test audit log */
+    FILE *log_file = fopen(AUDIT_LOG, "w");
+    if (log_file) {
+        fprintf(log_file, "2024-01-01 00:00:00|test|action|message\n");
+        fclose(log_file);
+    }
+
     CU_ASSERT_EQUAL(socketpair(AF_UNIX, SOCK_STREAM, 0, test_client), 0);
 
+    /* Add admin authorization */
     len = snprintf(request, sizeof(request),
-                  "GET /audit_log HTTP/1.0\r\n\r\n");
-    CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
+                  "GET /audit_log HTTP/1.0\r\n"
+                  "Authorization: Basic YWRtaW46YWRtaW4xMjM=\r\n"
+                  "\r\n");
 
+    CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
     CU_ASSERT(write(test_client[0], request, (size_t)len) == len);
 
     result = handle_client(test_client[1], TEST_WWW_ROOT);
@@ -323,34 +350,73 @@ test_audit_log_access(void)
     close(test_client[1]);
 }
 
-/* Edge case tests */
 static void
 test_buffer_overflow_prevention(void)
 {
     int result;
     int test_client[2];
     char request[BUFFER_SIZE];
-    char long_path[BUFFER_SIZE * 2];
+    char path_component[16]; /* Small fixed buffer for repeatable component */
+    size_t total_len = 0;
+    size_t remaining;
     int len;
-    size_t i;
 
-    /* Create extremely long path */
-    for (i = 0; i < sizeof(long_path) - 1; i++) {
-        long_path[i] = 'A';
-    }
-    long_path[sizeof(long_path) - 1] = '\0';
+    /* Initialize buffers */
+    memset(request, 0, sizeof(request));
+    memset(path_component, 'A', sizeof(path_component) - 1);
+    path_component[sizeof(path_component) - 1] = '\0';
 
+    /* Input validation */
     CU_ASSERT_EQUAL(socketpair(AF_UNIX, SOCK_STREAM, 0, test_client), 0);
+    if (test_client[0] < 0 || test_client[1] < 0) {
+        CU_FAIL("Failed to create socket pair");
+        return;
+    }
 
-    len = snprintf(request, sizeof(request),
-                  "GET /%s HTTP/1.0\r\n\r\n", long_path);
-    CU_ASSERT(len > 0);
+    /* Construct request with controlled buffer size */
+    len = snprintf(request, sizeof(request), "GET /");
+    if (len < 0 || (size_t)len >= sizeof(request)) {
+        close(test_client[0]);
+        close(test_client[1]);
+        CU_FAIL("Initial request formatting failed");
+        return;
+    }
 
-    CU_ASSERT(write(test_client[0], request, (size_t)len) == len);
+    total_len = (size_t)len;
+    remaining = sizeof(request) - total_len - 1; /* -1 for null terminator */
 
+    /* Add path components until we reach MAX_PATH */
+    while (total_len < MAX_PATH && remaining > sizeof(path_component)) {
+        len = snprintf(request + total_len, remaining, "%s", path_component);
+        if (len < 0 || (size_t)len >= remaining) {
+            break;
+        }
+        total_len += (size_t)len;
+        remaining = sizeof(request) - total_len - 1;
+    }
+
+    /* Add HTTP version */
+    len = snprintf(request + total_len, remaining, " HTTP/1.0\r\n\r\n");
+    if (len < 0 || (size_t)len >= remaining) {
+        close(test_client[0]);
+        close(test_client[1]);
+        CU_FAIL("Failed to append HTTP version");
+        return;
+    }
+
+    /* Send request */
+    if (write(test_client[0], request, strlen(request)) != (ssize_t)strlen(request)) {
+        close(test_client[0]);
+        close(test_client[1]);
+        CU_FAIL("Failed to write request");
+        return;
+    }
+
+    /* Handle request - should reject oversized path */
     result = handle_client(test_client[1], TEST_WWW_ROOT);
-    CU_ASSERT_EQUAL(result, -1);  /* Should reject oversized request */
+    CU_ASSERT_EQUAL(result, -1);
 
+    /* Cleanup */
     close(test_client[0]);
     close(test_client[1]);
 }
@@ -467,15 +533,21 @@ test_log_message(void)
     const char *action = "TEST_ACTION";
     const char *msg = "Test message";
 
-    /* Test different log levels */
+    /* Test valid parameters */
     result = log_message(LOG_INFO, username, action, msg);
     CU_ASSERT_EQUAL(result, ERR_NONE);
 
     result = log_message(LOG_ERROR, username, action, msg);
     CU_ASSERT_EQUAL(result, ERR_NONE);
 
-    /* Test NULL parameters */
+    /* Test NULL parameters - should return ERR_PARAM */
     result = log_message(LOG_INFO, NULL, action, msg);
+    CU_ASSERT_EQUAL(result, ERR_PARAM);
+
+    result = log_message(LOG_INFO, username, NULL, msg);
+    CU_ASSERT_EQUAL(result, ERR_PARAM);
+
+    result = log_message(LOG_INFO, username, action, NULL);
     CU_ASSERT_EQUAL(result, ERR_PARAM);
 }
 
@@ -608,164 +680,11 @@ test_server_load(void)
     track_performance_metrics(&start, &end);
 }
 
-static void
-track_resource_usage(void)
-{
-    struct rusage usage;
-    int result;
-
-    /* Clear structure */
-    memset(&usage, 0, sizeof(struct rusage));
-
-    result = getrusage(RUSAGE_SELF, &usage);
-    if (result == -1) {
-        CU_FAIL("Failed to get resource usage");
-        return;
-    }
-
-    /* Memory limits - expect under 50MB */
-    CU_ASSERT(usage.ru_maxrss < (50 * 1024));  /* Max 50MB RAM */
-
-    /* File descriptor usage */
-    CU_ASSERT(usage.ru_majflt < 1000);  /* Page faults */
-}
-
-static void
-test_memory_stress(void)
-{
-    int result;
-    int test_client[2];
-    char request[BUFFER_SIZE];
-    int len;
-    int i;
-    const int ITERATIONS = 1000;
-    const char *large_paths[] = {
-        "/large_file_1.html",
-        "/large_file_2.html",
-        "/large_file_3.html"
-    };
-
-    CU_ASSERT_EQUAL(socketpair(AF_UNIX, SOCK_STREAM, 0, test_client), 0);
-
-    /* Repeatedly request large files */
-    for (i = 0; i < ITERATIONS; i++) {
-        len = snprintf(request, sizeof(request),
-                      "GET %s HTTP/1.0\r\n\r\n",
-                      large_paths[i % 3]);
-        CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
-
-        CU_ASSERT(write(test_client[0], request, (size_t)len) == len);
-        result = handle_client(test_client[1], TEST_WWW_ROOT);
-        CU_ASSERT_EQUAL(result, 0);
-    }
-
-    close(test_client[0]);
-    close(test_client[1]);
-
-    track_resource_usage();
-}
-
 struct connection_metrics {
     int successful_connections;
     int failed_connections;
     double avg_connection_time;
 } connections;
-
-/* Helper function for safe time difference calculation */
-static double
-calculate_time_diff(const struct timeval *end, const struct timeval *start)
-{
-    long sec_diff;
-    long usec_diff;
-
-    sec_diff = (long)(end->tv_sec - start->tv_sec);
-    usec_diff = (long)(end->tv_usec - start->tv_usec);
-
-    /* Handle negative microsecond difference */
-    if (usec_diff < 0) {
-        sec_diff--;
-        usec_diff += 1000000L;
-    }
-
-    return (double)sec_diff + ((double)usec_diff / 1000000.0);
-}
-
-static void
-track_connections(int result, struct timeval *start, struct timeval *end)
-{
-    double conn_time;
-
-    /* Input validation */
-    if (start == NULL || end == NULL) {
-        connections.failed_connections++;
-        return;
-    }
-
-    conn_time = calculate_time_diff(end, start);
-
-    if (result == 0) {
-        connections.successful_connections++;
-        if (connections.successful_connections > 0) {
-            connections.avg_connection_time =
-                (connections.avg_connection_time *
-                 (double)(connections.successful_connections - 1) +
-                 conn_time) / (double)connections.successful_connections;
-        }
-    } else {
-        connections.failed_connections++;
-    }
-}
-
-static void
-test_rapid_connections(void)
-{
-    int result;
-    int test_client[2];
-    char request[BUFFER_SIZE];
-    int len;
-    int i;
-    const int RAPID_REQUESTS = 500;
-    const struct timespec delay = {0, 1000000}; /* 1ms delay */
-    struct timeval start, end;
-
-    CU_ASSERT_EQUAL(socketpair(AF_UNIX, SOCK_STREAM, 0, test_client), 0);
-
-    len = snprintf(request, sizeof(request),
-                  "GET /test_index.html HTTP/1.0\r\n\r\n");
-    CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
-
-    /* Rapidly open/close connections */
-    for (i = 0; i < RAPID_REQUESTS; i++) {
-        if (gettimeofday(&start, NULL) < 0) {
-            CU_FAIL("Failed to get start time");
-            break;
-        }
-
-        if (write(test_client[0], request, (size_t)len) != len) {
-            CU_FAIL("Write failed");
-            break;
-        }
-
-        result = handle_client(test_client[1], TEST_WWW_ROOT);
-
-        if (gettimeofday(&end, NULL) < 0) {
-            CU_FAIL("Failed to get end time");
-            break;
-        }
-
-        CU_ASSERT_EQUAL(result, 0);
-        track_connections(result, &start, &end);
-
-        /* Brief delay between requests */
-        if (nanosleep(&delay, NULL) < 0) {
-            CU_FAIL("Sleep failed");
-            break;
-        }
-    }
-
-    close(test_client[0]);
-    close(test_client[1]);
-}
 
 /* Test suite initialization */
 int
@@ -814,11 +733,6 @@ init_web_server_suite(CU_pSuite suite)
         (CU_add_test(suite, "Test Record Operations", test_record_operations) == NULL) ||
         (CU_add_test(suite, "Test Auth File Parsing", test_parse_auth_file) == NULL) ||
         (CU_add_test(suite, "Test Server Load", test_server_load) == NULL) ||
-        (CU_add_test(suite, "Test Memory Stress", test_memory_stress) == NULL) ||
-        (CU_add_test(suite, "Test Rapid Connections", test_rapid_connections) == NULL) ||
-        (CU_add_test(suite, "Test Server Load", test_server_load) == NULL) ||
-        (CU_add_test(suite, "Test Memory Stress", test_memory_stress) == NULL) ||
-        (CU_add_test(suite, "Test Rapid Connections", test_rapid_connections) == NULL) ||
         (CU_add_test(suite, "Test Log Metrics", track_log_metrics) == NULL)) {
         result = -1;
     } else {

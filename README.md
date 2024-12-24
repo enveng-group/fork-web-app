@@ -7,9 +7,14 @@ A lightweight HTTP web server implementation in ANSI C (C89), focusing on POSIX 
 - Basic authentication and session management
 - POSIX-compliant, musl libc based implementation
 - Minimal footprint with static binary output
+- ISO-8859-1 encoding support
+- HTML4.01 Strict compliant
+- CSS2.1 compliant
+- ECMAScript 3 (ES3) compliant
+- Mobile-first responsive design
 
 ## Prerequisites
-- gcc compiler
+- musl-gcc compiler
 - musl libc
 - GNU Make
 - CUnit testing framework
@@ -18,39 +23,69 @@ A lightweight HTTP web server implementation in ANSI C (C89), focusing on POSIX 
 
 ### Production Build
 ```bash
-make clean && make
+make ENV=prod
+```
+
+### Development Build
+```bash
+make ENV=dev
 ```
 
 ### Run Tests
 ```bash
-make clean && make test
+make test
 ```
 
 ## Project Structure
 ```
 .
 ├── bin/                # Binary outputs
+├── etc/               # Configuration files
 ├── include/           # Header files
+├── lib/               # Libraries
 ├── src/              # Source code
 ├── test/             # Test suite
 └── www/              # Static web content
+    ├── assets/       # Static assets
+    ├── error/        # Error pages
+    └── templates/    # HTML templates
 ```
 
 ## Usage
 Start the server:
 ```bash
-./bin/web_server
+./bin/web_server -c /etc/web_server.conf
 ```
 
 Access via browser:
 - Login page: http://localhost:8080
-- Test page: http://localhost:8080/test_index.html
+- Admin panel: http://localhost:8080/admin
+- Status page: http://localhost:8080/status
 
 ## Technical Details
-- Compliant with ISO/IEC 9899:1990 (C90)
-- POSIX.1 (IEEE 1003.1) compliance
+- ISO/IEC 9899:1990 (C90) compliant
+- POSIX.1 (IEEE 1003.1) compliant
+- X/Open-500 compliant
 - Static linking with musl libc
-- Thorough error handling
+- ISO-8859-1 character encoding
+- Memory-safe implementation
+- Thread-safe operations
+- No external dependencies
+
+## Development Guidelines
+- Mobile-first responsive design
+- HTML 4.01 Strict / XHTML 1.0 Strict
+- Native CSS2.1 only (no frameworks)
+- ES3 JavaScript (no libraries)
+- ISO-8859-1 encoding for all files
+
+## Security
+- Memory protection features
+- Stack protection enabled
+- Strict input validation
+- Safe string handling
+- Format string protection
 
 ## License
 AGPL-3.0-or-later
+

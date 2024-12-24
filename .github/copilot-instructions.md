@@ -64,6 +64,7 @@ These instructions ensure Copilot's suggestions align with our project's technic
 - Always define pointers with the `*` operator.
 - Always define arrays with the `[]` operator.
 - Never generate code that has undefined reference behaviour.
+- Avoid direct type punning to comply with strict aliasing rules.
 - Never redefine a variable in the same scope.
 - Avoid generating code that are conflicting types for the same variable.
 - Avoid previous declarations of variables.

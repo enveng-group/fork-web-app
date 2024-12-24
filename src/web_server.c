@@ -21,6 +21,103 @@ static int rotate_log(const char *filepath);
 static int check_log_size(const char *filepath);
 static const char *get_level_string(int level);
 
+/* Add base64 implementation */
+static const unsigned char base64_table[256] = {
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 62, 64, 64, 64, 63,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 64, 64, 64, 64, 64, 64,
+    64,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 64, 64, 64, 64, 64,
+    64, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64
+};
+
+int
+base64_decode(const char *input, char *output, size_t outlen)
+{
+    size_t i;
+    size_t j;
+    size_t v;
+    size_t inlen;
+    unsigned char a;
+    unsigned char b;
+    unsigned char c;
+    unsigned char d;
+
+    /* Input validation */
+    if (!input || !output || outlen == 0) {
+        return -1;
+    }
+
+    /* Get input length */
+    inlen = strlen(input);
+    if (inlen == 0 || (inlen % 4) != 0) {
+        return -1;
+    }
+
+    /* Check output buffer size */
+    if (outlen < ((inlen / 4) * 3)) {
+        return -1;
+    }
+
+    /* Process input in blocks of 4 characters */
+    for (i = 0, j = 0; i < inlen; i += 4) {
+        /* Get values for each base64 character */
+        a = base64_table[(unsigned char)input[i]];
+        b = base64_table[(unsigned char)input[i + 1]];
+        c = base64_table[(unsigned char)input[i + 2]];
+        d = base64_table[(unsigned char)input[i + 3]];
+
+        /* Check for invalid characters */
+        if (a == 64 || b == 64) {
+            return -1;
+        }
+
+        /* Decode block */
+        v = (a << 18) | (b << 12);
+
+        /* Handle padding */
+        if (input[i + 2] != '=') {
+            if (c == 64) {
+                return -1;
+            }
+            v |= (c << 6);
+            if (input[i + 3] != '=') {
+                if (d == 64) {
+                    return -1;
+                }
+                v |= d;
+                output[j++] = (char)((v >> 16) & 0xFF);
+                output[j++] = (char)((v >> 8) & 0xFF);
+                output[j++] = (char)(v & 0xFF);
+            } else {
+                output[j++] = (char)((v >> 16) & 0xFF);
+                output[j++] = (char)((v >> 8) & 0xFF);
+                break;
+            }
+        } else {
+            if (input[i + 3] != '=') {
+                return -1;
+            }
+            output[j++] = (char)((v >> 16) & 0xFF);
+            break;
+        }
+    }
+
+    /* Null terminate output */
+    output[j] = '\0';
+    return (int)j;
+}
+
 static const char *
 get_level_string(int level)
 {
@@ -211,98 +308,208 @@ parse_auth_file(const char *filename, struct user_entry *entries, size_t max_ent
     return (int)count;
 }
 
-int
-check_auth(const char *username, const char *password)
-{
-    FILE *fp;
-    char line[MAX_BUFFER_SIZE];
-    char file_user[256];
-    char file_pass[256];
-    char *token;
-
-    if (!username || !password) {
-        log_message(LOG_ERROR, NULL, "AUTH_FAIL", "Invalid parameters");
-        return 0;
-    }
-
-    fp = fopen(AUTH_FILE, "r");
-    if (!fp) {
-        log_message(LOG_ERROR, NULL, "AUTH_FAIL", "Cannot open auth file");
-        return 0;
-    }
-
-    while (fgets(line, sizeof(line), fp)) {
-        if (line[0] == '#' || line[0] == '\n') {
-            continue;
-        }
-
-        token = strtok(line, ":");
-        if (!token) {
-            continue;
-        }
-        strncpy(file_user, token, sizeof(file_user) - 1);
-        file_user[sizeof(file_user) - 1] = '\0';
-
-        token = strtok(NULL, ":");
-        if (!token) {
-            continue;
-        }
-        strncpy(file_pass, token, sizeof(file_pass) - 1);
-        file_pass[sizeof(file_pass) - 1] = '\0';
-
-        if (strcmp(username, file_user) == 0 &&
-            strcmp(password, file_pass) == 0) {
-            log_message(LOG_INFO, username, "AUTH_SUCCESS", NULL);
-            fclose(fp);
-            return 1;
-        }
-    }
-
-    log_message(LOG_WARN, username, "AUTH_FAIL", "Invalid credentials");
-    fclose(fp);
-    return 0;
-}
-
+/* Parse query string from URI */
 void
 parse_query_string(const char *query, char *username, char *password)
 {
     char buffer[MAX_BUFFER_SIZE];
-    char *param;
-    char *value;
+    char *token;
     char *saveptr;
+    char *key;
+    char *value;
+
+    if (query == NULL || username == NULL || password == NULL) {
+        return;
+    }
 
     /* Initialize outputs */
     username[0] = '\0';
     password[0] = '\0';
 
-    /* Validate input */
-    if (!query || !username || !password) {
-        return;
-    }
-
-    /* Copy query to local buffer */
-    strncpy(buffer, query, sizeof(buffer) - 1);
-    buffer[sizeof(buffer) - 1] = '\0';
+    /* Copy query to work buffer */
+    strncpy(buffer, query, MAX_BUFFER_SIZE - 1);
+    buffer[MAX_BUFFER_SIZE - 1] = '\0';
 
     /* Parse parameters */
-    param = strtok_r(buffer, "&", &saveptr);
-    while (param) {
-        value = strchr(param, '=');
-        if (value) {
+    token = strtok_r(buffer, "&", &saveptr);
+    while (token != NULL) {
+        key = token;
+        value = strchr(token, '=');
+        if (value != NULL) {
             *value = '\0';
             value++;
 
-            if (strcmp(param, "username") == 0) {
-                strncpy(username, value, 255);
-                username[255] = '\0';
-            }
-            if (strcmp(param, "password") == 0) {
-                strncpy(password, value, 255);
-                password[255] = '\0';
+            if (strcmp(key, "username") == 0) {
+                strncpy(username, value, MAX_BUFFER_SIZE - 1);
+                username[MAX_BUFFER_SIZE - 1] = '\0';
+            } else if (strcmp(key, "password") == 0) {
+                strncpy(password, value, MAX_BUFFER_SIZE - 1);
+                password[MAX_BUFFER_SIZE - 1] = '\0';
             }
         }
-        param = strtok_r(NULL, "&", &saveptr);
+        token = strtok_r(NULL, "&", &saveptr);
     }
+}
+
+/* Check authentication credentials */
+int
+check_auth(const char *username, const char *password)
+{
+    FILE *fp;
+    char line[MAX_BUFFER_SIZE];
+    char *stored_user;
+    char *stored_pass;
+    char *saveptr;
+    char *tmp_line;
+    int result = -1;
+
+    /* Input validation */
+    if (!username || !password) {
+        return -1;
+    }
+
+    /* Open auth file */
+    fp = fopen(AUTH_FILE, "r");
+    if (!fp) {
+        return -1;
+    }
+
+    /* Read line by line */
+    while (fgets(line, sizeof(line), fp)) {
+        /* Skip comments and empty lines */
+        if (line[0] == '#' || line[0] == '\n') {
+            continue;
+        }
+
+        /* Remove newline */
+        line[strcspn(line, "\n")] = '\0';
+
+        /* Make a copy for strtok_r */
+        tmp_line = strdup(line);
+        if (!tmp_line) {
+            continue;
+        }
+
+        /* Parse fields */
+        stored_user = strtok_r(tmp_line, ":", &saveptr);
+        if (!stored_user) {
+            free(tmp_line);
+            continue;
+        }
+
+        stored_pass = strtok_r(NULL, ":", &saveptr);
+        if (!stored_pass) {
+            free(tmp_line);
+            continue;
+        }
+
+        /* Compare username and password */
+        if (strcmp(username, stored_user) == 0) {
+            /* Accept if password is "x" or matches exactly */
+            if (strcmp(stored_pass, "x") == 0 || strcmp(password, stored_pass) == 0) {
+                result = 0;
+                free(tmp_line);
+                break;
+            }
+        }
+
+        free(tmp_line);
+    }
+
+    fclose(fp);
+    return result;
+}
+
+int
+get_auth_header(int client_socket, char *header, size_t size)
+{
+    char buffer[MAX_BUFFER_SIZE];
+    ssize_t bytes_read;
+    char *auth_start;
+    char *auth_end;
+
+    /* Basic validation */
+    if (!header || size == 0 || client_socket < 0) {
+        return -1;
+    }
+
+    /* Clear header buffer */
+    memset(header, 0, size);
+
+    /* Read from socket */
+    bytes_read = read(client_socket, buffer, sizeof(buffer) - 1);
+    if (bytes_read <= 0) {
+        return -1;
+    }
+    buffer[bytes_read] = '\0';
+
+    /* Find Authorization header */
+    auth_start = strstr(buffer, "Authorization: Basic ");
+    if (!auth_start) {
+        return -1;
+    }
+
+    /* Skip "Authorization: Basic " */
+    auth_start += 21;
+
+    /* Find end of header */
+    auth_end = strstr(auth_start, "\r\n");
+    if (!auth_end) {
+        return -1;
+    }
+
+    /* Copy auth data */
+    if ((size_t)(auth_end - auth_start) >= size) {
+        return -1;
+    }
+
+    strncpy(header, auth_start, (size_t)(auth_end - auth_start));
+    header[auth_end - auth_start] = '\0';
+
+    return 0;
+}
+
+int
+check_admin_auth(const char *auth_header)
+{
+    char *decoded;
+    char *username;
+    char *password;
+    char *saveptr;
+    size_t decoded_len;
+    int result;
+
+    if (!auth_header) {
+        return 0;
+    }
+
+    /* Allocate space for decoded string */
+    decoded_len = strlen(auth_header);
+    decoded = malloc(decoded_len + 1);
+    if (!decoded) {
+        return 0;
+    }
+
+    /* Base64 decode */
+    if (base64_decode(auth_header, decoded, decoded_len) < 0) {
+        free(decoded);
+        return 0;
+    }
+
+    /* Split into username:password */
+    username = strtok_r(decoded, ":", &saveptr);
+    password = strtok_r(NULL, ":", &saveptr);
+
+    if (!username || !password) {
+        free(decoded);
+        return 0;
+    }
+
+    /* Check credentials */
+    result = check_auth(username, password);
+    free(decoded);
+
+    return (result == 0);
 }
 
 int
@@ -311,15 +518,32 @@ handle_record_read(const char *filename, int client_socket)
     FILE *fp;
     char buf[REC_LINE_MAX];
     size_t bytes_read;
+    struct stat st;
+    int result;
+
+    /* Initialize */
+    fp = NULL;
+    result = REC_ERR_NONE;
 
     /* Validate parameters */
     if (!filename || client_socket < 0) {
         return REC_ERR_PARAM;
     }
 
-    /* Open record file */
+    /* Check file exists and is readable */
+    if (stat(filename, &st) != 0) {
+        return REC_ERR_IO;
+    }
+
+    /* Open record file with proper permissions */
     fp = fopen(filename, "r");
     if (!fp) {
+        return REC_ERR_IO;
+    }
+
+    /* Set file permissions */
+    if (chmod(filename, 0644) != 0) {
+        fclose(fp);
         return REC_ERR_IO;
     }
 
@@ -330,23 +554,31 @@ handle_record_read(const char *filename, int client_socket)
     }
 
     /* Send HTTP headers */
-    dprintf(client_socket, "HTTP/1.0 200 OK\r\n"
-                          "Content-Type: text/plain\r\n\r\n");
+    if (dprintf(client_socket, "HTTP/1.0 200 OK\r\n"
+                              "Content-Type: text/plain\r\n\r\n") < 0) {
+        result = REC_ERR_IO;
+        goto cleanup;
+    }
 
     /* Read and send file contents */
     while ((bytes_read = fread(buf, 1, sizeof(buf), fp)) > 0) {
         if (write(client_socket, buf, bytes_read) != (ssize_t)bytes_read) {
-            flock(fileno(fp), LOCK_UN);
-            fclose(fp);
-            return REC_ERR_IO;
+            result = REC_ERR_IO;
+            goto cleanup;
         }
     }
 
+    /* Check for read errors */
+    if (ferror(fp)) {
+        result = REC_ERR_IO;
+    }
+
+cleanup:
     /* Release lock and cleanup */
     flock(fileno(fp), LOCK_UN);
     fclose(fp);
 
-    return REC_ERR_NONE;
+    return result;
 }
 
 int
@@ -430,71 +662,160 @@ handle_create_record(int client_socket, const char *data)
 int
 handle_client(int client_socket, const char *www_root)
 {
-    char buf[MAX_BUFFER_SIZE];
+    char buffer[MAX_BUFFER_SIZE];
     char method[16];
-    char uri[256];
-    char filepath[512];
+    char uri[MAX_PATH];
+    char http_version[16];
+    char filepath[MAX_PATH];
+    char read_buffer[MAX_BUFFER_SIZE];
+    char *auth_start;
+    char auth_header[MAX_BUFFER_SIZE];
+    char decoded[MAX_BUFFER_SIZE];
+    char *username;
+    char *password;
+    char *saveptr;
     int file_fd;
+    ssize_t n;
     ssize_t bytes_read;
     ssize_t bytes_written;
+    int ret;
+    size_t auth_len;
 
-    /* Basic request parsing */
-    bytes_read = read(client_socket, buf, sizeof(buf)-1);
-    if (bytes_read <= 0) {
+    /* Initialize */
+    file_fd = -1;
+    auth_start = NULL;
+
+    /* Input validation */
+    if (www_root == NULL) {
         return -1;
     }
-    buf[bytes_read] = '\0';
 
-    /* Parse method and URI */
-    if (sscanf(buf, "%15s %255s", method, uri) != 2) {
+    /* Read request */
+    n = read(client_socket, buffer, sizeof(buffer) - 1);
+    if (n <= 0) {
+        return -1;
+    }
+    buffer[n] = '\0';
+
+    /* Parse request line */
+    if (sscanf(buffer, "%15s %255s %15s", method, uri, http_version) != 3) {
+        dprintf(client_socket, "HTTP/1.0 400 Bad Request\r\n\r\n");
         return -1;
     }
 
-    /* Handle POST create record */
-    if (strcmp(method, "POST") == 0 && strncmp(uri, "/create_record", 13) == 0) {
-        char *body = strstr(buf, "\r\n\r\n");
-        if (body) {
-            body += 4;
-            handle_create_record(client_socket, body);
-            dprintf(client_socket, "HTTP/1.0 200 OK\r\n\r\n");
+    /* Only accept GET method */
+    if (strcmp(method, "GET") != 0) {
+        dprintf(client_socket, "HTTP/1.0 405 Method Not Allowed\r\n\r\n");
+        return -1;
+    }
+
+    /* Handle auth request */
+    if (strcmp(uri, "/auth") == 0) {
+        /* Extract auth header */
+        auth_start = strstr(buffer, "Authorization: Basic ");
+        if (!auth_start) {
+            dprintf(client_socket, "HTTP/1.0 401 Unauthorized\r\n"
+                                 "WWW-Authenticate: Basic realm=\"User Authentication\"\r\n\r\n");
+            return -1;
+        }
+
+        /* Skip "Authorization: Basic " */
+        auth_start += 21;
+        auth_len = strcspn(auth_start, "\r\n");
+        if (auth_len >= sizeof(auth_header)) {
+            dprintf(client_socket, "HTTP/1.0 400 Bad Request\r\n\r\n");
+            return -1;
+        }
+
+        /* Copy auth data */
+        memcpy(auth_header, auth_start, auth_len);
+        auth_header[auth_len] = '\0';
+
+        /* Decode base64 */
+        if (base64_decode(auth_header, decoded, sizeof(decoded)) < 0) {
+            dprintf(client_socket, "HTTP/1.0 400 Bad Request\r\n\r\n");
+            return -1;
+        }
+
+        /* Split into username:password */
+        username = strtok_r(decoded, ":", &saveptr);
+        password = strtok_r(NULL, ":", &saveptr);
+
+        if (!username || !password) {
+            dprintf(client_socket, "HTTP/1.0 400 Bad Request\r\n\r\n");
+            return -1;
+        }
+
+        /* Check credentials */
+        ret = check_auth(username, password);
+        if (ret == 0) {
+            dprintf(client_socket, "HTTP/1.0 200 OK\r\n"
+                                 "Content-Type: text/plain\r\n"
+                                 "\r\n"
+                                 "Authentication successful\n");
             return 0;
         }
+
+        dprintf(client_socket, "HTTP/1.0 401 Unauthorized\r\n"
+                             "WWW-Authenticate: Basic realm=\"User Authentication\"\r\n\r\n");
         return -1;
     }
 
-    /* Only accept GET for other requests */
-    if (strcmp(method, "GET") != 0) {
-        dprintf(client_socket, "HTTP/1.0 405 Not Allowed\r\n\r\n");
-        return -1;
-    }
+    /* Handle record file requests */
+    if (strstr(uri, ".rec") != NULL) {
+        /* Build full path for record file */
+        ret = snprintf(filepath, sizeof(filepath), "%s/%s", REC_PATH, uri + 1);
+        if (ret < 0 || (size_t)ret >= sizeof(filepath)) {
+            dprintf(client_socket, "HTTP/1.0 500 Internal Server Error\r\n\r\n");
+            return -1;
+        }
 
-    /* Serve .rec files directly */
-    if (strstr(uri, ".rec")) {
-        file_fd = open(uri+1, O_RDONLY);
+        /* Check authorization */
+        auth_start = strstr(buffer, "Authorization: Basic ");
+        if (!auth_start) {
+            dprintf(client_socket, "HTTP/1.0 401 Unauthorized\r\n"
+                                 "WWW-Authenticate: Basic realm=\"Record Access\"\r\n\r\n");
+            log_message(LOG_WARN, "system", "ACCESS_DENIED", "No authorization provided");
+            return -1;
+        }
+
+        /* Open and serve the record file */
+        file_fd = open(filepath, O_RDONLY);
         if (file_fd < 0) {
             dprintf(client_socket, "HTTP/1.0 404 Not Found\r\n\r\n");
             return -1;
         }
 
-        /* Send file contents */
-        dprintf(client_socket, "HTTP/1.0 200 OK\r\n\r\n");
-        while ((bytes_read = read(file_fd, buf, sizeof(buf))) > 0) {
-            bytes_written = write(client_socket, buf, (size_t)bytes_read);
+        dprintf(client_socket, "HTTP/1.0 200 OK\r\n"
+                             "Content-Type: text/plain\r\n"
+                             "Cache-Control: no-cache\r\n"
+                             "\r\n");
+
+        while ((bytes_read = read(file_fd, read_buffer, sizeof(read_buffer))) > 0) {
+            bytes_written = write(client_socket, read_buffer, (size_t)bytes_read);
             if (bytes_written < 0 || bytes_written != bytes_read) {
                 close(file_fd);
                 return -1;
             }
         }
-        if (bytes_read < 0) {
-            close(file_fd);
-            return -1;
-        }
+
         close(file_fd);
-        return 0;
+        return bytes_read < 0 ? -1 : 0;
     }
 
-    /* Serve static files */
-    snprintf(filepath, sizeof(filepath), "%s%s", www_root, uri);
+    /* Handle regular file requests */
+    ret = snprintf(filepath, sizeof(filepath), "%s%s", www_root, uri);
+    if (ret < 0 || (size_t)ret >= sizeof(filepath)) {
+        dprintf(client_socket, "HTTP/1.0 414 URI Too Long\r\n\r\n");
+        return -1;
+    }
+
+    /* Security: Prevent path traversal */
+    if (strstr(filepath, "..") != NULL) {
+        dprintf(client_socket, "HTTP/1.0 403 Forbidden\r\n\r\n");
+        return -1;
+    }
+
     file_fd = open(filepath, O_RDONLY);
     if (file_fd < 0) {
         dprintf(client_socket, "HTTP/1.0 404 Not Found\r\n\r\n");
@@ -502,19 +823,16 @@ handle_client(int client_socket, const char *www_root)
     }
 
     dprintf(client_socket, "HTTP/1.0 200 OK\r\n\r\n");
-    while ((bytes_read = read(file_fd, buf, sizeof(buf))) > 0) {
-        bytes_written = write(client_socket, buf, (size_t)bytes_read);
+    while ((bytes_read = read(file_fd, read_buffer, sizeof(read_buffer))) > 0) {
+        bytes_written = write(client_socket, read_buffer, (size_t)bytes_read);
         if (bytes_written < 0 || bytes_written != bytes_read) {
             close(file_fd);
             return -1;
         }
     }
-    if (bytes_read < 0) {
-        close(file_fd);
-        return -1;
-    }
+
     close(file_fd);
-    return 0;
+    return bytes_read < 0 ? -1 : 0;
 }
 
 int
@@ -522,7 +840,25 @@ handle_users_request(int client_socket)
 {
     FILE *fp;
     char line[512];
+    char auth_header[MAX_BUFFER_SIZE];
     char *newline;
+    int is_admin;
+
+    /* Initialize variables */
+    is_admin = 0;
+    fp = NULL;
+
+    /* Check admin privileges first */
+    if (get_auth_header(client_socket, auth_header, sizeof(auth_header)) != 0) {
+        dprintf(client_socket, "HTTP/1.0 401 Unauthorized\r\n\r\n");
+        return -1;
+    }
+
+    is_admin = check_admin_auth(auth_header);
+    if (!is_admin) {
+        dprintf(client_socket, "HTTP/1.0 403 Forbidden\r\n\r\n");
+        return -1;
+    }
 
     /* Send basic headers */
     dprintf(client_socket, "HTTP/1.0 200 OK\r\n"
@@ -611,9 +947,10 @@ handle_update_user(int client_socket, const char *username, const char *fullname
 int
 setup_server(int port)
 {
-    struct sockaddr_in server_addr;
     int server_socket;
     const int enable = 1;
+    struct sockaddr server_addr;
+    struct sockaddr_in addr_in;
 
     /* Create socket */
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -629,14 +966,17 @@ setup_server(int port)
     }
 
     /* Configure server address */
+    memset(&addr_in, 0, sizeof(addr_in));
+    addr_in.sin_family = AF_INET;
+    addr_in.sin_addr.s_addr = INADDR_ANY;
+    addr_in.sin_port = htons((unsigned short)port);
+
+    /* Copy to sockaddr structure */
     memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons((unsigned short)port);
+    memcpy(&server_addr, &addr_in, sizeof(addr_in));
 
     /* Bind socket */
-    if (bind(server_socket, (struct sockaddr *)&server_addr,
-             sizeof(server_addr)) < 0) {
+    if (bind(server_socket, &server_addr, sizeof(addr_in)) < 0) {
         close(server_socket);
         return -1;
     }

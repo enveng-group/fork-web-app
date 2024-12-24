@@ -18,6 +18,7 @@
 #define ETC_PATH BASE_PATH "/etc"
 #define MAX_PATH 256
 #define MAX_TIMESTAMP 32
+#define B64_CHARS "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
 /* Subpaths */
 #define MAX_LOG_SIZE 10485760    /* 10MB */
@@ -86,6 +87,8 @@ struct user_entry {
 };
 
 /* Function prototypes */
+int base64_decode(const char *input, char *output, size_t outlen);
+int get_auth_header(int client_socket, char *header, size_t size);
 int check_auth(const char *username, const char *password);
 void parse_query_string(const char *query, char *username, char *password);
 int setup_server(int port);
@@ -97,5 +100,6 @@ int handle_create_record(int client_socket, const char *data);
 int handle_record_read(const char *filename, int client_socket);
 int handle_record_write(const char *filename, const char *data);
 int log_message(int level, const char *username, const char *action, const char *msg);
+int check_admin_auth(const char *auth_header);
 
 #endif /* WEB_SERVER_H */
