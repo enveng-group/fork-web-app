@@ -353,45 +353,6 @@
       return records.filter(record => record.Project_Name === 'SCJV - Pilbara Ports');
     }
 
-    // Add to all pages that load records
-    "use strict";
-
-    function parseRecordData(data, projectFilter) {
-      var records = [];
-      var currentRecord = {};
-      var lines = data.split('\n');
-
-      for (var i = 0; i < lines.length; i++) {
-        var line = lines[i].trim();
-
-        if (!line || line.startsWith('%')) {
-          continue;
-        }
-
-        var colonIndex = line.indexOf(':');
-        if (colonIndex > -1) {
-          var field = line.substring(0, colonIndex).trim();
-          var value = line.substring(colonIndex + 1).trim();
-
-          if (field === 'Project_Name') {
-            if (Object.keys(currentRecord).length > 0) {
-              records.push(currentRecord);
-            }
-            currentRecord = {};
-          }
-          currentRecord[field] = value;
-        }
-      }
-
-      if (Object.keys(currentRecord).length > 0) {
-        records.push(currentRecord);
-      }
-
-      return records.filter(function (record) {
-        return record.Project_Name === projectFilter;
-      });
-    }
-
     // Update populateTable function to match reduced columns
     function populateTable(records) {
       var table = document.getElementById('obligationsTable');
@@ -560,33 +521,6 @@
       var username = getCookie('username');
       // Add project-specific role checks
       return username && isProjectMember(username);
-    }
-
-    // Add to each HTML file that handles records
-    "use strict";
-
-    function handleServerError(error, context) {
-      var errorDiv = document.getElementById('record-error');
-      if (!errorDiv) return;
-
-      var message = 'Operation failed';
-      switch (error.status) {
-        case 403:
-          message = 'Permission denied';
-          break;
-        case 404:
-          message = 'Record not found';
-          break;
-        case 500:
-          message = 'Server error';
-          break;
-      }
-
-      errorDiv.innerHTML = context + ': ' + message;
-      errorDiv.style.display = 'block';
-      setTimeout(function () {
-        errorDiv.style.display = 'none';
-      }, 5000);
     }
   </script>
 </head>
