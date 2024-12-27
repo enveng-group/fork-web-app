@@ -8,44 +8,42 @@ OBJDIR = obj
 BINDIR = bin
 INCLUDEDIR = include
 
-COMMON_FLAGS = -std=c90 -O3 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500 \
-	-Wall -ansi -Wextra -pedantic -Werror -Wshadow \
-	-Wconversion -Wstrict-prototypes -Wmissing-prototypes \
-	-fanalyzer -fstack-protector-strong -fstack-check \
-	-fdata-sections -ffunction-sections -fno-common -fstrict-aliasing \
-	-Warray-bounds -Wstack-protector -Wformat=2 -Wformat-security \
-	-Wformat-overflow=2 -Wformat-truncation=2 -Walloca -Wvla \
-	-fno-omit-frame-pointer -finput-charset=iso-8859-1 \
-	-fexec-charset=iso-8859-1 -fwide-exec-charset=iso-8859-1 \
-	-Wbad-function-cast -Wstrict-aliasing=2 \
-	-Wnull-dereference -Wdouble-promotion -Wfloat-equal \
-	-Wpointer-arith -Wwrite-strings -Wunreachable-code \
-	-Wcast-align -Wswitch-default
+# Common flags combined on single lines to avoid continuation issues
+COMMON_FLAGS = -std=c90 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500 -Wall -ansi -Wextra -pedantic -Werror -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes -Warray-bounds -Wformat=2 -Wformat-security -Wformat-overflow=2 -Wformat-truncation=2 -Wvla -Wbad-function-cast -Wstrict-aliasing=2 -Wnull-dereference -Wdouble-promotion -Wfloat-equal -Wpointer-arith -Wwrite-strings -Wcast-align -Wcast-qual -Wredundant-decls -Wundef -Wmissing-include-dirs -Winit-self -Wswitch-enum -Wmissing-declarations -Wsign-conversion -fstack-protector-strong -fstack-check -fPIE -fstack-protector-all -fdata-sections -ffunction-sections -fno-common -fstrict-aliasing -fno-strict-overflow -fanalyzer -fno-omit-frame-pointer -finput-charset=iso-8859-1 -fexec-charset=iso-8859-1 -fwide-exec-charset=iso-8859-1
 
-PROD_CFLAGS = $(COMMON_FLAGS) -static
-PROD_LDFLAGS = -Wl,--gc-sections -static -lcrypt
-TEST_CFLAGS = $(COMMON_FLAGS)
-TEST_LDFLAGS = -Wl,--gc-sections
-TEST_LIBS = -lcunit -lcrypt
+PROD_CFLAGS = $(COMMON_FLAGS) -static -O3
+PROD_LDFLAGS = -static -Wl,--gc-sections -Wl,-z,relro,-z,now -Wl,-z,noexecstack -Wl,--sort-section=alignment -Wl,--warn-common -Wl,--no-undefined -Wl,--as-needed -Wl,--strip-all -Wl,--build-id=none -lpthread -lcrypt
 
+TEST_CFLAGS = $(COMMON_FLAGS) -g3 -O0 -fprofile-arcs -ftest-coverage -fstack-protector-all
+TEST_LIBS = -lgcov -lcunit -lcrypt -lpthread -lrt -ldl
+TEST_LDFLAGS = -Wl,--warn-common -Wl,--no-undefined -Wl,--fatal-warnings \
+			   -Wl,--gc-sections -Wl,-export-dynamic -Wl,--build-id \
+			   -Wl,--eh-frame-hdr -Wl,-Map=test.map -Wl,--trace -Wl,--verbose \
+			   $(TEST_LIBS)
+
+# Source files
 SRC = $(wildcard $(SRCDIR)/*.c)
 TEST_SRC = $(wildcard $(TESTDIR)/*.c)
 PROD_SRC = $(SRC)
-PROD_OBJ = $(PROD_SRC:$(SRCDIR)/%.c=$(OBJDIR)/prod/%.o)
 
+# Object files
+PROD_OBJ = $(PROD_SRC:$(SRCDIR)/%.c=$(OBJDIR)/prod/%.o)
 TEST_SRC_NO_MAIN = $(filter-out $(SRCDIR)/main.c,$(SRC))
 TEST_OBJ = $(TEST_SRC_NO_MAIN:$(SRCDIR)/%.c=$(OBJDIR)/test/%.o) \
 		   $(TEST_SRC:$(TESTDIR)/%.c=$(OBJDIR)/test/%.o)
 
+# Dependency files
+DEPFILES := $(PROD_OBJ:.o=.d) $(TEST_OBJ:.o=.d)
+
 PROD_TARGET = $(BINDIR)/web_server
 TEST_TARGET = $(BINDIR)/test_web_server
 
-# Build directories (no duplicate mkdir calls)
+# Build directories
 OBJDIRS = $(OBJDIR)/prod $(OBJDIR)/test
 BINDIRS = $(BINDIR)
 ALLDIRS = $(OBJDIRS) $(BINDIRS)
 
-DEPFILES := $(PROD_OBJ:.o=.d) $(TEST_OBJ:.o=.d)
+.PHONY: all prod test dist clean-dist release clean
 
 all: prod
 
@@ -80,16 +78,12 @@ $(OBJDIR)/test/%.o: $(SRCDIR)/%.c
 $(OBJDIR)/test/%.o: $(TESTDIR)/%.c
 	$(CC) -MMD -MP $(TEST_CFLAGS) -I$(INCLUDEDIR) -c $< -o $@
 
-# Add pattern rule for test objects from source files
 $(TEST_OBJ): | $(OBJDIR)/test
 
-# Fix test source patterns
-TEST_SRC = $(wildcard $(TESTDIR)/*.c)
-TEST_SRC_NO_MAIN = $(filter-out $(SRCDIR)/main.c,$(SRC))
-TEST_OBJ = $(TEST_SRC_NO_MAIN:$(SRCDIR)/%.c=$(OBJDIR)/test/%.o) \
-		   $(TEST_SRC:$(TESTDIR)/%.c=$(OBJDIR)/test/%.o)
+# Ensure the production object directory exists before building prod objects
+$(PROD_OBJ): | $(OBJDIR)/prod
 
-# Consolidated release config
+# Release configuration
 VERSION ?= 0.0.1
 RELEASE_NAME = web-app-$(VERSION)
 DISTDIR = dist
@@ -120,4 +114,37 @@ release: clean-dist prod dist
 clean:
 	rm -rf $(OBJDIR) $(BINDIR)/*.o $(BINDIR)/web_server $(BINDIR)/test_web_server
 
-.PHONY: all prod test dist clean-dist release clean
+# Include generated dependency files
+-include $(PROD_OBJS:.o=.d)
+-include $(TEST_OBJS:.o=.d)
+
+# Generate dependencies
+$(OBJDIR)/%.d: $(SRCDIR)/%.c
+	@set -e; rm -f $@; \
+	$(CC) -MM -I$(INCLUDEDIR) $< > $@.$$$$; \
+	sed 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
+
+$(OBJDIR)/test_%.d: $(TESTDIR)/%.c
+	@set -e; rm -f $@; \
+	$(CC) -MM -I$(INCLUDEDIR) $< > $@.$$$$; \
+	sed 's,\($*\)\.o[ :]*,$(OBJDIR)/test_\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
+
+# Ensure dependency files can be generated in obj/prod
+$(OBJDIR)/prod/%.d: $(SRCDIR)/%.c | $(OBJDIR)/prod
+	@set -e; rm -f $@; \
+	$(CC) -MM -I$(INCLUDEDIR) $< > $@.$$$$; \
+	sed 's,\($*\)\.o[ :]*,$(OBJDIR)/prod/\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
+
+# Ensure dependency files can be generated in obj/test
+$(OBJDIR)/test/%.d: $(TESTDIR)/%.c | $(OBJDIR)/test
+	@set -e; rm -f $@; \
+	$(CC) -MM -I$(INCLUDEDIR) $< > $@.$$$$; \
+	sed 's,\($*\)\.o[ :]*,$(OBJDIR)/test/\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
+
+# Remove redundant includes if already covered by -include $(DEPFILES)
+# -include $(PROD_OBJS:.o=.d)
+# -include $(TEST_OBJS:.o=.d)

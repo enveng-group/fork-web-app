@@ -5,6 +5,7 @@
 #include <CUnit/Basic.h>
 #include "../include/web_server.h"
 #include "test_suites.h"
+#include "test_setup.h"
 
 int
 main(void)

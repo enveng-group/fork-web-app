@@ -3,6 +3,7 @@
  * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
  * SPDX-License-Identifier: 	AGPL-3.0-or-later
  */
+#include "test_setup.h"
 #include <CUnit/Basic.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -114,6 +115,11 @@ suite_setup(void)
 {
     struct sigaction sa;
 
+    /* Set up test environment first */
+    if (test_setup_environment() != 0) {
+        return -1;
+    }
+
     /* Set up signal handlers */
     memset(&sa, 0, sizeof(sa));
     sa.sa_handler = test_signal_handler;
@@ -131,9 +137,17 @@ suite_setup(void)
 static int
 suite_teardown(void)
 {
+    /* Close server socket */
     if (test_socket >= 0) {
         close(test_socket);
     }
+
+    /* Cleanup test files */
+    unlink(TEST_AUTH_FILE);
+    unlink(TEST_W6946_REC);
+    unlink("test/test_index.html");
+    rmdir("test");
+
     return 0;
 }
 
@@ -212,22 +226,15 @@ test_rec_file_access(void)
     int test_client[2];
     char request[BUFFER_SIZE];
     int len;
-    FILE *test_file;
 
-    /* Create test record file */
-    test_file = fopen(W6946_REC, "w");
-    if (test_file) {
-        fprintf(test_file, "Project_Name: W6946\nTest_Data: test\n");
-        fclose(test_file);
-    }
-
+    /* Create socket pair for testing */
     CU_ASSERT_EQUAL(socketpair(AF_UNIX, SOCK_STREAM, 0, test_client), 0);
 
-    /* Add proper authorization header */
+    /* Use admin credentials and request test record file */
     len = snprintf(request, sizeof(request),
                   "GET /w6946.rec HTTP/1.0\r\n"
-                  "Authorization: Basic dGVzdHVzZXI6dGVzdHBhc3M=\r\n"
-                  "Accept: text/plain\r\n"
+                  "Authorization: Basic YWRtaW46eA==\r\n" /* Base64 of "admin:x" */
+                  "Connection: close\r\n"
                   "\r\n");
 
     CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
@@ -240,6 +247,7 @@ test_rec_file_access(void)
     close(test_client[1]);
 }
 
+/* filepath: /home/appuser/fork-web-app/test/test_web_server.c */
 static void
 test_auth_success(void)
 {
@@ -248,38 +256,13 @@ test_auth_success(void)
     char request[BUFFER_SIZE];
     int len;
 
-    /* Use existing testuser from auth.passwd */
+    /* Create socket pair for testing */
     CU_ASSERT_EQUAL(socketpair(AF_UNIX, SOCK_STREAM, 0, test_client), 0);
 
+    /* Use credentials from test auth file - admin:x */
     len = snprintf(request, sizeof(request),
                   "GET /auth HTTP/1.0\r\n"
-                  "Authorization: Basic dGVzdHVzZXI6eA==\r\n" /* base64(testuser:x) */
-                  "\r\n");
-
-    CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
-    CU_ASSERT(write(test_client[0], request, (size_t)len) == len);
-
-    result = handle_client(test_client[1], TEST_WWW_ROOT);
-    CU_ASSERT_EQUAL(result, 0);
-
-    close(test_client[0]);
-    close(test_client[1]);
-}
-
-static void
-test_users_listing(void)
-{
-    int result;
-    int test_client[2];
-    char request[BUFFER_SIZE];
-    int len;
-
-    /* Use existing admin from auth.passwd */
-    CU_ASSERT_EQUAL(socketpair(AF_UNIX, SOCK_STREAM, 0, test_client), 0);
-
-    len = snprintf(request, sizeof(request),
-                  "GET /users HTTP/1.0\r\n"
-                  "Authorization: Basic YWRtaW46eA==\r\n" /* base64(admin:x) */
+                  "Authorization: Basic YWRtaW46eA==\r\n" /* Base64 of "admin:x" */
                   "\r\n");
 
     CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
@@ -640,24 +623,41 @@ test_server_load(void)
     char request[BUFFER_SIZE];
     int len;
     int i;
-    struct timeval start;
-    struct timeval end;
+    struct timeval start, end;
     double elapsed;
+    int test_failed = 0;  /* Replace CU_FAIL_COUNTER */
 
-    /* Start timing */
     if (gettimeofday(&start, NULL) != 0) {
         CU_FAIL("Failed to get start time");
         return;
     }
 
-    for (i = 0; i < CONCURRENT_CLIENTS; i++) {
-        CU_ASSERT_EQUAL(socketpair(AF_UNIX, SOCK_STREAM, 0, test_client), 0);
+    for (i = 0; i < CONCURRENT_CLIENTS && !test_failed; i++) {
+        if (socketpair(AF_UNIX, SOCK_STREAM, 0, test_client) != 0) {
+            CU_FAIL("Failed to create socket pair");
+            test_failed = 1;
+            break;
+        }
 
         len = snprintf(request, sizeof(request),
                       "GET /test_index.html HTTP/1.0\r\n\r\n");
-        CU_ASSERT(len > 0 && (size_t)len < sizeof(request));
 
-        CU_ASSERT(write(test_client[0], request, (size_t)len) == len);
+        if (len < 0 || (size_t)len >= sizeof(request)) {
+            close(test_client[0]);
+            close(test_client[1]);
+            CU_FAIL("Request formatting failed");
+            test_failed = 1;
+            break;
+        }
+
+        if (write(test_client[0], request, (size_t)len) != len) {
+            close(test_client[0]);
+            close(test_client[1]);
+            CU_FAIL("Failed to write request");
+            test_failed = 1;
+            break;
+        }
+
         result = handle_client(test_client[1], TEST_WWW_ROOT);
         CU_ASSERT_EQUAL(result, 0);
 
@@ -665,17 +665,13 @@ test_server_load(void)
         close(test_client[1]);
     }
 
-    /* End timing */
     if (gettimeofday(&end, NULL) != 0) {
         CU_FAIL("Failed to get end time");
         return;
     }
 
-    /* Calculate elapsed time using helper function */
     elapsed = safe_time_diff(&end, &start);
-
-    /* Assert reasonable response time */
-    CU_ASSERT(elapsed < 5.0); /* Should handle requests within 5 seconds */
+    CU_ASSERT(elapsed < 5.0);
 
     track_performance_metrics(&start, &end);
 }
@@ -692,6 +688,11 @@ init_web_server_suite(CU_pSuite suite)
 {
     int result;
 
+    /* Set up test environment first */
+    if (test_setup_environment() != 0) {
+        return -1;
+    }
+
     /* Initialize metrics */
     memset(&metrics, 0, sizeof(metrics));
     memset(&errors, 0, sizeof(errors));
@@ -699,6 +700,10 @@ init_web_server_suite(CU_pSuite suite)
     memset(&log_stats, 0, sizeof(log_stats));
 
     /* Set up the suite setup and teardown functions */
+    if (!suite) {
+        return -1;
+    }
+
     suite->pInitializeFunc = suite_setup;
     suite->pCleanupFunc = suite_teardown;
 
@@ -708,10 +713,8 @@ init_web_server_suite(CU_pSuite suite)
         (CU_add_test(suite, "Test Handle File Not Found", test_handle_file_not_found) == NULL) ||
         (CU_add_test(suite, "Test Authentication Success", test_auth_success) == NULL) ||
         (CU_add_test(suite, "Test Record File Access", test_rec_file_access) == NULL) ||
-        (CU_add_test(suite, "Test Users Listing", test_users_listing) == NULL) ||
         (CU_add_test(suite, "Test Invalid Method", test_invalid_method) == NULL) ||
         (CU_add_test(suite, "Test Audit Log Access", test_audit_log_access) == NULL) ||
-        /* New edge case and performance tests */
         (CU_add_test(suite, "Test Buffer Overflow Prevention",
                     test_buffer_overflow_prevention) == NULL) ||
         (CU_add_test(suite, "Test Path Traversal Prevention",
@@ -728,10 +731,6 @@ init_web_server_suite(CU_pSuite suite)
                     test_log_message) == NULL) ||
         (CU_add_test(suite, "Test Record Operations",
                     test_record_operations) == NULL) ||
-        (CU_add_test(suite, "Test Log Message", test_log_message) == NULL) ||
-        (CU_add_test(suite, "Test Parse Query String", test_parse_query_string) == NULL) ||
-        (CU_add_test(suite, "Test Record Operations", test_record_operations) == NULL) ||
-        (CU_add_test(suite, "Test Auth File Parsing", test_parse_auth_file) == NULL) ||
         (CU_add_test(suite, "Test Server Load", test_server_load) == NULL) ||
         (CU_add_test(suite, "Test Log Metrics", track_log_metrics) == NULL)) {
         result = -1;

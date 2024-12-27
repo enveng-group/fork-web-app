@@ -20,6 +20,8 @@ static int handle_record_ops(int client_socket, const char *project, const char 
 static int rotate_log(const char *filepath);
 static int check_log_size(const char *filepath);
 static const char *get_level_string(int level);
+static const char *get_mime_type(const char *filename);
+static int serve_file(int client_socket, const char *filepath);
 
 /* Add base64 implementation */
 static const unsigned char base64_table[256] = {
@@ -41,26 +43,24 @@ static const unsigned char base64_table[256] = {
     64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64
 };
 
+/* base64_decode function with proper validation */
+
 int
 base64_decode(const char *input, char *output, size_t outlen)
 {
-    size_t i;
-    size_t j;
+    size_t i, j;
     size_t v;
     size_t inlen;
-    unsigned char a;
-    unsigned char b;
-    unsigned char c;
-    unsigned char d;
+    unsigned char a, b, c, d;
 
-    /* Input validation */
+    /* Validate inputs */
     if (!input || !output || outlen == 0) {
         return -1;
     }
 
-    /* Get input length */
+    /* Get input length and validate */
     inlen = strlen(input);
-    if (inlen == 0 || (inlen % 4) != 0) {
+    if (inlen == 0 || (inlen % 4) != 0 || inlen >= outlen * 4/3) {
         return -1;
     }
 
@@ -71,95 +71,74 @@ base64_decode(const char *input, char *output, size_t outlen)
 
     /* Process input in blocks of 4 characters */
     for (i = 0, j = 0; i < inlen; i += 4) {
-        /* Get values for each base64 character */
-        a = base64_table[(unsigned char)input[i]];
-        b = base64_table[(unsigned char)input[i + 1]];
-        c = base64_table[(unsigned char)input[i + 2]];
-        d = base64_table[(unsigned char)input[i + 3]];
-
-        /* Check for invalid characters */
-        if (a == 64 || b == 64) {
+        /* Check for invalid base64 table entries */
+        if (base64_table[(unsigned char)input[i]] == 64 ||
+            base64_table[(unsigned char)input[i+1]] == 64 ||
+            base64_table[(unsigned char)input[i+2]] == 64 ||
+            base64_table[(unsigned char)input[i+3]] == 64) {
             return -1;
         }
 
-        /* Decode block */
-        v = (a << 18) | (b << 12);
+        a = base64_table[(unsigned char)input[i]];
+        b = base64_table[(unsigned char)input[i+1]];
+        c = base64_table[(unsigned char)input[i+2]];
+        d = base64_table[(unsigned char)input[i+3]];
 
-        /* Handle padding */
-        if (input[i + 2] != '=') {
-            if (c == 64) {
-                return -1;
-            }
-            v |= (c << 6);
-            if (input[i + 3] != '=') {
-                if (d == 64) {
-                    return -1;
-                }
-                v |= d;
-                output[j++] = (char)((v >> 16) & 0xFF);
-                output[j++] = (char)((v >> 8) & 0xFF);
-                output[j++] = (char)(v & 0xFF);
-            } else {
-                output[j++] = (char)((v >> 16) & 0xFF);
-                output[j++] = (char)((v >> 8) & 0xFF);
-                break;
-            }
-        } else {
-            if (input[i + 3] != '=') {
-                return -1;
-            }
-            output[j++] = (char)((v >> 16) & 0xFF);
-            break;
+        v = (a << 18) | (b << 12) | (c << 6) | d;
+
+        output[j++] = (v >> 16) & 0xFF;
+        if (input[i+2] != '=') {
+            output[j++] = (v >> 8) & 0xFF;
+        }
+        if (input[i+3] != '=') {
+            output[j++] = v & 0xFF;
         }
     }
 
-    /* Null terminate output */
     output[j] = '\0';
     return (int)j;
 }
 
+
+/* Modify static functions to be used */
 static const char *
 get_level_string(int level)
 {
-    switch(level) {
-        case LOG_ERROR: return "ERROR";
-        case LOG_WARN:  return "WARN";
-        case LOG_INFO:  return "INFO";
-        case LOG_DEBUG: return "DEBUG";
-        default:        return "UNKNOWN";
+    switch (level) {
+        case LOG_ERROR:
+            return "ERROR";
+        case LOG_WARN:
+            return "WARN";
+        case LOG_INFO:
+            return "INFO";
+        case LOG_DEBUG:
+            return "DEBUG";
+        default:
+            return NULL;
     }
 }
 
 static int
 rotate_log(const char *filepath)
 {
+    char old_path[MAX_PATH];
     char new_path[MAX_PATH];
-    time_t now;
-    struct tm *tm_info;
+    int i;
 
-    if (!filepath) {
-        return ERR_PARAM;
+    /* Rotate existing backup files */
+    for (i = MAX_BACKUP_COUNT - 1; i > 0; i--) {
+        snprintf(old_path, sizeof(old_path), "%s.%d", filepath, i);
+        snprintf(new_path, sizeof(new_path), "%s.%d", filepath, i + 1);
+        rename(old_path, new_path);
     }
 
-    now = time(NULL);
-    if (now == (time_t)-1) {
+    /* Rotate current file */
+    snprintf(new_path, sizeof(new_path), "%s.1", filepath);
+    if (rename(filepath, new_path) != 0) {
         return ERR_IO;
     }
 
-    tm_info = localtime(&now);
-    if (!tm_info) {
-        return ERR_IO;
-    }
-
-    if (snprintf(new_path, sizeof(new_path), "%s.%04d%02d%02d",
-                 filepath,
-                 tm_info->tm_year + 1900,
-                 tm_info->tm_mon + 1,
-                 tm_info->tm_mday) < 0) {
-        return ERR_IO;
-    }
-
-    return rename(filepath, new_path);
+    return ERR_NONE;
 }
 
 static int
@@ -171,12 +150,11 @@ check_log_size(const char *filepath)
         return ERR_PARAM;
     }
 
-    if (stat(filepath, &st) == 0) {
-        if (st.st_size >= MAX_LOG_SIZE) {
-            return 1;
-        }
+    if (stat(filepath, &st) != 0) {
+        return ERR_NONE; /* File doesn't exist yet */
     }
-    return 0;
+
+    return (st.st_size >= MAX_LOG_SIZE) ? 1 : 0;
 }
 
 int
@@ -185,29 +163,29 @@ log_message(int level, const char *username, const char *action, const char *msg
     FILE *fp;
     time_t now;
     char timestamp[MAX_TIMESTAMP];
-    char filepath[MAX_PATH];
     struct tm *tm_info;
-    long ret;
+    int ret;
+    const char *level_str;
 
     /* Input validation */
-    if (!action || !msg) {
+    if (!username || !action || !msg) {
         return ERR_PARAM;
     }
 
-    /* Build log path */
-    ret = (long)snprintf(filepath, sizeof(filepath), "%s/audit.log", LOG_PATH);
-    if (ret < 0L || (size_t)ret >= sizeof(filepath)) {
-        return ERR_IO;
+    /* Get level string */
+    level_str = get_level_string(level);
+    if (!level_str) {
+        return ERR_PARAM;
     }
 
     /* Check log size and rotate if needed */
-    if (check_log_size(filepath)) {
-        if (rotate_log(filepath) != 0) {
+    if (check_log_size(AUDIT_LOG)) {
+        if (rotate_log(AUDIT_LOG) != ERR_NONE) {
             return ERR_IO;
         }
     }
 
-    /* Get timestamp */
+    /* Get current time */
     now = time(NULL);
     if (now == (time_t)-1) {
         return ERR_IO;
@@ -218,34 +196,29 @@ log_message(int level, const char *username, const char *action, const char *msg
         return ERR_IO;
     }
 
-    if (strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", tm_info) == 0) {
+    if (strftime(timestamp, sizeof(timestamp), LOG_TIME_FMT, tm_info) == 0) {
         return ERR_IO;
     }
 
-    /* Open log file in append mode */
-    fp = fopen(filepath, "a");
+    /* Open and lock log file */
+    fp = fopen(AUDIT_LOG, "a");
     if (!fp) {
         return ERR_IO;
     }
 
-    /* Write log entry */
-    ret = fprintf(fp, "[%s] [%s] %s: %s - %s\n",
-                 timestamp,
-                 get_level_string(level),
-                 username ? username : "system",
-                 action,
-                 msg);
-
-    if (ret < 0) {
+    if (flock(fileno(fp), LOCK_EX) == -1) {
         fclose(fp);
         return ERR_IO;
     }
 
-    if (fclose(fp) != 0) {
-        return ERR_IO;
-    }
+    /* Write log entry */
+    ret = fprintf(fp, LOG_ENTRY_FMT, timestamp, level_str,
+                 username, action, msg);
 
-    return ERR_NONE;
+    flock(fileno(fp), LOCK_UN);
+    fclose(fp);
+
+    return (ret < 0) ? ERR_IO : ERR_NONE;
 }
 
 int
@@ -421,52 +394,38 @@ check_auth(const char *username, const char *password)
 }
 
 int
-get_auth_header(int client_socket, char *header, size_t size)
+get_auth_header(int client_socket, char *auth_header, size_t max_len)
 {
     char buffer[MAX_BUFFER_SIZE];
+    char *line;
+    char *saveptr = NULL;
     ssize_t bytes_read;
-    char *auth_start;
-    char *auth_end;
 
-    /* Basic validation */
-    if (!header || size == 0 || client_socket < 0) {
+    /* Initialize output */
+    if (auth_header == NULL || max_len == 0) {
         return -1;
     }
+    auth_header[0] = '\0';
 
-    /* Clear header buffer */
-    memset(header, 0, size);
-
-    /* Read from socket */
+    /* Read request headers */
     bytes_read = read(client_socket, buffer, sizeof(buffer) - 1);
     if (bytes_read <= 0) {
         return -1;
     }
     buffer[bytes_read] = '\0';
 
-    /* Find Authorization header */
-    auth_start = strstr(buffer, "Authorization: Basic ");
-    if (!auth_start) {
-        return -1;
+    /* Parse headers line by line */
+    line = strtok_r(buffer, "\r\n", &saveptr);
+    while (line != NULL) {
+        if (strncmp(line, "Authorization: Basic ", 20) == 0) {
+            strncpy(auth_header, line + 20, max_len - 1);
+            auth_header[max_len - 1] = '\0';
+            return 0;
+        }
+        line = strtok_r(NULL, "\r\n", &saveptr);
     }
 
-    /* Skip "Authorization: Basic " */
-    auth_start += 21;
-
-    /* Find end of header */
-    auth_end = strstr(auth_start, "\r\n");
-    if (!auth_end) {
-        return -1;
-    }
-
-    /* Copy auth data */
-    if ((size_t)(auth_end - auth_start) >= size) {
-        return -1;
-    }
-
-    strncpy(header, auth_start, (size_t)(auth_end - auth_start));
-    header[auth_end - auth_start] = '\0';
-
-    return 0;
+    return -1;
 }
 
 int
@@ -581,50 +540,31 @@ cleanup:
     return result;
 }
 
+/* CRUD Operations */
 int
 handle_record_write(const char *filename, const char *data)
 {
     FILE *fp;
-    size_t data_len;
+    char filepath[PATH_MAX];
+    int ret;
 
-    /* Validate parameters */
-    if (!filename || !data) {
+    ret = snprintf(filepath, sizeof(filepath), "%s/%s", REC_PATH, filename);
+    if (ret < 0 || (size_t)ret >= sizeof(filepath)) {
         return REC_ERR_PARAM;
     }
 
-    /* Check data length */
-    data_len = strlen(data);
-    if (data_len == 0 || data_len >= REC_LINE_MAX) {
-        return REC_ERR_FORMAT;
-    }
-
-    /* Open file in append mode */
-    fp = fopen(filename, "a");
+    fp = fopen(filepath, "a");
     if (!fp) {
         return REC_ERR_IO;
     }
 
-    /* Lock file for writing */
     if (flock(fileno(fp), LOCK_EX) == -1) {
         fclose(fp);
         return REC_ERR_IO;
     }
 
-    /* Write data */
-    if (fprintf(fp, "%s\n", data) < 0) {
-        flock(fileno(fp), LOCK_UN);
-        fclose(fp);
-        return REC_ERR_IO;
-    }
+    fprintf(fp, "%s\n", data);
 
-    /* Flush to ensure write */
-    if (fflush(fp) != 0) {
-        flock(fileno(fp), LOCK_UN);
-        fclose(fp);
-        return REC_ERR_IO;
-    }
-
-    /* Release lock and cleanup */
     flock(fileno(fp), LOCK_UN);
     fclose(fp);
 
@@ -659,36 +599,138 @@ handle_create_record(int client_socket, const char *data)
     return handle_record_ops(client_socket, "scjv", data, 0);
 }
 
+static const char *
+get_mime_type(const char *filename)
+{
+    const char *ext;
+
+    if (filename == NULL)
+        return "text/plain; charset=ISO-8859-1";
+
+    ext = strrchr(filename, '.');
+    if (ext == NULL)
+        return "text/plain; charset=ISO-8859-1";
+
+    ext++;
+
+    /* Match file extensions */
+    if (strcmp(ext, "html") == 0) {
+        return "text/html; charset=ISO-8859-1";
+    } else if (strcmp(ext, "css") == 0) {
+        return "text/css";
+    } else if (strcmp(ext, "js") == 0) {
+        return "text/javascript";
+    } else if (strcmp(ext, "jpg") == 0 || strcmp(ext, "jpeg") == 0) {
+        return "image/jpeg";
+    } else if (strcmp(ext, "png") == 0) {
+        return "image/png";
+    } else if (strcmp(ext, "gif") == 0) {
+        return "image/gif";
+    } else if (strcmp(ext, "ico") == 0) {
+        return "image/x-icon";
+    } else if (strcmp(ext, "webp") == 0) {
+        return "image/webp";
+    } else if (strcmp(ext, "svg") == 0) {
+        return "image/svg+xml";
+    } else if (strcmp(ext, "rec") == 0) {
+        return "text/plain; charset=ISO-8859-1";
+    } else if (strcmp(ext, "desc") == 0) {
+        return "text/plain; charset=ISO-8859-1";
+    } else if (strcmp(ext, "passwd") == 0) {
+        return "text/plain; charset=ISO-8859-1";
+    } else if (strcmp(ext, "log") == 0) {
+        return "text/plain; charset=ISO-8859-1";
+    }
+
+    return "text/plain; charset=ISO-8859-1";
+}
+
+/* Static file serving */
+static int
+serve_file(int client_socket, const char *filepath)
+{
+    char buffer[MAX_BUFFER_SIZE];
+    char response[MAX_BUFFER_SIZE];
+    FILE *file;
+    size_t bytes;
+    const char *mime_type;
+
+    file = fopen(filepath, "rb");
+    if (!file) {
+        dprintf(client_socket, "HTTP/1.0 404 Not Found\r\n\r\n");
+        return -1;
+    }
+
+    mime_type = get_mime_type(filepath);
+    snprintf(response, sizeof(response),
+             "HTTP/1.0 200 OK\r\n"
+             "Content-Type: %s\r\n"
+             "\r\n", mime_type);
+
+    write(client_socket, response, strlen(response));
+
+    while ((bytes = fread(buffer, 1, sizeof(buffer), file)) > 0) {
+        write(client_socket, buffer, bytes);
+    }
+
+    fclose(file);
+    return 0;
+}
+
+/* Add helper to check filename extension */
+static int
+has_extension(const char *filename, const char *ext)
+{
+    const char *file_ext = strrchr(filename, '.');
+    return file_ext && strcmp(file_ext + 1, ext) == 0;
+}
+
+/* Add record file authentication check */
+static int
+check_record_access(const char *path, const char *auth_header)
+{
+    /* Require authentication for all .rec files */
+    if (has_extension(path, "rec")) {
+        if (!auth_header) {
+            return 0;
+        }
+        return check_admin_auth(auth_header);
+    }
+    return 1;
+}
+
 int
 handle_client(int client_socket, const char *www_root)
 {
+    /* Variable declarations at start of function */
     char buffer[MAX_BUFFER_SIZE];
     char method[16];
     char uri[MAX_PATH];
     char http_version[16];
     char filepath[MAX_PATH];
-    char read_buffer[MAX_BUFFER_SIZE];
-    char *auth_start;
+    char clean_path[MAX_PATH];
     char auth_header[MAX_BUFFER_SIZE];
-    char decoded[MAX_BUFFER_SIZE];
-    char *username;
-    char *password;
-    char *saveptr;
-    int file_fd;
-    ssize_t n;
-    ssize_t bytes_read;
-    ssize_t bytes_written;
-    int ret;
+    char *auth_start;
     size_t auth_len;
-
-    /* Initialize */
-    file_fd = -1;
-    auth_start = NULL;
+    size_t i;
+    size_t j;
+    ssize_t n;
+    int ret;
 
     /* Input validation */
     if (www_root == NULL) {
         return -1;
     }
+
+    /* Initialize buffers */
+    memset(buffer, 0, sizeof(buffer));
+    memset(method, 0, sizeof(method));
+    memset(uri, 0, sizeof(uri));
+    memset(http_version, 0, sizeof(http_version));
+    memset(filepath, 0, sizeof(filepath));
+    memset(clean_path, 0, sizeof(clean_path));
+    memset(auth_header, 0, sizeof(auth_header));
+    auth_start = NULL;
 
     /* Read request */
     n = read(client_socket, buffer, sizeof(buffer) - 1);
@@ -703,197 +745,170 @@ handle_client(int client_socket, const char *www_root)
         return -1;
     }
 
-    /* Only accept GET method */
-    if (strcmp(method, "GET") != 0) {
+    /* Handle authentication */
+    if (has_extension(uri, "rec") || has_extension(uri, "log")) {
+        if (get_auth_header(client_socket, auth_header, sizeof(auth_header)) != 0 ||
+            !check_admin_auth(auth_header)) {
+            dprintf(client_socket, "HTTP/1.0 401 Unauthorized\r\n"
+                                "WWW-Authenticate: Basic realm=\"Admin Access\"\r\n\r\n");
+            return -1;
+        }
+    }
+
+    /* Handle special cases */
+    if (strcmp(uri, "/users") == 0) {
+        return handle_users_request(client_socket);
+    }
+
+    if (strncmp(uri, "/record/", 8) == 0) {
+        if (strcmp(method, "GET") == 0) {
+            return handle_record_read(uri + 8, client_socket);
+        } else if (strcmp(method, "POST") == 0) {
+            char *data;
+            data = strstr(buffer, "\r\n\r\n");
+            if (!data) {
+                return -1;
+            }
+            data += 4;
+            return handle_record_write(uri + 8, data);
+        }
+    }
+
+    /* Clean the path to prevent directory traversal */
+    for (i = 0, j = 0; uri[i] != '\0' && j < sizeof(clean_path) - 1; i++) {
+        if (uri[i] == '.' && uri[i+1] == '.') {
+            continue;
+        }
+        clean_path[j++] = uri[i];
+    }
+    clean_path[j] = '\0';
+
+    /* Get auth header if present */
+    auth_start = strstr(buffer, "Authorization: Basic ");
+    if (auth_start != NULL) {
+        auth_start += 21; /* Length of "Authorization: Basic " */
+        auth_len = strcspn(auth_start, "\r\n");
+        if (auth_len < sizeof(auth_header)) {
+            memcpy(auth_header, auth_start, auth_len);
+            auth_header[auth_len] = '\0';
+        }
+    }
+
+    /* Handle .rec file requests */
+    if (has_extension(clean_path, "rec")) {
+        /* Check authentication */
+        if (!check_record_access(clean_path, auth_start ? auth_header : NULL)) {
+            dprintf(client_socket, "HTTP/1.0 401 Unauthorized\r\n"
+                                 "WWW-Authenticate: Basic realm=\"Record Access\"\r\n\r\n");
+            return -1;
+        }
+
+        /* Construct full filepath */
+        ret = snprintf(filepath, sizeof(filepath), "%s%s", www_root, clean_path);
+        if (ret < 0 || (size_t)ret >= sizeof(filepath)) {
+            dprintf(client_socket, "HTTP/1.0 414 URI Too Long\r\n\r\n");
+            return -1;
+        }
+
+        /* For GET requests, serve the record file */
+        if (strcmp(method, "GET") == 0) {
+            return handle_record_read(filepath, client_socket);
+        }
+
         dprintf(client_socket, "HTTP/1.0 405 Method Not Allowed\r\n\r\n");
         return -1;
     }
 
-    /* Handle auth request */
-    if (strcmp(uri, "/auth") == 0) {
-        /* Extract auth header */
-        auth_start = strstr(buffer, "Authorization: Basic ");
-        if (!auth_start) {
-            dprintf(client_socket, "HTTP/1.0 401 Unauthorized\r\n"
-                                 "WWW-Authenticate: Basic realm=\"User Authentication\"\r\n\r\n");
-            return -1;
-        }
-
-        /* Skip "Authorization: Basic " */
-        auth_start += 21;
-        auth_len = strcspn(auth_start, "\r\n");
-        if (auth_len >= sizeof(auth_header)) {
-            dprintf(client_socket, "HTTP/1.0 400 Bad Request\r\n\r\n");
-            return -1;
-        }
-
-        /* Copy auth data */
-        memcpy(auth_header, auth_start, auth_len);
-        auth_header[auth_len] = '\0';
-
-        /* Decode base64 */
-        if (base64_decode(auth_header, decoded, sizeof(decoded)) < 0) {
-            dprintf(client_socket, "HTTP/1.0 400 Bad Request\r\n\r\n");
-            return -1;
-        }
-
-        /* Split into username:password */
-        username = strtok_r(decoded, ":", &saveptr);
-        password = strtok_r(NULL, ":", &saveptr);
-
-        if (!username || !password) {
-            dprintf(client_socket, "HTTP/1.0 400 Bad Request\r\n\r\n");
-            return -1;
-        }
-
-        /* Check credentials */
-        ret = check_auth(username, password);
-        if (ret == 0) {
-            dprintf(client_socket, "HTTP/1.0 200 OK\r\n"
-                                 "Content-Type: text/plain\r\n"
-                                 "\r\n"
-                                 "Authentication successful\n");
-            return 0;
-        }
-
-        dprintf(client_socket, "HTTP/1.0 401 Unauthorized\r\n"
-                             "WWW-Authenticate: Basic realm=\"User Authentication\"\r\n\r\n");
-        return -1;
-    }
-
-    /* Handle record file requests */
-    if (strstr(uri, ".rec") != NULL) {
-        /* Build full path for record file */
-        ret = snprintf(filepath, sizeof(filepath), "%s/%s", REC_PATH, uri + 1);
+    /* Handle root path */
+    if (strcmp(clean_path, "/") == 0) {
+        ret = snprintf(filepath, sizeof(filepath), "%s/index.html", www_root);
         if (ret < 0 || (size_t)ret >= sizeof(filepath)) {
             dprintf(client_socket, "HTTP/1.0 500 Internal Server Error\r\n\r\n");
             return -1;
         }
-
-        /* Check authorization */
-        auth_start = strstr(buffer, "Authorization: Basic ");
-        if (!auth_start) {
-            dprintf(client_socket, "HTTP/1.0 401 Unauthorized\r\n"
-                                 "WWW-Authenticate: Basic realm=\"Record Access\"\r\n\r\n");
-            log_message(LOG_WARN, "system", "ACCESS_DENIED", "No authorization provided");
-            return -1;
-        }
-
-        /* Open and serve the record file */
-        file_fd = open(filepath, O_RDONLY);
-        if (file_fd < 0) {
-            dprintf(client_socket, "HTTP/1.0 404 Not Found\r\n\r\n");
-            return -1;
-        }
-
-        dprintf(client_socket, "HTTP/1.0 200 OK\r\n"
-                             "Content-Type: text/plain\r\n"
-                             "Cache-Control: no-cache\r\n"
-                             "\r\n");
-
-        while ((bytes_read = read(file_fd, read_buffer, sizeof(read_buffer))) > 0) {
-            bytes_written = write(client_socket, read_buffer, (size_t)bytes_read);
-            if (bytes_written < 0 || bytes_written != bytes_read) {
-                close(file_fd);
-                return -1;
-            }
-        }
-
-        close(file_fd);
-        return bytes_read < 0 ? -1 : 0;
+        return serve_file(client_socket, filepath);
     }
 
-    /* Handle regular file requests */
-    ret = snprintf(filepath, sizeof(filepath), "%s%s", www_root, uri);
+    /* Serve static files */
+    ret = snprintf(filepath, sizeof(filepath), "%s%s",
+                  www_root, strcmp(uri, "/") == 0 ? "/index.html" : uri);
     if (ret < 0 || (size_t)ret >= sizeof(filepath)) {
         dprintf(client_socket, "HTTP/1.0 414 URI Too Long\r\n\r\n");
         return -1;
     }
 
-    /* Security: Prevent path traversal */
-    if (strstr(filepath, "..") != NULL) {
-        dprintf(client_socket, "HTTP/1.0 403 Forbidden\r\n\r\n");
-        return -1;
-    }
-
-    file_fd = open(filepath, O_RDONLY);
-    if (file_fd < 0) {
-        dprintf(client_socket, "HTTP/1.0 404 Not Found\r\n\r\n");
-        return -1;
-    }
-
-    dprintf(client_socket, "HTTP/1.0 200 OK\r\n\r\n");
-    while ((bytes_read = read(file_fd, read_buffer, sizeof(read_buffer))) > 0) {
-        bytes_written = write(client_socket, read_buffer, (size_t)bytes_read);
-        if (bytes_written < 0 || bytes_written != bytes_read) {
-            close(file_fd);
-            return -1;
-        }
-    }
-
-    close(file_fd);
-    return bytes_read < 0 ? -1 : 0;
+    return serve_file(client_socket, filepath);
 }
 
 int
 handle_users_request(int client_socket)
 {
-    FILE *fp;
-    char line[512];
     char auth_header[MAX_BUFFER_SIZE];
-    char *newline;
-    int is_admin;
+    struct user_entry entries[100];
+    int count;
+    int i;
+    ssize_t bytes_written;
+    char response[MAX_BUFFER_SIZE];
+    int response_len;
 
-    /* Initialize variables */
-    is_admin = 0;
-    fp = NULL;
-
-    /* Check admin privileges first */
+    /* Get auth header */
     if (get_auth_header(client_socket, auth_header, sizeof(auth_header)) != 0) {
-        dprintf(client_socket, "HTTP/1.0 401 Unauthorized\r\n\r\n");
+        dprintf(client_socket, "HTTP/1.0 401 Unauthorized\r\n"
+                             "WWW-Authenticate: Basic realm=\"Admin Access\"\r\n\r\n");
         return -1;
     }
 
-    is_admin = check_admin_auth(auth_header);
-    if (!is_admin) {
+    /* Verify admin privileges */
+    if (!check_admin_auth(auth_header)) {
         dprintf(client_socket, "HTTP/1.0 403 Forbidden\r\n\r\n");
         return -1;
     }
 
-    /* Send basic headers */
-    dprintf(client_socket, "HTTP/1.0 200 OK\r\n"
-                          "Content-Type: text/plain\r\n\r\n");
-
-    /* Open and read auth file directly */
-    fp = fopen(AUTH_FILE, "r");
-    if (!fp) {
-        fprintf(stderr, "Error: Could not open %s\n", AUTH_FILE);
-        dprintf(client_socket, "ERROR");
-        return ERR_IO;
+    /* Parse auth file */
+    count = parse_auth_file(AUTH_FILE, entries, sizeof(entries)/sizeof(entries[0]));
+    if (count < 0) {
+        dprintf(client_socket, "HTTP/1.0 500 Internal Server Error\r\n\r\n");
+        return -1;
     }
 
-    /* Send each valid line */
-    while (fgets(line, sizeof(line), fp)) {
-        /* Skip comments and empty lines */
-        if (line[0] == '#' || line[0] == '\n') {
-            continue;
+    /* Send success response header */
+    response_len = snprintf(response, sizeof(response),
+                          "HTTP/1.0 200 OK\r\n"
+                          "Content-Type: text/plain\r\n"
+                          "\r\n");
+
+    if (response_len < 0 || (size_t)response_len >= sizeof(response)) {
+        return -1;
+    }
+
+    bytes_written = write(client_socket, response, (size_t)response_len);
+    if (bytes_written < 0 || bytes_written != response_len) {
+        return -1;
+    }
+
+    /* Output each user */
+    for (i = 0; i < count; i++) {
+        response_len = snprintf(response, sizeof(response),
+                              "%s:%s:%d:%d:%s:%s:%s:%d\n",
+                              entries[i].username,
+                              "*****",  /* Don't send actual passwords */
+                              entries[i].uid,
+                              entries[i].gid,
+                              entries[i].fullname,
+                              entries[i].homedir,
+                              entries[i].shell,
+                              entries[i].is_admin);
+
+        if (response_len < 0 || (size_t)response_len >= sizeof(response)) {
+            return -1;
         }
 
-        /* Remove trailing newline if present */
-        newline = strchr(line, '\n');
-        if (newline) {
-            *newline = '\0';
-        }
-
-        /* If line doesn't end with :0 or :1, append :0 */
-        if (line[strlen(line) - 2] != ':') {
-            dprintf(client_socket, "%s:0\n", line);
-        } else {
-            dprintf(client_socket, "%s\n", line);
+        bytes_written = write(client_socket, response, (size_t)response_len);
+        if (bytes_written < 0 || bytes_written != response_len) {
+            return -1;
         }
     }
 
-    fclose(fp);
     return 0;
 }
 
