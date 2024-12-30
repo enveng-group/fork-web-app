@@ -275,68 +275,6 @@ $(PROD_OBJ): | $(OBJDIR)/prod
 $(PROD_OBJ): $(HDRS)
 $(TEST_OBJ): $(HDRS)
 
-# Release configuration
-VERSION ?= 0.0.1
-RELEASE_NAME = web-app-$(VERSION)
-DISTDIR = dist
-TMPDIR = /tmp/$(RELEASE_NAME)
-
-# Define required directories and files
-WEB_FILES = www/audit.html www/crud_profile.html www/crud_scjv.html \
-	www/dashboard.html www/index.html www/ms1180.html \
-	www/profile.html www/scjv.html www/w6946.html
-
-REC_FILES = var/records/ms1180.rec var/records/obligation_number.txt \
-	var/records/schema.desc var/records/scjv.rec var/records/w6946.rec
-
-LOG_FILES = var/log/audit.log
-
-# Updated dist target
-dist: $(PROD_TARGET)
-	rm -rf $(TMPDIR)
-	# Create directory structure
-	mkdir -p $(TMPDIR)
-	mkdir -p $(TMPDIR)/etc
-	mkdir -p $(TMPDIR)/var/log
-	mkdir -p $(TMPDIR)/var/records
-	mkdir -p $(TMPDIR)/www
-	# Copy executable
-	cp $(PROD_TARGET) $(TMPDIR)/web_server
-	# Copy auth file
-	cp etc/auth.passwd $(TMPDIR)/etc/
-	# Copy record files
-	cp var/records/ms1180.rec $(TMPDIR)/var/records/
-	cp var/records/obligation_number.txt $(TMPDIR)/var/records/
-	cp var/records/schema.desc $(TMPDIR)/var/records/
-	cp var/records/scjv.rec $(TMPDIR)/var/records/
-	cp var/records/w6946.rec $(TMPDIR)/var/records/
-	# Copy log files
-	cp var/log/audit.log $(TMPDIR)/var/log/
-	# Copy web files
-	cp www/audit.html $(TMPDIR)/www/
-	cp www/crud_profile.html $(TMPDIR)/www/
-	cp www/crud_scjv.html $(TMPDIR)/www/
-	cp www/dashboard.html $(TMPDIR)/www/
-	cp www/index.html $(TMPDIR)/www/
-	cp www/ms1180.html $(TMPDIR)/www/
-	cp www/profile.html $(TMPDIR)/www/
-	cp www/scjv.html $(TMPDIR)/www/
-	cp www/w6946.html $(TMPDIR)/www/
-	$(MAKE) t4g-permissions
-	# Create tarball
-	mkdir -p $(DISTDIR)
-	cd $(TMPDIR)/.. && tar czf $(CURDIR)/$(DISTDIR)/$(RELEASE_NAME).tar.gz $(RELEASE_NAME)
-	rm -rf $(TMPDIR)
-
-clean-dist:
-	rm -rf $(DISTDIR)
-
-release: clean-dist prod dist
-	@echo "Release package created: $(DISTDIR)/$(RELEASE_NAME).tar.gz"
-
-clean:
-	rm -rf $(OBJDIR) $(BINDIR)/*.o $(BINDIR)/web_server $(BINDIR)/test_web_server
-
 # Include generated dependency files
 -include $(PROD_OBJS:.o=.d)
 -include $(TEST_OBJS:.o=.d)
@@ -399,49 +337,62 @@ opt: pgo-generate pgo-use
 # Add new target for t4g builds
 .PHONY: t4g-release
 
-# Build directories
-BUILDDIR ?= $(CURDIR)/build
-TMPDIR ?= $(BUILDDIR)/tmp
-RELEASEDIR = $(BUILDDIR)/release
+# Release configuration
+VERSION ?= 0.0.2
 RELEASE_NAME = web-app-$(VERSION)
+BUILDDIR = build
+DISTDIR = $(BUILDDIR)/dist
+TMPDIR = $(BUILDDIR)/tmp/$(RELEASE_NAME)
 
-# Modify t4g-release target
+# Define required runtime files and their destinations
+RUNTIME_FILES = \
+	$(BINDIR)/web_server:web_server \
+	etc/auth.passwd:etc/auth.passwd \
+	var/records/ms1180.rec:var/records/ms1180.rec \
+	var/records/obligation_number.txt:var/records/obligation_number.txt \
+	var/records/schema.desc:var/records/schema.desc \
+	var/records/scjv.rec:var/records/scjv.rec \
+	var/records/w6946.rec:var/records/w6946.rec \
+	www/audit.html:www/audit.html \
+	www/crud_profile.html:www/crud_profile.html \
+	www/crud_scjv.html:www/crud_scjv.html \
+	www/dashboard.html:www/dashboard.html \
+	www/index.html:www/index.html \
+	www/ms1180.html:www/ms1180.html \
+	www/profile.html:www/profile.html \
+	www/scjv.html:www/scjv.html \
+	www/w6946.html:www/w6946.html
+
 t4g-release: clean-dist prod
-	@echo "Creating release package structure..."
-	@mkdir -p $(BUILDDIR)
+	@echo "Creating minimal release package..."
+	@rm -rf $(TMPDIR)
 	@mkdir -p $(TMPDIR)
-	@rm -rf $(RELEASEDIR)
-	@mkdir -p $(RELEASEDIR)/$(RELEASE_NAME)
-	@mkdir -p $(RELEASEDIR)/$(RELEASE_NAME)/etc
-	@mkdir -p $(RELEASEDIR)/$(RELEASE_NAME)/var/log
-	@mkdir -p $(RELEASEDIR)/$(RELEASE_NAME)/var/records
-	@mkdir -p $(RELEASEDIR)/$(RELEASE_NAME)/www
-	# Copy built executable from correct location
-	@cp $(BINDIR)/web_server $(RELEASEDIR)/$(RELEASE_NAME)/
-	# Copy configuration files
-	@cp -r etc/* $(RELEASEDIR)/$(RELEASE_NAME)/etc/
-	# Copy record files
-	@cp -r var/records/* $(RELEASEDIR)/$(RELEASE_NAME)/var/records/
-	# Copy web files
-	@cp -r www/* $(RELEASEDIR)/$(RELEASE_NAME)/www/
-	# Create empty log file
-	@touch $(RELEASEDIR)/$(RELEASE_NAME)/var/log/audit.log
-	# Set permissions
-	@$(MAKE) t4g-permissions RELEASEDIR=$(RELEASEDIR) RELEASE_NAME=$(RELEASE_NAME)
-	# Create tarball
-	@cd $(RELEASEDIR) && tar -czf ../$(RELEASE_NAME).tar.gz $(RELEASE_NAME)
-	@echo "Release package created: $(BUILDDIR)/$(RELEASE_NAME).tar.gz"
 
-# Add permissions target
-t4g-permissions:
-	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)
-	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)/etc
-	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)/var
-	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)/var/log
-	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)/var/records
-	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)/www
-	@chmod 644 $(RELEASEDIR)/$(RELEASE_NAME)/etc/*
-	@chmod 644 $(RELEASEDIR)/$(RELEASE_NAME)/var/records/*
-	@chmod 644 $(RELEASEDIR)/$(RELEASE_NAME)/www/*
-	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)/web_server
-	@chmod 644 $(RELEASEDIR)/$(RELEASE_NAME)/var/log/audit.log
+	@# Create required directories
+	@mkdir -p $(TMPDIR)/etc
+	@mkdir -p $(TMPDIR)/var/log
+	@mkdir -p $(TMPDIR)/var/records
+	@mkdir -p $(TMPDIR)/www
+
+	@# Copy only runtime files
+	@for pair in $(RUNTIME_FILES); do \
+		src=$$(echo $$pair | cut -d: -f1); \
+		dst=$$(echo $$pair | cut -d: -f2); \
+		cp $$src $(TMPDIR)/$$dst; \
+	done
+
+	@# Create empty log file
+	@touch $(TMPDIR)/var/log/audit.log
+
+	@# Set correct permissions
+	@find $(TMPDIR) -type d -exec chmod 755 {} \;
+	@find $(TMPDIR) -type f -exec chmod 644 {} \;
+	@chmod 755 $(TMPDIR)/web_server
+
+	@# Create minimal tarball
+	@mkdir -p $(DISTDIR)
+	@cd $(BUILDDIR)/tmp && tar czf $(CURDIR)/$(DISTDIR)/$(RELEASE_NAME).tar.gz $(RELEASE_NAME)
+	@echo "Minimal release package created: $(DISTDIR)/$(RELEASE_NAME).tar.gz"
+
+clean:
+	rm -rf $(BUILDDIR) $(OBJDIR) $(BINDIR)/*.o $(BINDIR)/web_server $(BINDIR)test_web_server
