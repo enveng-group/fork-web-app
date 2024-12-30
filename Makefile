@@ -399,20 +399,49 @@ opt: pgo-generate pgo-use
 # Add new target for t4g builds
 .PHONY: t4g-release
 
-t4g-release: CC = aarch64-linux-musl-gcc
-t4g-release: clean-dist prod dist
-	@echo "T4g optimized release package created: $(DISTDIR)/$(RELEASE_NAME).tar.gz"
+# Build directories
+BUILDDIR ?= $(CURDIR)/build
+TMPDIR ?= $(BUILDDIR)/tmp
+RELEASEDIR = $(BUILDDIR)/release
+RELEASE_NAME = web-app-$(VERSION)
 
-# Update permissions for t4g deployment
+# Modify t4g-release target
+t4g-release: clean-dist prod
+	@echo "Creating release package structure..."
+	@mkdir -p $(BUILDDIR)
+	@mkdir -p $(TMPDIR)
+	@rm -rf $(RELEASEDIR)
+	@mkdir -p $(RELEASEDIR)/$(RELEASE_NAME)
+	@mkdir -p $(RELEASEDIR)/$(RELEASE_NAME)/etc
+	@mkdir -p $(RELEASEDIR)/$(RELEASE_NAME)/var/log
+	@mkdir -p $(RELEASEDIR)/$(RELEASE_NAME)/var/records
+	@mkdir -p $(RELEASEDIR)/$(RELEASE_NAME)/www
+	# Copy built executable from correct location
+	@cp $(BINDIR)/web_server $(RELEASEDIR)/$(RELEASE_NAME)/
+	# Copy configuration files
+	@cp -r etc/* $(RELEASEDIR)/$(RELEASE_NAME)/etc/
+	# Copy record files
+	@cp -r var/records/* $(RELEASEDIR)/$(RELEASE_NAME)/var/records/
+	# Copy web files
+	@cp -r www/* $(RELEASEDIR)/$(RELEASE_NAME)/www/
+	# Create empty log file
+	@touch $(RELEASEDIR)/$(RELEASE_NAME)/var/log/audit.log
+	# Set permissions
+	@$(MAKE) t4g-permissions RELEASEDIR=$(RELEASEDIR) RELEASE_NAME=$(RELEASE_NAME)
+	# Create tarball
+	@cd $(RELEASEDIR) && tar -czf ../$(RELEASE_NAME).tar.gz $(RELEASE_NAME)
+	@echo "Release package created: $(BUILDDIR)/$(RELEASE_NAME).tar.gz"
+
+# Add permissions target
 t4g-permissions:
-	chmod 755 $(TMPDIR)
-	chmod 755 $(TMPDIR)/etc
-	chmod 755 $(TMPDIR)/var
-	chmod 755 $(TMPDIR)/var/log
-	chmod 755 $(TMPDIR)/var/records
-	chmod 755 $(TMPDIR)/www
-	chmod 644 $(TMPDIR)/etc/auth.passwd
-	chmod 644 $(TMPDIR)/var/records/*
-	chmod 644 $(TMPDIR)/var/log/*
-	chmod 644 $(TMPDIR)/www/*.html
-	chmod 755 $(TMPDIR)/web_server
+	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)
+	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)/etc
+	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)/var
+	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)/var/log
+	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)/var/records
+	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)/www
+	@chmod 644 $(RELEASEDIR)/$(RELEASE_NAME)/etc/*
+	@chmod 644 $(RELEASEDIR)/$(RELEASE_NAME)/var/records/*
+	@chmod 644 $(RELEASEDIR)/$(RELEASE_NAME)/www/*
+	@chmod 755 $(RELEASEDIR)/$(RELEASE_NAME)/web_server
+	@chmod 644 $(RELEASEDIR)/$(RELEASE_NAME)/var/log/audit.log
