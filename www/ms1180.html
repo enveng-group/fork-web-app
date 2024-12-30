@@ -394,13 +394,13 @@
 
     window.onload = function () {
       if (!checkSession()) return;
-      fetch('/ms1180.rec')  // Changed from '../var/db/ms1180.rec'
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.text();
-        })
+      fetch('/var/records/ms1180.rec')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.text();
+      })
         .then(data => {
           const records = parseRecData(data);
           populateTable(records);

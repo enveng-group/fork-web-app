@@ -450,23 +450,24 @@
     var currentDataset = 'all';
     var cachedRecords = {};
 
+    /* filepath: www/dashboard.html */
     function loadAllRecords() {
-      var projects = ['scjv', 'ms1180', 'w6946'];
+          var projects = ['scjv', 'ms1180', 'w6946'];
 
-      Promise.all(projects.map(function (project) {
-        return fetch('/' + project + '.rec')
-          .then(function (response) { return response.text(); })
-          .then(function (data) {
-            var records = parseRecData(data);
-            cachedRecords[project] = records;
-            return records;
+          Promise.all(projects.map(function (project) {
+            return fetch('/var/records/' + project + '.rec')  // Updated path to correct location
+              .then(function (response) { return response.text(); })
+              .then(function (data) {
+                var records = parseRecData(data);
+                cachedRecords[project] = records;
+                return records;
+              });
+          })).then(function (results) {
+            updateCharts('all');
+            initializeDatasetButtons();
+            createActionList(cachedRecords);
           });
-      })).then(function (results) {
-        updateCharts('all');
-        initializeDatasetButtons();
-        createActionList(cachedRecords); // Add this line
-      });
-    }
+        }
 
     function initializeDatasetButtons() {
       var selectorHtml =

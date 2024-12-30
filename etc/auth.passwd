@@ -20,3 +20,5 @@ conmgr:lion:1014:1014:SCJV - Construction Manager:/home/conmgr:/bin/sh
 commgr:tiger:1015:1015:SCJV - Commercial Manager:/home/commgr:/bin/sh
 projmgr:eagle:1016:1016:SCJV - Project Manager:/home/projmgr:/bin/sh
 perdmgr:whale:1017:1017:Perdaman - Management:/home/perdmgr:/bin/sh
+admin:x:0:0:Admin User:/root:/bin/sh:1
+testuser:x:1000:1000:Test User:/home/testuser:/bin/sh:0

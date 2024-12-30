@@ -1,0 +1,14 @@
+# Test Record File
+# Format: DATE|USER|ACTION|STATUS|DETAILS
+# ISO-8859-1 encoded
+
+2024-01-01|admin|LOGIN|SUCCESS|Initial login
+2024-01-01|testuser|VIEW|SUCCESS|Accessed homepage
+2024-01-01|admin|CREATE|SUCCESS|Created new user account
+2024-01-01|guest|LOGIN|FAILED|Invalid credentials
+2024-01-02|testuser|LOGOUT|SUCCESS|Normal session end
+2024-01-02|admin|UPDATE|SUCCESS|Modified system settings
+2024-01-02|testuser|LOGIN|SUCCESS|Regular login
+2024-01-02|testuser|VIEW|SUCCESS|Accessed reports
+2024-01-02|admin|DELETE|SUCCESS|Removed old records
+2024-01-02|system|BACKUP|SUCCESS|Daily backup completed

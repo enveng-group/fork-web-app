@@ -1,19 +1,19 @@
+/* filepath: /home/appuser/fork-web-app/test/test_runner.c */
 /**
  * Copyright 2024 Enveng Group - Simon French-Bluhm and Adrian Gallo.
- * SPDX-License-Identifier: 	AGPL-3.0-or-later
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/* filepath: /home/appuser/web-app/test/test_runner.c */
-#include <CUnit/Basic.h>
-#include "../include/web_server.h"
 #include "test_suites.h"
 
 /* Declarations of test suite initialization functions */
 int init_web_server_suite(CU_pSuite suite);
+int init_web_server_security_suite(CU_pSuite suite);
 
 int
 main(void)
 {
     CU_pSuite web_server_suite;
+    CU_pSuite web_server_security_suite;
 
     /* Initialize CUnit registry */
     if (CU_initialize_registry() != CUE_SUCCESS) {
@@ -27,8 +27,15 @@ main(void)
         return CU_get_error();
     }
 
+    web_server_security_suite = CU_add_suite("Web Server Security Tests", NULL, NULL);
+    if (web_server_security_suite == NULL) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
     /* Initialize test suites */
-    if (init_web_server_suite(web_server_suite) != 0) {
+    if (init_web_server_suite(web_server_suite) != 0 ||
+        init_web_server_security_suite(web_server_security_suite) != 0) {
         CU_cleanup_registry();
         return CU_get_error();
     }

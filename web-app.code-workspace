@@ -107,7 +107,7 @@
         "git.autorefresh": true,
         "git.closeDiffOnOperation": true,
         "git.confirmSync": false,
-        "git.enableCommitSigning": true,
+        "git.enableCommitSigning": false,
         "git.enableSmartCommit": true,
         "git.enabled": true,
         "git.fetchOnPull": true,
@@ -206,7 +206,6 @@
         },
         "workbench.preferredHighContrastColorTheme": "Default Dark Modern",
         "workbench.colorTheme": "GitHub Dark Default",
-        "workbench.colorTheme": "GitHub Dark Default",
         "diffEditor.ignoreTrimWhitespace": false,
         "search.exclude": {
             "**/node_modules": true,
@@ -253,7 +252,6 @@
         "snyk.folderConfigs": [
             {
                 "folderPath": "/devcontainer/web-app",
-                "folderPath": "/devcontainer/web-app",
                 "baseBranch": "main",
                 "localBranches": ["feature/boilerplate", "main"]
             }
@@ -279,7 +277,7 @@
         "diffEditor.hideUnchangedRegions.enabled": true,
         "editor.inlineSuggest.syntaxHighlightingEnabled": true,
         "files.autoGuessEncoding": true,
-        "files.encoding": "iso88591",
+        "files.encoding": "utf8",
         "files.eol": "\n",
         "files.insertFinalNewline": true,
         "files.trimFinalNewlines": true,

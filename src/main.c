@@ -1,10 +1,16 @@
-#include "../include/web_server.h"
+/* filepath: /home/appuser/fork-web-app/src/main.c */
+/* C Standard Library headers */
 #include <stdio.h>
 #include <stdlib.h>
+
+/* POSIX headers */
 #include <unistd.h>
-#include <signal.h>
 #include <errno.h>
+#include <signal.h>
 #include <sys/socket.h>
+
+/* Local headers */
+#include "../include/web_server.h"
 
 static volatile sig_atomic_t server_running = 1;
 

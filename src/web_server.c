@@ -14,6 +14,104 @@
 #include <time.h>
 #include <string.h>
 
+/* Add log rotation implementation */
+
+int
+check_log_size(const char *filename)
+{
+    struct stat st;
+
+    if (stat(filename, &st) < 0) {
+        return -1;
+    }
+
+    return st.st_size >= LOG_MAX_SIZE;
+}
+
+int
+rotate_log(const char *logname)
+{
+    char oldpath[PATH_MAX];
+    char newpath[PATH_MAX];
+    int i;
+
+    /* Parameter validation */
+    if (!logname) {
+        return ERR_PARAM;
+    }
+
+    /* Remove oldest log if exists */
+    snprintf(oldpath, sizeof(oldpath), "%s/%s.%d%s",
+             LOG_DIR, logname, LOG_MAX_FILES, LOG_ARCHIVE_SUFFIX);
+    remove(oldpath);
+
+    /* Rotate existing logs */
+    for (i = LOG_MAX_FILES - 1; i > 0; i--) {
+        snprintf(oldpath, sizeof(oldpath), "%s/%s.%d%s",
+                LOG_DIR, logname, i, LOG_ARCHIVE_SUFFIX);
+        snprintf(newpath, sizeof(newpath), "%s/%s.%d%s",
+                LOG_DIR, logname, i + 1, LOG_ARCHIVE_SUFFIX);
+        rename(oldpath, newpath);
+    }
+
+    /* Rotate current log to .1 */
+    snprintf(oldpath, sizeof(oldpath), "%s/%s%s",
+             LOG_DIR, logname, LOG_SUFFIX);
+    snprintf(newpath, sizeof(newpath), "%s/%s.1%s",
+             LOG_DIR, logname, LOG_ARCHIVE_SUFFIX);
+
+    if (rename(oldpath, newpath) != 0) {
+        return ERR_IO;
+    }
+
+    return ERR_NONE;
+}
+
+/* Modify log_message() to handle rotation */
+int
+log_message(int severity, const char *username, const char *action, const char *message)
+{
+    FILE *fp;
+    time_t now;
+    char timestamp[32];
+    char logpath[PATH_MAX];
+    int ret;
+
+    /* Validate parameters */
+    if (!username || !action || !message) {
+        return ERR_PARAM;
+    }
+
+    /* Format timestamp */
+    now = time(NULL);
+    if (strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S",
+                localtime(&now)) == 0) {
+        return ERR_INTERNAL;
+    }
+
+    /* Check log size and rotate if needed */
+    snprintf(logpath, sizeof(logpath), "%s/web%s", LOG_DIR, LOG_SUFFIX);
+    if (check_log_size(logpath)) {
+        ret = rotate_log("web");
+        if (ret != ERR_NONE) {
+            return ret;
+        }
+    }
+
+    /* Open log file in append mode */
+    fp = fopen(logpath, "a");
+    if (!fp) {
+        return ERR_IO;
+    }
+
+    /* Write log entry */
+    fprintf(fp, "%s|%d|%s|%s|%s\n",
+            timestamp, severity, username, action, message);
+
+    fclose(fp);
+    return ERR_NONE;
+}
+
 int
 parse_auth_file(const char *filename, struct user_entry *entries, size_t max_entries)
 {
@@ -74,19 +172,33 @@ parse_auth_file(const char *filename, struct user_entry *entries, size_t max_ent
     return (int)count;
 }
 
+/* Similarly modify log_audit() to use rotation */
 static int
 log_audit(const char *username, const char *action)
 {
     FILE *fp;
     time_t now;
     char timestamp[32];
+    char logpath[PATH_MAX];
     int ret;
 
     if (!username || !action) {
         return -1;
     }
 
-    fp = fopen("var/log/audit.log", "a");
+    /* Construct log path */
+    snprintf(logpath, sizeof(logpath), "%s/audit%s", LOG_DIR, LOG_SUFFIX);
+
+    /* Check log size and rotate if needed */
+    if (check_log_size(logpath) == 1) {
+        ret = rotate_log("audit");
+        if (ret != ERR_NONE) {
+            return ret;
+        }
+    }
+
+    /* Open log file with exclusive lock */
+    fp = fopen(logpath, "a");
     if (!fp) {
         return -1;
     }
@@ -94,7 +206,7 @@ log_audit(const char *username, const char *action)
     /* Get timestamp */
     now = time(NULL);
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S",
-            localtime(&now));
+             localtime(&now));
 
     /* Lock file for writing */
     ret = flock(fileno(fp), LOCK_EX);
@@ -197,39 +309,318 @@ parse_query_string(const char *query, char *username, char *password)
 }
 
 int
+handle_create_record(int client_socket, const char *data)
+{
+    char username[256];
+    const char *body;
+    const char *username_header;
+    size_t i;
+    int result;
+
+    /* Response messages */
+    const char success_response[] =
+        "HTTP/1.0 200 OK\r\n"
+        "Content-Type: application/json\r\n"
+        "Access-Control-Allow-Origin: *\r\n"
+        "Access-Control-Allow-Methods: POST\r\n"
+        "Access-Control-Allow-Headers: Content-Type, X-Username\r\n\r\n"
+        "{\"status\":\"success\",\"message\":\"Record created successfully\"}\r\n";
+
+    const char error_response[] =
+        "HTTP/1.0 400 Bad Request\r\n"
+        "Content-Type: application/json\r\n"
+        "Access-Control-Allow-Origin: *\r\n\r\n"
+        "{\"status\":\"error\",\"message\":\"Invalid record format\"}\r\n";
+
+    const char server_error[] =
+        "HTTP/1.0 500 Internal Server Error\r\n"
+        "Content-Type: application/json\r\n"
+        "Access-Control-Allow-Origin: *\r\n\r\n"
+        "{\"status\":\"error\",\"message\":\"Server error\"}\r\n";
+
+    /* Parameter validation */
+    if (data == NULL || client_socket < 0) {
+        return ERR_PARAM;
+    }
+
+    /* Extract username from header */
+    username_header = strstr(data, "X-Username: ");
+    if (username_header) {
+        username_header += 11; /* Skip "X-Username: " */
+        for (i = 0; i < sizeof(username) - 1 && username_header[i] != '\r' && username_header[i] != '\n'; i++) {
+            username[i] = username_header[i];
+        }
+        username[i] = '\0';
+    } else {
+        username[0] = '\0';
+    }
+
+    /* Find start of request body */
+    body = strstr(data, "\r\n\r\n");
+    if (body == NULL || strlen(body) < 5) {
+        write(client_socket, error_response, strlen(error_response));
+        return ERR_PARAM;
+    }
+    body += 4; /* Skip CRLN CRLN */
+
+    /* Basic validation of record format */
+    if (strstr(body, "Project_Name") == NULL ||
+        strstr(body, "Obligation") == NULL) {
+        write(client_socket, error_response, strlen(error_response));
+        return ERR_PARAM;
+    }
+
+    /* Create the record */
+    result = create_record_in_file(body);
+
+    if (result == 0) {
+        /* Log success */
+        log_message(LOG_INFO, username, "CREATE_RECORD", "Record created successfully");
+        log_audit(username, "Record created");
+        write(client_socket, success_response, strlen(success_response));
+        return 0;
+    }
+
+    /* Log failure */
+    log_message(LOG_ERROR, username, "CREATE_RECORD", "Failed to create record");
+
+    /* Send error response */
+    write(client_socket, server_error, strlen(server_error));
+    return -1;
+}
+
+int
+create_record_in_file(const char *data)
+{
+    FILE *fp;
+    int ret = ERR_NONE;
+    char filepath[PATH_MAX];
+
+    /* Input validation */
+    if (!data) {
+        return ERR_PARAM;
+    }
+
+    /* Construct full path */
+    if (snprintf(filepath, sizeof(filepath), "%s/scjv.rec", RECORDS_DIR) < 0) {
+        return ERR_INTERNAL;
+    }
+
+    /* Create directory if it doesn't exist */
+    if (mkdir(RECORDS_DIR, 0755) < 0 && errno != EEXIST) {
+        return ERR_IO;
+    }
+
+    /* Open file with exclusive lock */
+    fp = fopen(filepath, "a");
+    if (!fp) {
+        return ERR_IO;
+    }
+
+    /* Get exclusive lock */
+    if (flock(fileno(fp), LOCK_EX) == 0) {
+        /* Write record */
+        if (fprintf(fp, "%s\n", data) < 0) {
+            ret = ERR_IO;
+        }
+        flock(fileno(fp), LOCK_UN);
+    } else {
+        ret = ERR_IO;
+    }
+
+    fclose(fp);
+    return ret;
+}
+
+int
+update_record_in_file(FILE *fp, const char *data)
+{
+    FILE *temp_fp;
+    char line[MAX_BUFFER_SIZE];
+    char curr_ob[64];
+    char new_ob[64];
+    int found;
+    const char *start;
+
+    /* Parameter validation */
+    if (!fp || !data) {
+        return ERR_PARAM;
+    }
+
+    memset(curr_ob, 0, sizeof(curr_ob));
+    memset(new_ob, 0, sizeof(new_ob));
+    found = 0;
+
+    /* Extract new obligation number */
+    start = strstr(data, "Obligation_Number:");
+    if (!start || sscanf(start, "Obligation_Number: %63s", new_ob) != 1) {
+        return ERR_PARAM;
+    }
+
+    /* Create temp file */
+    temp_fp = fopen("var/records/scjv.rec.tmp", "w");
+    if (!temp_fp) {
+        return ERR_IO;
+    }
+
+    /* Reset position to start of file */
+    rewind(fp);
+
+    /* Copy header if present */
+    if (fgets(line, sizeof(line), fp) && strstr(line, "%rec: Project")) {
+        fputs(line, temp_fp);
+        if (fgets(line, sizeof(line), fp) && line[0] == '\n') {
+            fputs(line, temp_fp);
+        } else {
+            rewind(fp);
+        }
+    } else {
+        rewind(fp);
+    }
+
+    /* Process file line by line */
+    while (fgets(line, sizeof(line), fp)) {
+        /* Check if this is start of a record */
+        if (strstr(line, "Obligation_Number:")) {
+            if (sscanf(line, "Obligation_Number: %63s", curr_ob) == 1) {
+                /* If this is our target record */
+                if (strcmp(curr_ob, new_ob) == 0) {
+                    /* Write new record data without %rec header */
+                    if (strstr(data, "%rec: Project")) {
+                        const char *record_start = strstr(data, "\n\n");
+                        if (record_start) {
+                            record_start += 2;
+                            fprintf(temp_fp, "%s", record_start);
+                        } else {
+                            fprintf(temp_fp, "%s", data);
+                        }
+                    } else {
+                        fprintf(temp_fp, "%s", data);
+                    }
+                    found = 1;
+
+                    /* Skip old record */
+                    while (fgets(line, sizeof(line), fp)) {
+                        if (line[0] == '\n' || strstr(line, "Project_Name:")) {
+                            break;
+                        }
+                    }
+                    if (strstr(line, "Project_Name:")) {
+                        fputs(line, temp_fp);
+                    }
+                    continue;
+                }
+            }
+        }
+        fputs(line, temp_fp);
+    }
+
+    fclose(temp_fp);
+
+    /* Only replace if record was found and updated */
+    if (found) {
+        rename("var/records/scjv.rec.tmp", "var/records/scjv.rec");
+        return 0;
+    }
+
+    remove("var/records/scjv.rec.tmp");
+    return ERR_NOTFOUND;
+}
+
+int
+handle_update_record(int client_socket, const char *data)
+{
+    FILE *fp;
+    const char *body;
+    int result;
+
+    /* Parameter validation */
+    if (!data) {
+        return ERR_PARAM;
+    }
+
+    /* Open file for update */
+    fp = fopen("var/records/scjv.rec", "r");
+    if (!fp) {
+        return ERR_IO;
+    }
+
+    /* Get exclusive lock */
+    if (flock(fileno(fp), LOCK_EX) != 0) {
+        fclose(fp);
+        return ERR_IO;
+    }
+
+    /* Find request body */
+    body = strstr(data, "\r\n\r\n");
+    if (!body) {
+        flock(fileno(fp), LOCK_UN);
+        fclose(fp);
+        return ERR_PARAM;
+    }
+    body += 4;
+
+    /* Update record */
+    result = update_record_in_file(fp, body);
+
+    /* Cleanup */
+    flock(fileno(fp), LOCK_UN);
+    fclose(fp);
+
+    /* Send response */
+    if (result == 0) {
+        dprintf(client_socket,
+            "HTTP/1.0 200 OK\r\n"
+            "Content-Type: application/json\r\n"
+            "Access-Control-Allow-Origin: *\r\n\r\n"
+            "{\"status\":\"success\"}\r\n");
+    } else {
+        dprintf(client_socket,
+            "HTTP/1.0 500 Internal Server Error\r\n"
+            "Content-Type: application/json\r\n"
+            "Access-Control-Allow-Origin: *\r\n\r\n"
+            "{\"status\":\"error\",\"message\":\"Failed to update record\"}\r\n");
+    }
+
+    return result;
+}
+
+
+int
 handle_client(int client_socket, const char *www_root)
 {
     char buf[MAX_BUFFER_SIZE];
     char method[16];
     char uri[256];
     char filepath[512];
-    char username[256];
-    char password[256];
+    char username[256] = {0};  /* Initialize to zero */
+    char password[256] = {0};  /* Initialize to zero */
+    char fullname[256] = {0};  /* Initialize to zero */
+    char email[256] = {0};     /* Initialize to zero */
+    char project[256] = {0};   /* Initialize to zero */
+    char line[1024];
+    const char *filename;
     char *query;
+    char *query_copy;
+    char *token;
+    char *saveptr;
+    char *value;
     ssize_t bytes_read;
     struct stat st;
     int file_fd;
     ssize_t read_bytes;
     ssize_t write_result;
-    /* Variables used across multiple sections */
-    char fullname[256];
-    char email[256];
-    char project[256];
-    char *query_copy;
-    char *token;
-    char *saveptr;
-    char *value;
-    /* Shared file handling variables */
     FILE *fp;
-    char line[1024];
-    const char *rec_path;
     int result;
 
-    /* Initialize strings */
-    memset(fullname, 0, sizeof(fullname));
-    memset(email, 0, sizeof(email));
-    memset(project, 0, sizeof(project));
-    rec_path = NULL;
+    /* Initialize pointers */
+    filename = NULL;
+    query = NULL;
+    query_copy = NULL;
+    token = NULL;
+    saveptr = NULL;
+    value = NULL;
+    file_fd = -1;
 
     /* Read HTTP request */
     bytes_read = read(client_socket, buf, sizeof(buf) - 1);
@@ -248,8 +639,8 @@ handle_client(int client_socket, const char *www_root)
     }
     fprintf(stderr, "Method: %s, URI: %s\n", method, uri);
 
-    /* Only accept GET method */
-    if (strcmp(method, "GET") != 0) {
+    /* Update method check to allow POST */
+    if (strcmp(method, "GET") != 0 && strcmp(method, "POST") != 0) {
         dprintf(client_socket, "HTTP/1.0 405 Method Not Allowed\r\n\r\n");
         return -1;
     }
@@ -333,42 +724,48 @@ handle_client(int client_socket, const char *www_root)
 
     /* Handle .rec file requests */
     if (strstr(uri, ".rec") != NULL) {
-        rec_path = NULL;
+        fprintf(stderr, "Received .rec file request for URI: %s\n", uri);
 
-        if (strcmp(uri, "/scjv.rec") == 0) {
-            rec_path = "var/db/scjv.rec";
-        } else if (strcmp(uri, "/w6946.rec") == 0) {
-            rec_path = "var/db/w6946.rec";
-        } else if (strcmp(uri, "/ms1180.rec") == 0) {
-            rec_path = "var/db/ms1180.rec";
+        filename = strrchr(uri, '/');
+        if (filename) {
+            filename++; /* Skip the slash */
+        } else {
+            filename = uri; /* No slash found, use full URI */
         }
 
-        if (rec_path != NULL) {
-            /* Open and send .rec file */
-            file_fd = open(rec_path, O_RDONLY);
-            if (file_fd < 0) {
-                dprintf(client_socket, "HTTP/1.0 404 Not Found\r\n\r\n");
+        /* Construct full path */
+        if (snprintf(filepath, sizeof(filepath), "var/records/%s", filename) >= (int)sizeof(filepath)) {
+            dprintf(client_socket, "HTTP/1.0 500 Internal Server Error\r\n\r\n");
+            return -1;
+        }
+
+        fprintf(stderr, "Attempting to serve .rec file: %s\n", filepath);
+
+        /* Open and send .rec file */
+        file_fd = open(filepath, O_RDONLY);
+        if (file_fd < 0) {
+            fprintf(stderr, "Error opening file %s: %s\n", filepath, strerror(errno));
+            dprintf(client_socket, "HTTP/1.0 404 Not Found\r\n\r\n");
+            return -1;
+        }
+
+        /* Send HTTP headers */
+        dprintf(client_socket,
+            "HTTP/1.0 200 OK\r\n"
+            "Content-Type: text/plain\r\n"
+            "Access-Control-Allow-Origin: *\r\n\r\n");
+
+        /* Send file contents */
+        while ((read_bytes = read(file_fd, buf, sizeof(buf))) > 0) {
+            write_result = write(client_socket, buf, (size_t)read_bytes);
+            if (write_result < 0 || write_result != read_bytes) {
+                close(file_fd);
                 return -1;
             }
-
-            /* Send HTTP headers */
-            dprintf(client_socket,
-                "HTTP/1.0 200 OK\r\n"
-                "Content-Type: text/plain\r\n"
-                "Access-Control-Allow-Origin: *\r\n\r\n");
-
-            /* Send file contents */
-            while ((read_bytes = read(file_fd, buf, sizeof(buf))) > 0) {
-                write_result = write(client_socket, buf, (size_t)read_bytes);
-                if (write_result < 0 || write_result != read_bytes) {
-                    close(file_fd);
-                    return -1;
-                }
-            }
-
-            close(file_fd);
-            return 0;
         }
+
+        close(file_fd);
+        return 0;
     }
 
     /* Handle profile view */
@@ -411,6 +808,19 @@ handle_client(int client_socket, const char *www_root)
         }
     }
 
+    /* Handle CRUD endpoints */
+    if (strcmp(uri, ENDPOINT_CREATE) == 0) {
+        return handle_create_record(client_socket, buf);
+    }
+    else if (strcmp(uri, ENDPOINT_UPDATE) == 0) {
+        return handle_update_record(client_socket, buf);
+    }
+
+    /* Add handler for get_next_number endpoint */
+    if (strncmp(uri, ENDPOINT_NEXT_NUMBER, strlen(ENDPOINT_NEXT_NUMBER)) == 0) {
+        return handle_next_number(client_socket);
+    }
+
     /* Check if file exists and is readable */
     if (stat(filepath, &st) < 0 || !S_ISREG(st.st_mode)) {
         fprintf(stderr, "Error: File not found or not regular: %s\n", filepath);
@@ -425,7 +835,11 @@ handle_client(int client_socket, const char *www_root)
     }
 
     /* Send HTTP response */
-    dprintf(client_socket, "HTTP/1.0 200 OK\r\n\r\n");
+    dprintf(client_socket, "HTTP/1.0 200 OK\r\n");
+    dprintf(client_socket, "Access-Control-Allow-Origin: *\r\n");
+    dprintf(client_socket, "Access-Control-Allow-Methods: GET, POST\r\n");
+    dprintf(client_socket, "Access-Control-Allow-Headers: Content-Type, X-Username\r\n");
+    dprintf(client_socket, "\r\n");
 
     /* Send file contents */
     while ((read_bytes = read(file_fd, buf, sizeof(buf))) > 0) {
@@ -534,9 +948,12 @@ handle_update_user(int client_socket, const char *username, const char *fullname
 int
 setup_server(int port)
 {
-    struct sockaddr_in server_addr;
     int server_socket;
     const int enable = 1;
+    union {
+        struct sockaddr sa;
+        struct sockaddr_in sin;
+    } addr;
 
     /* Create socket */
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -551,24 +968,111 @@ setup_server(int port)
         return -1;
     }
 
-    /* Configure server address */
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons((unsigned short)port);
+    /* Initialize server address structure */
+    memset(&addr, 0, sizeof(addr));
+    addr.sin.sin_family = AF_INET;
+    addr.sin.sin_addr.s_addr = INADDR_ANY;
+    addr.sin.sin_port = htons((unsigned short)port);
 
     /* Bind socket */
-    if (bind(server_socket, (struct sockaddr *)&server_addr,
-             sizeof(server_addr)) < 0) {
+    if (bind(server_socket, &addr.sa, sizeof(addr.sin)) < 0) {
         close(server_socket);
         return -1;
     }
 
     /* Listen for connections */
-    if (listen(server_socket, 10) < 0) {
+    if (listen(server_socket, SOMAXCONN) < 0) {
         close(server_socket);
         return -1;
     }
 
     return server_socket;
+}
+
+/* filepath: /home/appuser/fork-web-app/src/web_server.c */
+
+int
+get_next_obligation_number(void)
+{
+    FILE *fp;
+    char number_str[32];
+    char *prefix;
+    int number;
+    int ret;
+
+    /* Open with exclusive lock for atomic read/write */
+    fp = fopen("/home/appuser/fork-web-app/var/records/obligation_number.txt", "r+");
+    if (!fp) {
+        return -1;
+    }
+
+    /* Get exclusive lock */
+    if (flock(fileno(fp), LOCK_EX) != 0) {
+        fclose(fp);
+        return -1;
+    }
+
+    /* Read current number */
+    if (fgets(number_str, sizeof(number_str), fp) == NULL) {
+        flock(fileno(fp), LOCK_UN);
+        fclose(fp);
+        return -1;
+    }
+
+    /* Find prefix */
+    prefix = strstr(number_str, "PCEMP-");
+    if (!prefix) {
+        flock(fileno(fp), LOCK_UN);
+        fclose(fp);
+        return -1;
+    }
+
+    /* Convert to number */
+    number = atoi(prefix + 6);
+    if (number <= 0) {
+        flock(fileno(fp), LOCK_UN);
+        fclose(fp);
+        return -1;
+    }
+
+    /* Write incremented number */
+    rewind(fp);
+    ret = fprintf(fp, "PCEMP-%d\n", number + 1);
+    fflush(fp);
+
+    /* Release lock and close */
+    flock(fileno(fp), LOCK_UN);
+    fclose(fp);
+
+    return ret < 0 ? -1 : number;
+}
+
+int
+handle_next_number(int client_socket)
+{
+    int number;
+    char response[256];
+
+    number = get_next_obligation_number();
+    if (number < 0) {
+        dprintf(client_socket,
+            "HTTP/1.0 500 Internal Server Error\r\n"
+            "Content-Type: text/plain\r\n"
+            "Access-Control-Allow-Origin: *\r\n"
+            "Access-Control-Allow-Headers: X-Username\r\n"
+            "\r\n"
+            "Error getting obligation number");
+        return -1;
+    }
+
+    snprintf(response, sizeof(response),
+        "HTTP/1.0 200 OK\r\n"
+        "Content-Type: text/plain\r\n"
+        "Access-Control-Allow-Origin: *\r\n"
+        "Access-Control-Allow-Headers: X-Username\r\n"
+        "\r\n"
+        "PCEMP-%d", number);
+
+    write(client_socket, response, strlen(response));
+    return 0;
 }

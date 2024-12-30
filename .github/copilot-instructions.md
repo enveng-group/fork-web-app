@@ -64,12 +64,13 @@ These instructions ensure Copilot's suggestions align with our project's technic
 - Always define pointers with the `*` operator.
 - Always define arrays with the `[]` operator.
 - Never generate code that has undefined reference behaviour.
+- Avoid direct type punning to comply with strict aliasing rules.
 - Never redefine a variable in the same scope.
 - Avoid generating code that are conflicting types for the same variable.
 - Avoid previous declarations of variables.
 - C90 standard requiring declarations at start of blocks
 - ISO C90 forbids mixed declarations and code
-- Code must compile with gcc using: `-static -std=c90 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500 -Wall -ansi -Wextra -pedantic -Werror -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes -fanalyzer -fstack-protector-strong -fstack-check -fdata-sections -ffunction-sections -fno-common -fstrict-aliasing -Warray-bounds -Wstack-protector -Wformat=2 -Wformat-security -Wformat-overflow=2 -Wformat-truncation=2 -Walloca -Wvla -fno-omit-frame-pointer -finput-charset=iso-8859-1 -fexec-charset=iso-8859-1 -fwide-exec-charset=iso-8859-1`
+- Code must compile with gcc using: `-static -O3 std=c90 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=500 -Wall -ansi -Wextra -pedantic -Werror -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes -Warray-bounds -Wformat=2 -Wformat-security -Wformat-overflow=2 -Wformat-truncation=2 -Wvla -Wbad-function-cast -Wstrict-aliasing=2 -Wnull-dereference -Wdouble-promotion -Wfloat-equal -Wpointer-arith -Wwrite-strings -Wcast-align -Wcast-qual -Wredundant-decls -Wundef -Wmissing-include-dirs -Winit-self -Wswitch-enum -Wmissing-declarations -Wsign-conversion -fstack-protector-strong -fstack-check -fPIE -fstack-protector-all -fdata-sections -ffunction-sections -fno-common -fstrict-aliasing -fno-strict-overflow -fanalyzer -fno-omit-frame-pointer -finput-charset=iso-8859-1 -fexec-charset=iso-8859-1 -fwide-exec-charset=iso-8859-1`
 - Code Safety Requirements:
     - No VLAs (enforced by -Wvla)
     - No array bounds violations (enforced by -Warray-bounds)
@@ -242,68 +243,68 @@ if (val > INT_MAX || val < INT_MIN) {
 ## Optimised Directory Structure
 ```plaintext
 /			# . (root directory)
-├── bin/                # Essential user binaries
-│   ├── sh              # POSIX-compliant shell
-│   ├── ls              # List directory contents
-│   ├── cp              # Copy files
-│   ├── mv              # Move/rename files
-│   ├── rm              # Remove files
-│   ├── mkdir           # Create directories
-│   └── ...             # Other essential commands
-├── sbin/               # Essential system binaries
-│   ├── init            # Init system
-│   ├── fsck            # Filesystem check
-│   ├── mount           # Mount filesystems
-│   ├── umount          # Unmount filesystems
-│   └── ...             # Other system utilities
-├── lib/                # Shared libraries for essential binaries
-│   ├── libc.so         # musl libc
-│   ├── libpthread.so   # POSIX threads
-│   ├── libm.so         # Math library
-│   └── ...             # Other essential shared libraries
-├── etc/                # System configuration files
-│   ├── passwd          # User account information
-│   ├── group           # Group account information
-│   ├── fstab           # Filesystem table
-│   ├── hosts           # Hostname resolution
-│   └── ...             # Other configuration files
-├── dev/                # Device files
-│   ├── null            # Null device
-│   ├── zero            # Zero device
-│   ├── tty             # Terminal device
-│   ├── random          # Random number generator
-│   ├── sda             # First disk device
-│   └── ...             # Other device nodes
-├── tmp/                # Temporary files
-├── var/                # Variable data
-│   ├── log/            # Log files
-│   │   ├── syslog      # System log
-│   │   ├── auth.log    # Authentication log
-│   │   └── ...         # Other log files
-│   ├── spool/          # Spool directories
-│   └── run/            # Runtime data
-├── usr/                # Secondary hierarchy for user programs
-│   ├── bin/            # Non-essential user binaries
-│   ├── lib/            # Shared libraries for `/usr/bin`
-│   ├── include/        # Header files
-│   ├── share/          # Architecture-independent files
-│   │   ├── man/        # Manual pages
-│   │   └── locale/     # Localization files
-│   └── src/            # Source code (optional)
-├── home/               # User home directories
-│   ├── user1/          # Example user
-│   └── user2/          # Another user
-├── opt/                # Optional software packages
-├── mnt/                # Mount points for temporary filesystems
-│   ├── usb/            # USB devices
-│   ├── cdrom/          # CD-ROM
-│   └── ...             # Other mount points
-├── proc/               # Virtual filesystem for processes
-├── sys/                # Virtual filesystem for system information
-└── boot/               # Bootloader files (if applicable)
-    ├── kernel          # Kernel image
-    ├── initrd          # Initial RAM disk
-    └── ...             # Other boot files
+??? bin/                # Essential user binaries
+?   ??? sh              # POSIX-compliant shell
+?   ??? ls              # List directory contents
+?   ??? cp              # Copy files
+?   ??? mv              # Move/rename files
+?   ??? rm              # Remove files
+?   ??? mkdir           # Create directories
+?   ??? ...             # Other essential commands
+??? sbin/               # Essential system binaries
+?   ??? init            # Init system
+?   ??? fsck            # Filesystem check
+?   ??? mount           # Mount filesystems
+?   ??? umount          # Unmount filesystems
+?   ??? ...             # Other system utilities
+??? lib/                # Shared libraries for essential binaries
+?   ??? libc.so         # musl libc
+?   ??? libpthread.so   # POSIX threads
+?   ??? libm.so         # Math library
+?   ??? ...             # Other essential shared libraries
+??? etc/                # System configuration files
+?   ??? passwd          # User account information
+?   ??? group           # Group account information
+?   ??? fstab           # Filesystem table
+?   ??? hosts           # Hostname resolution
+?   ??? ...             # Other configuration files
+??? dev/                # Device files
+?   ??? null            # Null device
+?   ??? zero            # Zero device
+?   ??? tty             # Terminal device
+?   ??? random          # Random number generator
+?   ??? sda             # First disk device
+?   ??? ...             # Other device nodes
+??? tmp/                # Temporary files
+??? var/                # Variable data
+?   ??? log/            # Log files
+?   ?   ??? syslog      # System log
+?   ?   ??? auth.log    # Authentication log
+?   ?   ??? ...         # Other log files
+?   ??? spool/          # Spool directories
+?   ??? run/            # Runtime data
+??? usr/                # Secondary hierarchy for user programs
+?   ??? bin/            # Non-essential user binaries
+?   ??? lib/            # Shared libraries for `/usr/bin`
+?   ??? include/        # Header files
+?   ??? share/          # Architecture-independent files
+?   ?   ??? man/        # Manual pages
+?   ?   ??? locale/     # Localization files
+?   ??? src/            # Source code (optional)
+??? home/               # User home directories
+?   ??? user1/          # Example user
+?   ??? user2/          # Another user
+??? opt/                # Optional software packages
+??? mnt/                # Mount points for temporary filesystems
+?   ??? usb/            # USB devices
+?   ??? cdrom/          # CD-ROM
+?   ??? ...             # Other mount points
+??? proc/               # Virtual filesystem for processes
+??? sys/                # Virtual filesystem for system information
+??? boot/               # Bootloader files (if applicable)
+    ??? kernel          # Kernel image
+    ??? initrd          # Initial RAM disk
+    ??? ...             # Other boot files
 ```
 
 ## **1. Essential Components of a POSIX-Compliant Filesystem**
@@ -460,7 +461,7 @@ To ensure POSIX compliance:
     - Ensure compatibility with musl's threading and math libraries.
 - **Containerized Development**:
     - Target **AMD64** architecture with static linking for compatibility across container instances.
-    - Optimize for minimal dependencies, leveraging musl’s built-in features where possible.
+    - Optimize for minimal dependencies, leveraging musl?s built-in features where possible.
 
 ## **Compiler Flags Reference**
 ### Production Build (musl-gcc because it runs on Trisquel)
@@ -623,7 +624,7 @@ process_data(struct data_block *block)
 - Ensure that the generated snippets adhere to the project's coding standards and practices as outlined in this document.
 - Provide context-specific suggestions that integrate seamlessly with the existing codebase.
 
-Here’s a comprehensive list of the **POSIX-compliant** and **ISO C89 (ANSI C)** headers and libraries provided by **musl libc**. These libraries and headers are essential for building a project that adheres to your requirements for compliance, portability, and lightweight environments.
+Here?s a comprehensive list of the **POSIX-compliant** and **ISO C89 (ANSI C)** headers and libraries provided by **musl libc**. These libraries and headers are essential for building a project that adheres to your requirements for compliance, portability, and lightweight environments.
 
 ---
 

@@ -1,0 +1,281 @@
+%rec: Project
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Site Environmental Management Plan
+Procedure: Groundwater Management Plan
+Environmental_Aspect: Water Quality
+Obligation_Number: W6946-01
+Obligation: Implement quarterly groundwater monitoring program at designated monitoring bores MB01-MB06
+Accountability: Site Manager
+Responsibility: Environmental Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/06/30
+Close_Out_Date:
+Status: In Progress
+Supporting_Information: Monitoring parameters include pH, TDS, heavy metals as per license conditions
+General_Comments: Initial baseline data collected in March 2024
+Compliance_Comments: Submit results to DWER within 30 days of sampling
+NonConformance_Comments:
+Evidence: Groundwater monitoring records
+PersonEmail: env.coord@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Quarterly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/06/30
+Inspection: Yes
+Inspection_Frequency: Quarterly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Monitoring
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Site Environmental Management Plan
+Procedure: Acid Sulfate Soils Management
+Environmental_Aspect: Soil Management
+Obligation_Number: W6946-02
+Obligation: Conduct daily pH monitoring of dewatering discharge during excavation works
+Accountability: Construction Manager
+Responsibility: Site Environmental Officer
+ProjectPhase: Construction
+Action_DueDate: 2024/08/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: pH must remain between 6.5-8.5 as per dewatering license
+General_Comments: Monitoring equipment calibrated and ready
+Compliance_Comments: Daily logs to be maintained with corrective actions if needed
+NonConformance_Comments:
+Evidence:
+PersonEmail: seo@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Daily
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/08/31
+Inspection: Yes
+Inspection_Frequency: Daily
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Monitoring
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Site Environmental Management Plan
+Procedure: Materials Handling
+Environmental_Aspect: Hazardous Materials
+Obligation_Number: W6946-03
+Obligation: Maintain containment systems inspection program for lithium-ion battery storage areas
+Accountability: Operations Manager
+Responsibility: HSE Advisor
+ProjectPhase: Operations
+Action_DueDate: 2024/12/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Weekly inspections of bunding, drainage systems and fire suppression equipment required
+General_Comments: Training for inspection personnel scheduled
+Compliance_Comments: Inspection records to be retained for 5 years
+NonConformance_Comments:
+Evidence:
+PersonEmail: hse@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Weekly
+Recurring_Status: Pending
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: Yes
+Inspection_Frequency: Weekly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Safety
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Site Environmental Management Plan
+Procedure: Emergency Response
+Environmental_Aspect: Incident Management
+Obligation_Number: W6946-04
+Obligation: Conduct quarterly emergency response drills for chemical spill scenarios
+Accountability: Emergency Response Coordinator
+Responsibility: Safety Manager
+ProjectPhase: Operations
+Action_DueDate: 2024/09/30
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Drills must include spill response team activation and regulatory notification procedures
+General_Comments: Emergency Response Plan approved by DFES
+Compliance_Comments: After-action reports required within 48 hours
+NonConformance_Comments:
+Evidence:
+PersonEmail: safety@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Quarterly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/09/30
+Inspection: No
+Inspection_Frequency:
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Training
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Site Environmental Management Plan
+Procedure: Energy Management
+Environmental_Aspect: Emissions Reduction
+Obligation_Number: W6946-05
+Obligation: Report monthly energy consumption and efficiency metrics to corporate sustainability team
+Accountability: Facility Manager
+Responsibility: Energy Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/07/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Data required includes kWh consumption, peak demand, and battery cycling efficiency
+General_Comments: Monitoring systems installation complete
+Compliance_Comments: Reports due by 5th of following month
+NonConformance_Comments:
+Evidence:
+PersonEmail: energy@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Monthly
+Recurring_Status: Pending
+Recurring_Forcasted_Date: 2024/07/31
+Inspection: No
+Inspection_Frequency:
+Site_or_Desktop: Desktop
+New_Control_Action_Required:
+Obligation_Type: Reporting%rec: Project
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Site Environmental Management Plan
+Procedure: Groundwater Management Plan
+Environmental_Aspect: Water Quality
+Obligation_Number: W6946-01
+Obligation: Implement quarterly groundwater monitoring program at designated monitoring bores MB01-MB06
+Accountability: Site Manager
+Responsibility: Environmental Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/06/30
+Close_Out_Date:
+Status: In Progress
+Supporting_Information: Monitoring parameters include pH, TDS, heavy metals as per license conditions
+General_Comments: Initial baseline data collected in March 2024
+Compliance_Comments: Submit results to DWER within 30 days of sampling
+NonConformance_Comments:
+Evidence: Groundwater monitoring records
+PersonEmail: env.coord@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Quarterly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/06/30
+Inspection: Yes
+Inspection_Frequency: Quarterly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Monitoring
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Site Environmental Management Plan
+Procedure: Acid Sulfate Soils Management
+Environmental_Aspect: Soil Management
+Obligation_Number: W6946-02
+Obligation: Conduct daily pH monitoring of dewatering discharge during excavation works
+Accountability: Construction Manager
+Responsibility: Site Environmental Officer
+ProjectPhase: Construction
+Action_DueDate: 2024/08/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: pH must remain between 6.5-8.5 as per dewatering license
+General_Comments: Monitoring equipment calibrated and ready
+Compliance_Comments: Daily logs to be maintained with corrective actions if needed
+NonConformance_Comments:
+Evidence:
+PersonEmail: seo@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Daily
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/08/31
+Inspection: Yes
+Inspection_Frequency: Daily
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Monitoring
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Site Environmental Management Plan
+Procedure: Materials Handling
+Environmental_Aspect: Hazardous Materials
+Obligation_Number: W6946-03
+Obligation: Maintain containment systems inspection program for lithium-ion battery storage areas
+Accountability: Operations Manager
+Responsibility: HSE Advisor
+ProjectPhase: Operations
+Action_DueDate: 2024/12/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Weekly inspections of bunding, drainage systems and fire suppression equipment required
+General_Comments: Training for inspection personnel scheduled
+Compliance_Comments: Inspection records to be retained for 5 years
+NonConformance_Comments:
+Evidence:
+PersonEmail: hse@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Weekly
+Recurring_Status: Pending
+Recurring_Forcasted_Date: 2024/12/31
+Inspection: Yes
+Inspection_Frequency: Weekly
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Safety
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Site Environmental Management Plan
+Procedure: Emergency Response
+Environmental_Aspect: Incident Management
+Obligation_Number: W6946-04
+Obligation: Conduct quarterly emergency response drills for chemical spill scenarios
+Accountability: Emergency Response Coordinator
+Responsibility: Safety Manager
+ProjectPhase: Operations
+Action_DueDate: 2024/09/30
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Drills must include spill response team activation and regulatory notification procedures
+General_Comments: Emergency Response Plan approved by DFES
+Compliance_Comments: After-action reports required within 48 hours
+NonConformance_Comments:
+Evidence:
+PersonEmail: safety@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Quarterly
+Recurring_Status: Active
+Recurring_Forcasted_Date: 2024/09/30
+Inspection: No
+Inspection_Frequency:
+Site_or_Desktop: Site
+New_Control_Action_Required:
+Obligation_Type: Training
+
+Project_Name: W6946
+Primary_Environmental_Mechanism: Site Environmental Management Plan
+Procedure: Energy Management
+Environmental_Aspect: Emissions Reduction
+Obligation_Number: W6946-05
+Obligation: Report monthly energy consumption and efficiency metrics to corporate sustainability team
+Accountability: Facility Manager
+Responsibility: Energy Coordinator
+ProjectPhase: Operations
+Action_DueDate: 2024/07/31
+Close_Out_Date:
+Status: Not Started
+Supporting_Information: Data required includes kWh consumption, peak demand, and battery cycling efficiency
+General_Comments: Monitoring systems installation complete
+Compliance_Comments: Reports due by 5th of following month
+NonConformance_Comments:
+Evidence:
+PersonEmail: energy@w6946.com
+Recurring_Obligation: Yes
+Recurring_Frequency: Monthly
+Recurring_Status: Pending
+Recurring_Forcasted_Date: 2024/07/31
+Inspection: No
+Inspection_Frequency:
+Site_or_Desktop: Desktop
+New_Control_Action_Required:
+Obligation_Type: Reporting

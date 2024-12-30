@@ -3,7 +3,7 @@
 
 <head>
   <title>W6946 Environmental Obligations</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+  <meta http-equiv="""Content-Type" content="text/html; charset=ISO-8859-1">
   <style type="text/css">
     body {
       font-family: Arial, sans-serif;
@@ -284,7 +284,7 @@
         const cells = rows[i].getElementsByTagName("td");
         if (!cells || cells.length < 8) continue;
 
-        const dueDateCell = cells[7];
+        const dueDateCell = cells[5]; // Use correct index
         if (!dueDateCell || !dueDateCell.textContent) continue;
 
         const dueDate = new Date(dueDateCell.textContent);
@@ -301,7 +301,10 @@
       }
     }
 
+    // Replace the parseRecData and related functions with:
+
     function parseRecData(recData) {
+      "use strict";
       const records = [];
       let currentRecord = {};
 
@@ -344,13 +347,16 @@
         }
       }
 
-      // Add the last record
+      // Add the last record if not empty
       if (Object.keys(currentRecord).length > 0) {
         records.push(currentRecord);
       }
 
-      // Filter to only include W6946 records
-      return records.filter(record => record.Project_Name === 'W6946');
+      // Make project name matching case-insensitive
+      return records.filter(record =>
+        record.Project_Name &&
+        record.Project_Name.toLowerCase() === 'w6946'.toLowerCase()
+      );
     }
 
     // Update populateTable function to match reduced columns
@@ -392,25 +398,37 @@
       return true;
     }
 
+    // In the window.onload function:
     window.onload = function () {
+      "use strict";
       if (!checkSession()) return;
-      fetch('/w6946.rec')  // Changed from '../var/db/w6946.rec'
+
+      fetch('/var/records/w6946.rec')
         .then(response => {
           if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('Unable to load record file');
           }
           return response.text();
         })
         .then(data => {
+          if (!data || !data.trim()) {
+            document.getElementById('obligationsTable').innerHTML +=
+              '<tr><td colspan="9">No data available</td></tr>';
+            return;
+          }
           const records = parseRecData(data);
-          populateTable(records);
-          // Only check dates after table is populated
-          setTimeout(checkDueDates, 100);
+          if (records && records.length > 0) {
+            populateTable(records);
+            setTimeout(checkDueDates, 100);
+          } else {
+            document.getElementById('obligationsTable').innerHTML +=
+              '<tr><td colspan="9">No records found for W6946</td></tr>';
+          }
         })
         .catch(error => {
           console.error('Error loading records:', error);
-          document.getElementById('obligationsTable')
-            .innerHTML += '<tr><td colspan="18">Error loading data</td></tr>';
+          document.getElementById('obligationsTable').innerHTML +=
+            '<tr><td colspan="9">Error loading data: ' + error.message + '</td></tr>';
         });
     };
 

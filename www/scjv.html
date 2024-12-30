@@ -349,7 +349,7 @@
         records.push(currentRecord);
       }
 
-      // Filter to only include SCJV - Pilbara Ports records
+      // Filter to only include scjv records
       return records.filter(record => record.Project_Name === 'SCJV - Pilbara Ports');
     }
 
@@ -392,26 +392,15 @@
       return true;
     }
 
-    function navigateToProfile() {
-      if (!checkSession()) return;
-      var username = getCookie('username');
-      window.location.href = 'profile.html?username=' + encodeURIComponent(username);
-    }
-
-    function navigateToProject(url) {
-      if (!checkSession()) return;
-      window.location.href = url;
-    }
-
     window.onload = function () {
       if (!checkSession()) return;
-      fetch('/scjv.rec')  // Changed from '../var/db/scjv.rec'
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.text();
-        })
+      fetch('/var/records/scjv.rec')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.text();
+      })
         .then(data => {
           const records = parseRecData(data);
           populateTable(records);
@@ -462,12 +451,23 @@
         rows[i].style.display = show ? '' : 'none';
       }
     }
+
+    function navigateToProfile() {
+      if (!checkSession()) return;
+      var username = getCookie('username');
+      window.location.href = 'profile.html?username=' + encodeURIComponent(username);
+    }
+
+    function navigateToProject(url) {
+      if (!checkSession()) return;
+      window.location.href = url;
+    }
   </script>
 </head>
 
 <body>
   <div id="header">
-    <h1>SCJV - Pilbara Ports Environmental Obligations</h1>
+    <h1>SCJV Environmental Obligations</h1>
   </div>
 
   <div class="user-nav">

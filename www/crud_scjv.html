@@ -1,0 +1,483 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+
+<head>
+  <title>SCJV Records Management</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+  <style type="text/css">
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f7f2;
+    }
+
+    .form-group {
+      margin: 10px 0;
+    }
+
+    .error {
+      color: #ff0000;
+      display: none;
+      padding: 10px;
+    }
+
+    label {
+      display: inline-block;
+      width: 150px;
+    }
+
+    input[type="text"],
+    select {
+      width: 300px;
+      padding: 5px;
+    }
+
+    input[type="submit"],
+    button {
+      padding: 5px 15px;
+      margin: 5px;
+      background: #2f4f2f;
+      color: white;
+      border: none;
+    }
+  </style>
+
+  <script type="text/javascript">
+    "use strict";
+
+    // Error handling helper
+    function showError(message) {
+      var errorDiv = document.getElementById("record-error");
+      errorDiv.innerHTML = message;
+      errorDiv.style.display = "block";
+    }
+
+    // Cookie helper
+    function getCookie(name) {
+      var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? match[2] : '';
+    }
+
+    // Session check
+    function checkSession() {
+      var username = getCookie('username');
+      if (!username) {
+        alert("Session expired - please login again");
+        window.location.href = 'index.html';
+        return false;
+      }
+      return true;
+    }
+
+    // Get next obligation number
+    function getNextObligationNumber() {
+      return new Promise(function (resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "/get_next_number", true);
+        xhr.setRequestHeader("X-Username", getCookie("username"));
+
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            resolve(xhr.responseText.trim());
+          } else {
+            reject(new Error("Failed to get obligation number: " + xhr.responseText));
+          }
+        };
+
+        xhr.onerror = function () {
+          reject(new Error("Network error getting obligation number"));
+        };
+
+        xhr.send();
+      });
+    }
+
+    // Form validation
+    function validateForm() {
+      var obligation = document.getElementById("obligation").value;
+      if (!obligation) {
+        showError("Obligation description is required");
+        return false;
+      }
+      return true;
+    }
+
+    // Initialize form
+    async function initializeForm() {
+      try {
+        var obligationNumber = await getNextObligationNumber();
+        document.getElementById("obligation_number").value = obligationNumber;
+        document.getElementById("record-error").style.display = "none";
+      } catch (err) {
+        showError("Error getting obligation number: " + err.message);
+      }
+    }
+
+    // Create record
+    function createRecord() {
+      if (!validateForm()) {
+        return false;
+      }
+
+      try {
+        var obligationNumber = document.getElementById("obligation_number").value;
+        if (!obligationNumber) {
+          throw new Error("No obligation number present");
+        }
+
+        var recData = formatRecordData("create");
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/create_record", true);
+        xhr.setRequestHeader("Content-Type", "text/plain");
+        xhr.setRequestHeader("X-Username", getCookie("username"));
+
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              alert("Record created successfully");
+              document.getElementById("recordForm").reset();
+              initializeForm();
+            } else {
+              showError("Failed to create record: " + xhr.responseText);
+            }
+          }
+        };
+
+        xhr.send(recData);
+      } catch (err) {
+        showError(err.message);
+      }
+      return false;
+    }
+
+    // Search record
+    function searchRecord() {
+      var obligation = document.getElementById("search_obligation").value;
+      if (!obligation) {
+        showError("Please enter an obligation number");
+        return;
+      }
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/var/records/scjv.rec", true);
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            var records = xhr.responseText.split("\n\n");
+            var found = false;
+
+            for (var i = 0; i < records.length; i++) {
+              if (records[i].includes("Obligation_Number: " + obligation)) {
+                found = true;
+                fillUpdateForm(records[i]);
+                document.getElementById("updateForm").style.display = "block";
+                break;
+              }
+            }
+
+            if (!found) {
+              showError("Record not found");
+              document.getElementById("updateForm").style.display = "none";
+            }
+          } else {
+            showError("Error searching record");
+          }
+        }
+      };
+      xhr.send();
+    }
+
+    // Format record data helper
+    function formatRecordData(type) {
+      var prefix = type === "create" ? "" : "update_";
+      return "%rec: Project\n\n" +
+        "Project_Name: SCJV - Pilbara Ports\n" +
+        "Primary_Environmental_Mechanism: " + document.getElementById(prefix + "mechanism").value + "\n" +
+        "Procedure: " + document.getElementById(prefix + "procedure").value + "\n" +
+        "Environmental_Aspect: " + document.getElementById(prefix + "aspect").value + "\n" +
+        "Obligation_Number: " + document.getElementById(prefix + "obligation_number").value + "\n" +
+        "Obligation: " + document.getElementById(prefix + "obligation").value + "\n" +
+        "Accountability: " + document.getElementById(prefix + "accountability").value + "\n" +
+        "Responsibility: " + document.getElementById(prefix + "responsibility").value + "\n" +
+        "ProjectPhase: Design and Construction\n" +
+        "Action_DueDate: " + (type === "create" ? document.getElementById("due_date").value : new Date().toISOString().split('T')[0]) + "\n" +
+        "Status: " + (type === "create" ? document.getElementById("status").value : "Not Started") + "\n" +
+        "Recurring_Obligation: " + (type === "create" ? document.getElementById("recurring").value : "No") + "\n" +
+        "Site_or_Desktop: " + (type === "create" ? document.getElementById("location").value : "Desktop") + "\n" +
+        "Obligation_Type: " + (type === "create" ? document.getElementById("type").value : "Site based");
+    }
+
+    // Fill update form
+    function fillUpdateForm(record) {
+      var lines = record.split("\n");
+      var fields = {};
+
+      for (var i = 0; i < lines.length; i++) {
+        var parts = lines[i].split(": ");
+        if (parts.length === 2) {
+          fields[parts[0].trim()] = parts[1].trim();
+        }
+      }
+
+      document.getElementById("update_mechanism").value = fields["Primary_Environmental_Mechanism"] || "";
+      document.getElementById("update_obligation_number").value = fields["Obligation_Number"] || "";
+      document.getElementById("update_procedure").value = fields["Procedure"] || "";
+      document.getElementById("update_aspect").value = fields["Environmental_Aspect"] || "";
+      document.getElementById("update_obligation").value = fields["Obligation"] || "";
+      document.getElementById("update_accountability").value = fields["Accountability"] || "";
+      document.getElementById("update_responsibility").value = fields["Responsibility"] || "";
+    }
+
+    // Update record
+    function updateRecord() {
+      try {
+        var data = formatRecordData("update");
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/update_record", true);
+        xhr.setRequestHeader("Content-Type", "text/plain");
+        xhr.setRequestHeader("X-Username", getCookie("username"));
+
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              alert("Record updated successfully");
+              document.getElementById("updateForm").style.display = "none";
+              document.getElementById("search_obligation").value = "";
+            } else {
+              showError("Failed to update record: " + xhr.responseText);
+            }
+          }
+        };
+
+        xhr.send(data);
+      } catch (err) {
+        showError("Error updating record: " + err.message);
+      }
+      return false;
+    }
+
+    /* Get exact record format from server */
+    function getRecordFormat(obligationNumber, callback) {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "/search_record?obligation=" + obligationNumber, true);
+      xhr.setRequestHeader("Content-Type", "text/plain");
+      xhr.setRequestHeader("X-Username", getCookie("username"));
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            callback(xhr.responseText);
+          } else {
+            showError("Failed to get record format");
+          }
+        }
+      };
+
+      xhr.send();
+    }
+
+    // Navigation
+    function goBack() {
+      window.location.href = 'dashboard.html';
+    }
+
+    // Initialize on load
+    window.onload = function () {
+      if (!checkSession()) return;
+      initializeForm();
+    };
+  </script>
+</head>
+
+<body>
+  <div>
+    <h1>SCJV Records Management</h1>
+    <div id="record-error" class="error"></div>
+
+    <form id="recordForm" onsubmit="return createRecord();" action="javascript:void(0);">
+      <div class="form-group">
+        <label for="mechanism">Environmental Mechanism:</label>
+        <select id="mechanism" required>
+          <option value="Portside CEMP">Portside CEMP</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="obligation_number">Obligation Number:</label>
+        <input type="text" id="obligation_number" readonly style="background-color: #eee;">
+      </div>
+
+      <div class="form-group">
+        <label for="procedure">Procedure:</label>
+        <input type="text" id="procedure" required>
+      </div>
+
+      <div class="form-group">
+        <label for="aspect">Environmental Aspect:</label>
+        <input type="text" id="aspect" required>
+      </div>
+
+      <div class="form-group">
+        <label for="obligation">Obligation:</label>
+        <input type="text" id="obligation" required>
+      </div>
+
+      <div class="form-group">
+        <label for="accountability">Accountability:</label>
+        <input type="text" id="accountability" required>
+      </div>
+
+      <div class="form-group">
+        <label for="responsibility">Responsibility:</label>
+        <select id="responsibility" required>
+          <option value="hssemgr">HSSE Manager</option>
+          <option value="envlead">Environmental Lead</option>
+          <option value="envadv">Lead Environmental Advisor</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="phase">Project Phase:</label>
+        <select id="phase" required>
+          <option value="Design and Construction">Design and Construction</option>
+          <option value="During Construction">During Construction</option>
+          <option value="Throughout the project">Throughout the project</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="due_date">Due Date:</label>
+        <input type="date" id="due_date" required>
+      </div>
+
+      <div class="form-group">
+        <label for="status">Status:</label>
+        <select id="status" required>
+          <option value="Not Started">Not Started</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="recurring">Recurring:</label>
+        <select id="recurring" required>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="frequency">Frequency:</label>
+        <select id="frequency">
+          <option value="">None</option>
+          <option value="Daily">Daily</option>
+          <option value="Weekly">Weekly</option>
+          <option value="Monthly">Monthly</option>
+          <option value="Annual">Annual</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="inspection">Inspection Required:</label>
+        <select id="inspection" required>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="inspection_freq">Inspection Frequency:</label>
+        <select id="inspection_freq">
+          <option value="">None</option>
+          <option value="Daily">Daily</option>
+          <option value="Weekly">Weekly</option>
+          <option value="Monthly">Monthly</option>
+          <option value="Annual">Annual</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="location">Location:</label>
+        <select id="location" required>
+          <option value="Site">Site</option>
+          <option value="Desktop">Desktop</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="type">Obligation Type:</label>
+        <select id="type" required>
+          <option value="Site based">Site based</option>
+          <option value="Reporting">Reporting</option>
+          <option value="Training">Training</option>
+          <option value="Design">Design</option>
+          <option value="Procurement">Procurement</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <input type="submit" value="Create Record">
+        <button type="button" onclick="goBack();">Back</button>
+      </div>
+    </form>
+
+    <hr>
+    <h2>Update Record</h2>
+    <div class="form-group">
+      <label for="search_obligation">Search Obligation Number:</label>
+      <input type="text" id="search_obligation" placeholder="e.g. PCEMP-01">
+      <button onclick="searchRecord()">Search</button>
+    </div>
+
+    <form id="updateForm" style="display:none;" onsubmit="return updateRecord();" action="javascript:void(0);">
+      <div class="form-group">
+        <label for="update_mechanism">Environmental Mechanism:</label>
+        <select id="update_mechanism" required>
+          <option value="Portside CEMP">Portside CEMP</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="update_obligation_number">Obligation Number:</label>
+        <input type="text" id="update_obligation_number" readonly style="background-color: #eee;">
+      </div>
+
+      <div class="form-group">
+        <label for="update_procedure">Procedure:</label>
+        <input type="text" id="update_procedure" required>
+      </div>
+
+      <div class="form-group">
+        <label for="update_aspect">Environmental Aspect:</label>
+        <input type="text" id="update_aspect" required>
+      </div>
+
+      <div class="form-group">
+        <label for="update_obligation">Obligation:</label>
+        <input type="text" id="update_obligation" required>
+      </div>
+
+      <div class="form-group">
+        <label for="update_accountability">Accountability:</label>
+        <input type="text" id="update_accountability" required>
+      </div>
+
+      <div class="form-group">
+        <label for="update_responsibility">Responsibility:</label>
+        <select id="update_responsibility" required>
+          <option value="hssemgr">HSSE Manager</option>
+          <option value="envlead">Environmental Lead</option>
+          <option value="envadv">Lead Environmental Advisor</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <input type="submit" value="Update Record">
+      </div>
+    </form>
+  </div>
+</body>
+
+</html>
