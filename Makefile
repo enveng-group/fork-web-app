@@ -28,7 +28,7 @@ INCLUDEDIR = include
 # Add version info
 MAJOR_VERSION = 0
 MINOR_VERSION = 0
-PATCH_VERSION = 1
+PATCH_VERSION = 2
 VERSION = $(MAJOR_VERSION).$(MINOR_VERSION).$(PATCH_VERSION)
 
 # Core language and standards flags
@@ -138,18 +138,18 @@ PROD_CFLAGS = $(LANG_FLAGS) $(WARN_FLAGS) $(SEC_FLAGS) $(OPT_FLAGS) -static
 
 # Enhanced linker flags for performance
 PROD_LDFLAGS = -static -Wl,--gc-sections,-O3,--sort-common \
-    -Wl,--build-id=none,-z,relro,-z,now,-z,noexecstack \
-    -Wl,--sort-section=alignment,--strip-all,--warn-common \
-    -Wl,--no-undefined,--no-allow-shlib-undefined \
-    -Wl,--no-copy-dt-needed-entries,--as-needed \
-    -Wl,-z,separate-code,-z,text,-z,defs \
-    -Wl,-z,relro,-z,global \
-    -Wl,-z,noexecstack,-z,nocombreloc \
-    -Wl,--eh-frame-hdr,--exclude-libs,ALL \
-    -Wl,--sort-section=alignment \
-    -Wl,--relax \
-    -Wl,-O3 \
-    -lpthread -lcrypt -lrt -ldl
+	-Wl,--build-id=none,-z,relro,-z,now,-z,noexecstack \
+	-Wl,--sort-section=alignment,--strip-all,--warn-common \
+	-Wl,--no-undefined,--no-allow-shlib-undefined \
+	-Wl,--no-copy-dt-needed-entries,--as-needed \
+	-Wl,-z,separate-code,-z,text,-z,defs \
+	-Wl,-z,relro,-z,global \
+	-Wl,-z,noexecstack,-z,nocombreloc \
+	-Wl,--eh-frame-hdr,--exclude-libs,ALL \
+	-Wl,--sort-section=alignment \
+	-Wl,--relax \
+	-Wl,-O3 \
+	-lpthread -lcrypt -lrt -ldl
 
 # Test & Debug configuration flags
 TEST_BASIC = -std=c90 -ansi -pedantic \
@@ -289,7 +289,7 @@ WEB_FILES = www/audit.html www/crud_profile.html www/crud_scjv.html \
 REC_FILES = var/records/ms1180.rec var/records/obligation_number.txt \
 	var/records/schema.desc var/records/scjv.rec var/records/w6946.rec
 
-LOG_FILES = var/log/audit.log var/log/updates.log var/log/web.log
+LOG_FILES = var/log/audit.log
 
 # Updated dist target
 dist: $(PROD_TARGET)
@@ -312,8 +312,6 @@ dist: $(PROD_TARGET)
 	cp var/records/w6946.rec $(TMPDIR)/var/records/
 	# Copy log files
 	cp var/log/audit.log $(TMPDIR)/var/log/
-	cp var/log/updates.log $(TMPDIR)/var/log/
-	cp var/log/web.log $(TMPDIR)/var/log/
 	# Copy web files
 	cp www/audit.html $(TMPDIR)/www/
 	cp www/crud_profile.html $(TMPDIR)/www/
@@ -408,7 +406,11 @@ t4g-release: clean-dist prod dist
 # Update permissions for t4g deployment
 t4g-permissions:
 	chmod 755 $(TMPDIR)
-	chmod 755 $(TMPDIR)/{etc,var,var/log,var/records,www}
+	chmod 755 $(TMPDIR)/etc
+	chmod 755 $(TMPDIR)/var
+	chmod 755 $(TMPDIR)/var/log
+	chmod 755 $(TMPDIR)/var/records
+	chmod 755 $(TMPDIR)/www
 	chmod 644 $(TMPDIR)/etc/auth.passwd
 	chmod 644 $(TMPDIR)/var/records/*
 	chmod 644 $(TMPDIR)/var/log/*
